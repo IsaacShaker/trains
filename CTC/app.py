@@ -1,6 +1,6 @@
 import sys
 import time
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit
 from PyQt6.QtCore import Qt, QTimer
 
 class MyWindow(QMainWindow):
@@ -231,13 +231,167 @@ class MyWindow(QMainWindow):
             frame.setMinimumSize(width, height)  # Set minimum size
         return frame
 
-    # The functionality for user filing a maintenance closure
+    # Custom dialog for user to select maintenance closure line
     def closureClicked(self):
-        print("Maintenance Report has been filed!")
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Maintenance Report")
+
+        # Apply styles to the dialog
+        dialog.setStyleSheet("""
+            QDialog {
+                background-color: #171717;
+            }
+            QLabel {
+                color: white;
+            }
+            QComboBox {
+                background-color: #772ce8;
+                color: #ffffff;
+                border: 1px solid #ffffff;
+                padding: 5px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #772ce8;
+                color: #ffffff;
+                selection-background-color: #CCCCFF;
+                selection-color: #000000;
+            }
+            QLineEdit {
+                background-color: #772ce8;
+                color: #ffffff;
+                padding: 5px;
+                border: 1px solid #ffffff;
+            }
+            QPushButton {
+                background-color: green;
+                color: white;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QPushButton:hover {
+                background-color: #ffffff;
+            }
+        """)
+
+        layout = QVBoxLayout(dialog)
+
+        # Create label
+        label = QLabel("What Block Requries Maintenance?")
+        layout.addWidget(label)
+
+        # Create horizontal layout for combo box and text entry box
+        h_layout = QHBoxLayout()
+
+        # Create combo box with options
+        combo_box = QComboBox()
+        combo_box.addItems(["Blue Line"])
+        h_layout.addWidget(combo_box)
+
+        # Create text entry box
+        text_entry = QLineEdit()
+        text_entry.setPlaceholderText("1 - 15")
+        h_layout.addWidget(text_entry)
+
+        # Add horizontal layout to the main layout
+        layout.addLayout(h_layout)
+
+        # Create 'Submit' button
+        button = QPushButton("Submit")
+        button.clicked.connect(lambda: self.submit_closure(dialog, combo_box.currentText(), text_entry.text()))
+        layout.addWidget(button)
+
+        dialog.setLayout(layout)
+        dialog.exec()
+
+    # Handle the selection when 'OK' is pressed
+    def submit_closure(self, dialog, line, block):
+        #selected_line = combo_box.currentText()
+        #print(f"Maintenance is being filed on the {selected_line}!")
+        #dialog.accept()
+        maintenanceBlock = (line, block, "M")
+        print("Block", block, "on the", line, "has been closed for maintenance!")
+        dialog.accept()
 
     # The functionality for user opening a block from maintenance
     def openingClicked(self):
-        print("Block has been reopened!")
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Maintenance Opening")
+
+        # Apply styles to the dialog
+        dialog.setStyleSheet("""
+            QDialog {
+                background-color: #171717;
+            }
+            QLabel {
+                color: white;
+            }
+            QComboBox {
+                background-color: #772ce8;
+                color: #ffffff;
+                border: 1px solid #ffffff;
+                padding: 5px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #772ce8;
+                color: #ffffff;
+                selection-background-color: #CCCCFF;
+                selection-color: #000000;
+            }
+            QLineEdit {
+                background-color: #772ce8;
+                color: #ffffff;
+                padding: 5px;
+                border: 1px solid #ffffff;
+            }
+            QPushButton {
+                background-color: green;
+                color: white;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QPushButton:hover {
+                background-color: #ffffff;
+            }
+        """)
+
+        layout = QVBoxLayout(dialog)
+
+        # Create label
+        label = QLabel("What Block Needs Reopened?")
+        layout.addWidget(label)
+
+        # Create horizontal layout for combo box and text entry box
+        h_layout = QHBoxLayout()
+
+        # Create combo box with options
+        combo_box = QComboBox()
+        combo_box.addItems(["Blue Line"])
+        h_layout.addWidget(combo_box)
+
+        # Create text entry box
+        text_entry = QLineEdit()
+        text_entry.setPlaceholderText("1 - 15")
+        h_layout.addWidget(text_entry)
+
+        # Add horizontal layout to the main layout
+        layout.addLayout(h_layout)
+
+        # Create 'Submit' button
+        button = QPushButton("Submit")
+        button.clicked.connect(lambda: self.submit_opening(dialog, combo_box.currentText(), text_entry.text()))
+        layout.addWidget(button)
+
+        dialog.setLayout(layout)
+        dialog.exec()
+
+    # Handle the selection when 'OK' is pressed
+    def submit_opening(self, dialog, line, block):
+        #selected_line = combo_box.currentText()
+        #print(f"Maintenance is being filed on the {selected_line}!")
+        #dialog.accept()
+        maintenanceBlock = (line, block, "M")
+        print("Block", block, "on the", line, "has been reopened!")
+        dialog.accept()   
 
     # The functionality of the user selecting the Simulation Speed of the system
     def simSpeedSelected(self, s):
