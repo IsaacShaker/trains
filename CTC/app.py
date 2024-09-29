@@ -76,14 +76,14 @@ class MyWindow(QMainWindow):
 
         # 1. Maintenance Section (Top left)
         maintenance_frame = self.create_section_frame(400, 80)  # Reduced height
-        maintenance_layout = QVBoxLayout()
+        maintenance_layout = QHBoxLayout()
         maintenance_label = QLabel("Maintenance")
         maintenance_label.setStyleSheet("color: white; font-size: 18px;")
         maintenance_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the label
         maintenance_layout.addWidget(maintenance_label)
 
-        # Horizontal layout for Closure and Opening buttons
-        button_layout = QHBoxLayout()
+        # Vertical layout for Closure and Opening buttons
+        button_layout = QVBoxLayout()
         
         #Define Maintenance Closure button
         closure_button = QPushButton("Closure")
@@ -103,18 +103,26 @@ class MyWindow(QMainWindow):
 
         # 2. Simulation Speed Section (Top right)
         speed_frame = self.create_section_frame(400, 80)  # Reduced height
-        speed_layout = QVBoxLayout()
+        speed_layout = QHBoxLayout()
         speed_label = QLabel("Simulation Speed")
         speed_label.setStyleSheet("color: white; font-size: 18px;")
         speed_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         speed_layout.addWidget(speed_label)
+
+        # Vertical layout for Clock and Simulation Speed
+        sim_layout = QVBoxLayout()
+
+        # Add the clock
+        sim_layout.addWidget(QLabel("Insert Clock"))
 
         # Create a QComboBox for simulation speed
         self.speed_combo_box = QComboBox()
         self.speed_combo_box.setStyleSheet("color: white; background-color: #772CE8;")
         self.speed_combo_box.addItems(["1x", "10x", "50x"])  # Example speed options
         self.speed_combo_box.currentTextChanged.connect(self.simSpeedSelected)
-        speed_layout.addWidget(self.speed_combo_box)
+        sim_layout.addWidget(self.speed_combo_box)
+
+        speed_layout.addLayout(sim_layout)
         speed_frame.setLayout(speed_layout)
         grid_layout.addWidget(speed_frame, 0, 1)
 
