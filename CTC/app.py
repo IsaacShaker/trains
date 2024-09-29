@@ -1,10 +1,16 @@
 import sys
+import time
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.simulationRunning = False #this is necessary for clock to work properly
+
+        self.oldTime = 21600 # the system will began at 6AM
+        self.speed = 1
 
         # Set the window title
         self.setWindowTitle("CTC Office")
@@ -38,6 +44,16 @@ class MyWindow(QMainWindow):
         # Add the tabs to the tab widget
         self.create_tabs()
 
+        # Timer for clock update
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_clock)
+
+        # Initialize the start time, speed, and total elapsed time
+        self.start_time = time.time()
+        self.speed = 1
+        self.total_elapsed_time = 0  # New variable to keep track of total elapsed time
+        self.timer.start(1000)  # Update every second
+
     def create_tabs(self):
         # Home Tab content
         home = QWidget()
@@ -53,7 +69,7 @@ class MyWindow(QMainWindow):
         test_bench = QWidget()
         test_bench_layout = QVBoxLayout()
 
-        # Add a placeholder for Test Bench, feel free to customize later
+        # Add a placeholder for Test Bench
         test_bench_label = QLabel("Test Bench content goes here.")
         test_bench_label.setStyleSheet("color: white; font-size: 18px;")
         test_bench_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
@@ -85,7 +101,7 @@ class MyWindow(QMainWindow):
         # Vertical layout for Closure and Opening buttons
         button_layout = QVBoxLayout()
         
-        #Define Maintenance Closure button
+        # Define Maintenance Closure button
         closure_button = QPushButton("Closure")
         closure_button.setStyleSheet("background-color: yellow; color: black;")
         closure_button.clicked.connect(self.closureClicked)
@@ -103,7 +119,7 @@ class MyWindow(QMainWindow):
 
         # 2. Simulation Speed Section (Top right)
         speed_frame = self.create_section_frame(400, 80)  # Reduced height
-        speed_layout = QHBoxLayout()
+        speed_layout = QHBoxLayout()  # Using QHBoxLayout to align items horizontally
         speed_label = QLabel("Simulation Speed")
         speed_label.setStyleSheet("color: white; font-size: 18px;")
         speed_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
@@ -112,19 +128,38 @@ class MyWindow(QMainWindow):
         # Vertical layout for Clock and Simulation Speed
         sim_layout = QVBoxLayout()
 
-        # Add the clock
-        sim_layout.addWidget(QLabel("Insert Clock"))
+        # Add the clock label
+        self.clock_label = QLabel(self.format_time(0))
+        self.clock_label.setStyleSheet("color: white; font-size: 18px;")
+        sim_layout.addWidget(self.clock_label)
+
+        # Horizontal Layout for on/off button and sim speed combo box
+        simOptions_layout = QHBoxLayout()
 
         # Create a QComboBox for simulation speed
         self.speed_combo_box = QComboBox()
         self.speed_combo_box.setStyleSheet("color: white; background-color: #772CE8;")
         self.speed_combo_box.addItems(["1x", "10x", "50x"])  # Example speed options
         self.speed_combo_box.currentTextChanged.connect(self.simSpeedSelected)
-        sim_layout.addWidget(self.speed_combo_box)
+        simOptions_layout.addWidget(self.speed_combo_box)
 
+        # Create on/off button for the simulation
+        operational_button = QPushButton("Start")
+        operational_button.setStyleSheet("background-color: green; color: black;")
+        operational_button.clicked.connect(self.operationalClicked)
+        simOptions_layout.addWidget(operational_button)
+
+        # Add the horizontal layout containing the combo box and on/off button to sim_layout
+        sim_layout.addLayout(simOptions_layout)
+
+        # Add the vertical layout containing the clock and sim options to speed_layout
         speed_layout.addLayout(sim_layout)
+
+        # Set the layout for the speed frame
         speed_frame.setLayout(speed_layout)
         grid_layout.addWidget(speed_frame, 0, 1)
+
+
 
         # 3. Schedule Builder Section (Middle)
         schedule_frame = self.create_section_frame(800, 250)  # Reduced height
@@ -176,7 +211,7 @@ class MyWindow(QMainWindow):
         blocks_layout.addWidget(upper_blocks_label)
 
         # Spacer to take up remaining space and push the lower part down
-        #blocks_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+        blocks_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
         # Lower portion of Block Occupancies
         blocks_layout.addWidget(QLabel("Block occupancies go here", alignment=Qt.AlignmentFlag.AlignCenter))  # Placeholder for the lower section
@@ -207,6 +242,48 @@ class MyWindow(QMainWindow):
     # The functionality of the user selecting the Simulation Speed of the system
     def simSpeedSelected(self, s):
         print("The simulation is now running at", s, "speed!")
+        self.speed = int(s[:-1])  # Extracting the numeric value from the selected string
+
+    # The functionality of the user starting the simulation
+    def operationalClicked(self):
+        # Toggle the simulation state
+        if not self.simulationRunning:
+            self.simulationRunning = True
+            self.start_time = time.time()  # Reset start time when simulation starts
+            print("The simulation has started!")
+        else:
+            self.simulationRunning = False
+            print("The simulation has been stopped!")
+
+        # Update the button text to reflect the current state
+        sender = self.sender()  # Get the button that triggered the event
+        if self.simulationRunning:
+            sender.setText("Stop")  # Change the button text to "Stop" when running
+            sender.setStyleSheet("background-color: red; color: white;")
+        else:
+            sender.setText("Start")  # Change the button text back to "Start" when stopped
+            sender.setStyleSheet("background-color: green; color: white;")
+
+    def format_time(self, seconds: int) -> str:
+        hours = (seconds // 3600) % 24
+        minutes = (seconds % 3600) // 60
+        seconds = seconds % 60
+        return f"{hours:02}:{minutes:02}:{seconds:02}"
+
+    def update_clock(self):
+        # Only update the clock if the simulation is running
+        if self.simulationRunning:
+            # Update the time according to the previous time and the simulation speed
+            self.newTime = self.oldTime + (1 * self.speed)
+
+            # Update the clock label with the formatted time
+            formatted_time = self.format_time(self.newTime)
+            self.clock_label.setText(formatted_time)
+
+            # Update oldTime to the newTime for the next call
+            self.oldTime = self.newTime
+
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
