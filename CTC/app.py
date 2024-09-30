@@ -101,7 +101,10 @@ class MyWindow(QMainWindow):
         grid_layout.setContentsMargins(10, 10, 10, 10)  # Adjust margins as needed
         grid_layout.setSpacing(10)  # Adjust spacing between widgets
 
-        # 1. Maintenance Section (Top left)
+        # Define Maintenance Opening button as an instance attribute
+        self.opening_button = QPushButton("Opening")
+
+        # 1. Initial setup for Maintenance Section (Top left)
         maintenance_frame = self.create_section_frame(400, 80)  # Reduced height
         maintenance_layout = QHBoxLayout()
         maintenance_label = QLabel("Maintenance")
@@ -111,22 +114,24 @@ class MyWindow(QMainWindow):
 
         # Vertical layout for Closure and Opening buttons
         button_layout = QVBoxLayout()
-        
+
         # Define Maintenance Closure button
         closure_button = QPushButton("Closure")
         closure_button.setStyleSheet("background-color: yellow; color: black;")
         closure_button.clicked.connect(self.closureClicked)
         button_layout.addWidget(closure_button)  # Add the Closure button to the horizontal layout
-        
-        # Define Maintenance Opening button
-        opening_button = QPushButton("Opening")
-        opening_button.setStyleSheet("background-color: green; color: black;")
-        opening_button.clicked.connect(self.openingClicked)
-        button_layout.addWidget(opening_button)  # Add the Opening button to the horizontal layout
 
-        maintenance_layout.addLayout(button_layout)  # Add the horizontal button layout to the maintenance frame layout
+        # Add the Opening button to the layout
+        button_layout.addWidget(self.opening_button)
+
+        # Add the vertical button layout to the maintenance frame layout
+        maintenance_layout.addLayout(button_layout)
         maintenance_frame.setLayout(maintenance_layout)
         grid_layout.addWidget(maintenance_frame, 0, 0)
+
+        # Update the button's state initially based on maintenance_blocks
+        self.update_opening_button_state()
+
 
         # 2. Simulation Speed Section (Top right)
         speed_frame = self.create_section_frame(400, 80)  # Reduced height
@@ -319,6 +324,7 @@ class MyWindow(QMainWindow):
         block = int(block)
         self.maintenance_blocks.append((line, block))
         self.maintenance_blocks = sorted(self.maintenance_blocks, key=lambda x: x[1])
+        self.update_opening_button_state()
         self.occupied_blocks.append((line, block))
         self.occupied = sorted(self.occupied_blocks, key=lambda x: x[1])
         self.open_blocks.remove((line, block))
@@ -378,43 +384,58 @@ class MyWindow(QMainWindow):
         layout.addWidget(label)
 
         # Create horizontal layout for combo box and text entry box
-        h_layout = QHBoxLayout()
+        h_layout = QVBoxLayout()
 
         # Create combo box with options
-        combo_box = QComboBox()
-        combo_box.addItems(["Blue"])
-        h_layout.addWidget(combo_box)
-
-        # Create text entry box
-        text_entry = QLineEdit()
-        text_entry.setPlaceholderText("1 - 15")
-        h_layout.addWidget(text_entry)
-
-        # Add horizontal layout to the main layout
-        layout.addLayout(h_layout)
+        line_combo_box = QComboBox()
+        for block in self.maintenance_blocks:
+            line_combo_box.addItem(f"{block[0]} - Block #{block[1]}")
+        h_layout.addWidget(line_combo_box)
 
         # Create 'Submit' button
         button = QPushButton("Submit")
-        button.clicked.connect(lambda: self.submit_opening(dialog, combo_box.currentText(), text_entry.text()))
-        layout.addWidget(button)
+        button.clicked.connect(lambda: self.submit_opening(dialog, line_combo_box.currentText()))
+        h_layout.addWidget(button)
+
+        # Add horizontal layout to the main layout
+        layout.addLayout(h_layout)
 
         dialog.setLayout(layout)
         dialog.exec()
 
     # Handle the selection when 'Submit' is pressed
-    def submit_opening(self, dialog, line, block):
-        print('in submit_opening')
-        block = int(block)
-        self.open_blocks.append((line, block))
+    def submit_opening(self, dialog, open_block):
+        block_line, block_number_str = open_block.split(" - ")
+        block_number_str = block_number_str[7:]
+        block_number = int(block_number_str)
+        block = (block_line, block_number)
+        self.open_blocks.append(block)
         self.open_blocks = sorted(self.open_blocks, key=lambda x: x[1])
-        self.maintenance_blocks.remove((line, block))
-        self.occupied_blocks.remove((line, block))
-        print(self.maintenance_blocks)
-        print(self.maintenance_blocks)
-        print(self.open_blocks)
+        self.maintenance_blocks.remove(block)
+        self.update_opening_button_state()
+        self.occupied_blocks.remove(block)
 
-        print("Block", block, "on the", line, "line has been reopened from maintenance!")
+        print("Block", block_line, "on the", block_number, "line has been reopened from maintenance!")
         dialog.accept()  
+
+    # Method to update the Opening button's state dynamically
+    def update_opening_button_state(self):
+        try:
+            # Try disconnecting the clicked signal if it's already connected
+            self.opening_button.clicked.disconnect()
+        except TypeError:
+            # If there's nothing to disconnect, just pass
+            pass
+
+        # Update the button's state based on whether there are maintenance blocks
+        if len(self.maintenance_blocks) > 0:
+            self.opening_button.setEnabled(True)
+            self.opening_button.setStyleSheet("background-color: green; color: black;")
+            self.opening_button.clicked.connect(self.openingClicked)  # Enable click functionality
+        else:
+            self.opening_button.setEnabled(False)  # Disable the button
+            self.opening_button.setStyleSheet("background-color: gray; color: black;")
+
 
     # The functionality of the user selecting the Simulation Speed of the system
     def simSpeedSelected(self, s):
