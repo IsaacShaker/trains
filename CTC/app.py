@@ -12,6 +12,17 @@ class MyWindow(QMainWindow):
         self.oldTime = 21600 # the system will began at 6AM
         self.speed = 1
 
+        # create the open block list, everything should open upon creation
+        self.open_blocks = []
+        for i in range(1,16): # fill the list with all necesary blocks
+            self.open_blocks.append(('Blue',i))
+
+        # create the maintenance blocks list
+        self.maintenance_blocks = []
+
+        #create the occupied block list
+        self.occupied_blocks = []
+
         # Set the window title
         self.setWindowTitle("CTC Office")
 
@@ -284,7 +295,7 @@ class MyWindow(QMainWindow):
 
         # Create combo box with options
         combo_box = QComboBox()
-        combo_box.addItems(["Blue Line"])
+        combo_box.addItems(["Blue"])
         h_layout.addWidget(combo_box)
 
         # Create text entry box
@@ -303,19 +314,25 @@ class MyWindow(QMainWindow):
         dialog.setLayout(layout)
         dialog.exec()
 
-    # Handle the selection when 'OK' is pressed
+    # Handle the selection when 'Submit' is pressed
     def submit_closure(self, dialog, line, block):
-        #selected_line = combo_box.currentText()
-        #print(f"Maintenance is being filed on the {selected_line}!")
-        #dialog.accept()
-        maintenanceBlock = (line, block, "M")
-        print("Block", block, "on the", line, "has been closed for maintenance!")
+        block = int(block)
+        self.maintenance_blocks.append((line, block))
+        self.maintenance_blocks = sorted(self.maintenance_blocks, key=lambda x: x[1])
+        self.occupied_blocks.append((line, block))
+        self.occupied = sorted(self.occupied_blocks, key=lambda x: x[1])
+        self.open_blocks.remove((line, block))
+        print(self.maintenance_blocks)
+        print(self.occupied_blocks)
+        print(self.open_blocks)
+        print("Block", block, "on the", line, "line has been closed for maintenance!")
         dialog.accept()
 
     # The functionality for user opening a block from maintenance
     def openingClicked(self):
+        print('in openingClicked')
         dialog = QDialog(self)
-        dialog.setWindowTitle("Maintenance Opening")
+        dialog.setWindowTitle("Maintenance Report")
 
         # Apply styles to the dialog
         dialog.setStyleSheet("""
@@ -357,7 +374,7 @@ class MyWindow(QMainWindow):
         layout = QVBoxLayout(dialog)
 
         # Create label
-        label = QLabel("What Block Needs Reopened?")
+        label = QLabel("What Block Needs Opened?")
         layout.addWidget(label)
 
         # Create horizontal layout for combo box and text entry box
@@ -365,7 +382,7 @@ class MyWindow(QMainWindow):
 
         # Create combo box with options
         combo_box = QComboBox()
-        combo_box.addItems(["Blue Line"])
+        combo_box.addItems(["Blue"])
         h_layout.addWidget(combo_box)
 
         # Create text entry box
@@ -384,14 +401,20 @@ class MyWindow(QMainWindow):
         dialog.setLayout(layout)
         dialog.exec()
 
-    # Handle the selection when 'OK' is pressed
+    # Handle the selection when 'Submit' is pressed
     def submit_opening(self, dialog, line, block):
-        #selected_line = combo_box.currentText()
-        #print(f"Maintenance is being filed on the {selected_line}!")
-        #dialog.accept()
-        maintenanceBlock = (line, block, "M")
-        print("Block", block, "on the", line, "has been reopened!")
-        dialog.accept()   
+        print('in submit_opening')
+        block = int(block)
+        self.open_blocks.append((line, block))
+        self.open_blocks = sorted(self.open_blocks, key=lambda x: x[1])
+        self.maintenance_blocks.remove((line, block))
+        self.occupied_blocks.remove((line, block))
+        print(self.maintenance_blocks)
+        print(self.maintenance_blocks)
+        print(self.open_blocks)
+
+        print("Block", block, "on the", line, "line has been reopened from maintenance!")
+        dialog.accept()  
 
     # The functionality of the user selecting the Simulation Speed of the system
     def simSpeedSelected(self, s):
