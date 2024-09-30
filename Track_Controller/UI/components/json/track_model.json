@@ -1,0 +1,44 @@
+{
+    "Blue": {
+        "SW": {
+            "blocks": [
+                {
+                    "block": "1",
+                    "occupied": true
+                },
+                {
+                    "block": "2",
+                    "occupied": false
+                },
+                {
+                    "block": "3",
+                    "occupied": false
+                },
+                {
+                    "block": "4",
+                    "occupied": true
+                }
+            ],
+            "switches": []
+        },
+        "HW": {
+            "blocks": [
+                {
+                    "block": "5",
+                    "occupied": false
+                },
+                {
+                    "block": "6",
+                    "occupied": true
+                },
+                {
+                    "block": "7",
+                    "occupied": true
+                }
+            ],
+            "switches": []
+        }
+    },
+    "Green": {},
+    "Red": {}
+}

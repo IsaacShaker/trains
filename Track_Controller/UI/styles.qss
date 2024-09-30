@@ -1,0 +1,17 @@
+/* styles.qss */
+QComboBox {
+    /* Keep the dropdown style as default */
+    padding: 5px; /* Optional: You can adjust padding if needed */
+}
+
+QPushButton {
+    background-color: purple; /* Purple background */
+    color: black;             /* Black text */
+    border: none;             /* No border */
+    border-radius: 5px;      /* Rounded corners */
+    padding: 10px;           /* Padding */
+}
+
+QPushButton:hover {
+    background-color: #800080; /* Darker purple on hover */
+}
