@@ -10,7 +10,9 @@ class MyWindow(QMainWindow):
         self.simulationRunning = False #this is necessary for clock to work properly
 
         self.oldTime = 21600 # the system will began at 6AM
-        self.speed = 1
+        self.speed = 1 # the system will be running at 1x speed by default
+
+        self.automatic_mode = True # the system begins in automatic mode
 
         # create the open block list, everything should open upon creation
         self.open_blocks = []
@@ -161,7 +163,7 @@ class MyWindow(QMainWindow):
 
         # Create on/off button for the simulation
         operational_button = QPushButton("Start")
-        operational_button.setStyleSheet("background-color: green; color: black;")
+        operational_button.setStyleSheet("background-color: green; color: white;")
         operational_button.clicked.connect(self.operationalClicked)
         simOptions_layout.addWidget(operational_button)
 
@@ -185,10 +187,41 @@ class MyWindow(QMainWindow):
         schedule_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         schedule_layout.addWidget(schedule_label)
 
-        # Add widgets for schedule builder (placeholders)
-        schedule_layout.addWidget(QLabel("Auto/Manual Toggle goes here", alignment=Qt.AlignmentFlag.AlignCenter))
+        # Add Hbox for Mode switch and upload/dispatch buttons
+        mode_layout = QHBoxLayout()
+
+        # Add the Mode button
+        self.mode_button = QPushButton('Current Mode: Automatic Mode')
+        # look into this mode_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.mode_button.setStyleSheet("background-color: blue; color: white;")
+        self.mode_button.clicked.connect(self.mode_clicked)
+        mode_layout.addWidget(self.mode_button)
+
+        #Add Vbox for upload/dispatch buttons
+        upload_dispatch_layout = QVBoxLayout()
+
+        # Add the upload button
+        self.upload_button = QPushButton('Upload a Schedule')
+        self.upload_button.setStyleSheet("background-color: blue; color: white;")
+        self.upload_button.clicked.connect(self.upload_clicked)
+        upload_dispatch_layout.addWidget(self.upload_button)
+
+        # Add the dispatch button (we want this disabled since starting in auto mode)
+        self.dispatch_button = QPushButton('Dispatch a Train')
+        self.dispatch_button.setStyleSheet("background-color: gray; color: white;")
+        self.dispatch_button.clicked.connect(self.dispatch_clicked)
+        self.dispatch_button.setEnabled(False)
+        upload_dispatch_layout.addWidget(self.dispatch_button)
+
+        # Add upload/dispatch button to QHBoxLayout
+        mode_layout.addLayout(upload_dispatch_layout)
+
+        # Add the QHBoxLayout to the main schedule layout
+        schedule_layout.addLayout(mode_layout)
+
+        # Set Layout for frame
         schedule_frame.setLayout(schedule_layout)
-        grid_layout.addWidget(schedule_frame, 1, 0, 1, 2)  # Span two columns
+        grid_layout.addWidget(schedule_frame, 1, 0, 1, 2)
 
         # 4. Dispatch Rate Section (Lower left)
         dispatch_frame = self.create_section_frame(400, 150)
@@ -481,6 +514,50 @@ class MyWindow(QMainWindow):
             # Update oldTime to the newTime for the next call
             self.oldTime = self.newTime
 
+    def mode_clicked(self):
+        print('in mode_clicked')
+        
+        # Toggle the mode first
+        self.automatic_mode = not self.automatic_mode
+
+        if self.automatic_mode:
+            # Switch to Automatic Mode
+            print('switching to auto')
+            self.mode_button.setText('Current Mode: Automatic Mode')
+            self.mode_button.setStyleSheet("background-color: blue; color: white;")
+        else:
+            # Switch to Manual Mode
+            print('switching to manual')
+            self.mode_button.setText('Current Mode: Manual Mode')
+            self.mode_button.setStyleSheet("background-color: green; color: white;")
+
+        # Update the button states based on the new mode
+        self.update_mode_button_state()
+
+
+    # Method to update the Mode button's state dynamically
+    def update_mode_button_state(self):
+        # No need to disconnect any signals, just update the state
+        if self.automatic_mode:
+            # Automatic Mode: Enable Upload, Disable Dispatch
+            self.upload_button.setEnabled(True)
+            self.upload_button.setStyleSheet("background-color: blue; color: white;")
+            
+            self.dispatch_button.setEnabled(False)
+            self.dispatch_button.setStyleSheet("background-color: gray; color: white;")
+        else:
+            # Manual Mode: Enable Dispatch, Disable Upload
+            self.dispatch_button.setEnabled(True)
+            self.dispatch_button.setStyleSheet("background-color: green; color: white;")
+            
+            self.upload_button.setEnabled(False)
+            self.upload_button.setStyleSheet("background-color: gray; color: white;")
+
+    def upload_clicked(self):
+        print('Uploading a schedule...')
+
+    def dispatch_clicked(self):
+        print('Dispatching a train...')
 
 
 if __name__ == "__main__":
