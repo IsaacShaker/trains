@@ -368,9 +368,6 @@ class MyWindow(QMainWindow):
         self.occupied_blocks.append((line, block))
         self.occupied = sorted(self.occupied_blocks, key=lambda x: x[1])
         self.open_blocks.remove((line, block))
-        print(self.maintenance_blocks)
-        print(self.occupied_blocks)
-        print(self.open_blocks)
         print("Block", block, "on the", line, "line has been closed for maintenance!")
         dialog.accept()
 
@@ -521,26 +518,23 @@ class MyWindow(QMainWindow):
             # Update oldTime to the newTime for the next call
             self.oldTime = self.newTime
 
-    def mode_clicked(self):
-        print('in mode_clicked')
-        
+    def mode_clicked(self):        
         # Toggle the mode first
         self.automatic_mode = not self.automatic_mode
 
         if self.automatic_mode:
             # Switch to Automatic Mode
-            print('switching to auto')
+            print('Switched to Automatic Mode')
             self.mode_button.setText('Current Mode: Automatic Mode')
             self.mode_button.setStyleSheet("background-color: #00ffff; color: black;")
         else:
             # Switch to Manual Mode
-            print('switching to manual')
+            print('Switched to Manual Mode')
             self.mode_button.setText('Current Mode: Manual Mode')
             self.mode_button.setStyleSheet("background-color: green; color: white;")
 
         # Update the button states based on the new mode
         self.update_mode_button_state()
-
 
     # Method to update the Mode button's state dynamically
     def update_mode_button_state(self):
