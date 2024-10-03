@@ -1,6 +1,7 @@
 import sys
 import time
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit
+from train import Train
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog
 from PyQt6.QtCore import Qt, QTimer
 
 class MyWindow(QMainWindow):
@@ -14,16 +15,19 @@ class MyWindow(QMainWindow):
 
         self.automatic_mode = True # the system begins in automatic mode
 
-        # create the open block list, everything should open upon creation
+        # Create the open block list, everything should open upon creation
         self.open_blocks = []
         for i in range(1,16): # fill the list with all necesary blocks
             self.open_blocks.append(('Blue',i))
 
-        # create the maintenance blocks list
+        # Create the maintenance blocks list
         self.maintenance_blocks = []
 
-        #create the occupied block list
+        # Create the occupied block list
         self.occupied_blocks = []
+
+        # Create the trains list
+        trains = []
 
         # Set the window title
         self.setWindowTitle("CTC Office")
@@ -84,7 +88,7 @@ class MyWindow(QMainWindow):
 
         # Add a placeholder for Test Bench
         test_bench_label = QLabel("Test Bench content goes here.")
-        test_bench_label.setStyleSheet("color: white; font-size: 18px;")
+        test_bench_label.setStyleSheet("color: white; font-size: 20px;")
         test_bench_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         test_bench_layout.addWidget(test_bench_label)
 
@@ -110,7 +114,7 @@ class MyWindow(QMainWindow):
         maintenance_frame = self.create_section_frame(400, 80)  # Reduced height
         maintenance_layout = QHBoxLayout()
         maintenance_label = QLabel("Maintenance")
-        maintenance_label.setStyleSheet("color: white; font-size: 18px;")
+        maintenance_label.setStyleSheet("color: white; font-size: 20px;")
         maintenance_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the label
         maintenance_layout.addWidget(maintenance_label)
 
@@ -141,7 +145,7 @@ class MyWindow(QMainWindow):
         speed_frame = self.create_section_frame(400, 80)  # Reduced height
         speed_layout = QHBoxLayout()  # Using QHBoxLayout to align items horizontally
         speed_label = QLabel("Simulation Speed")
-        speed_label.setStyleSheet("color: white; font-size: 18px;")
+        speed_label.setStyleSheet("color: white; font-size: 20px;")
         speed_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         speed_layout.addWidget(speed_label)
 
@@ -188,12 +192,12 @@ class MyWindow(QMainWindow):
         schedule_frame = self.create_section_frame(800, 200)  # Reduced height
         schedule_layout = QVBoxLayout()
         schedule_label = QLabel("Schedule Builder")
-        schedule_label.setStyleSheet("color: white; font-size: 18px;")
+        schedule_label.setStyleSheet("color: white; font-size: 20px;")
         schedule_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         schedule_layout.addWidget(schedule_label)
 
         # Add Hbox for Mode switch and upload/dispatch buttons
-        mode_layout = QHBoxLayout()
+        mode_layout = QVBoxLayout()
 
         # Add the Mode button
         self.mode_button = QPushButton('Current Mode: Automatic Mode')
@@ -203,7 +207,7 @@ class MyWindow(QMainWindow):
         mode_layout.addWidget(self.mode_button)
 
         #Add Vbox for upload/dispatch buttons
-        upload_dispatch_layout = QVBoxLayout()
+        upload_dispatch_layout = QHBoxLayout()
 
         # Add the upload button
         self.upload_button = QPushButton('Upload a Schedule')
@@ -234,12 +238,15 @@ class MyWindow(QMainWindow):
         dispatch_frame = self.create_section_frame(400, 200)
         dispatch_layout = QVBoxLayout()
         dispatch_label = QLabel("Dispatch Rate")
-        dispatch_label.setStyleSheet("color: white; font-size: 18px;")
+        dispatch_label.setStyleSheet("color: white; font-size: 20px;")
         dispatch_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         dispatch_layout.addWidget(dispatch_label)
 
         # Add widgets for dispatch rate (placeholders)
-        dispatch_layout.addWidget(QLabel("4 Trains/hr display goes here", alignment=Qt.AlignmentFlag.AlignCenter))
+        rate_label = QLabel("x Trains/hr")
+        rate_label.setStyleSheet("background-color: blue; color: white; font-size: 32px;")
+        rate_label.setAlignment(Qt.AlignmentFlag.AlignCenter) # Center the text
+        dispatch_layout.addWidget(rate_label)
         dispatch_frame.setLayout(dispatch_layout)
         grid_layout.addWidget(dispatch_frame, 2, 0)
 
@@ -247,12 +254,39 @@ class MyWindow(QMainWindow):
         train_frame = self.create_section_frame(400, 200)
         train_layout = QVBoxLayout()
         train_label = QLabel("Train Data")
-        train_label.setStyleSheet("color: white; font-size: 18px;")
+        train_label.setStyleSheet("color: white; font-size: 20px;")
         train_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         train_layout.addWidget(train_label)
 
-        # Add widgets for train data (placeholders)
-        train_layout.addWidget(QLabel("Train data display goes here", alignment=Qt.AlignmentFlag.AlignCenter))
+        # Create Hbox for Train Data widgets
+        train_data_big_layout = QHBoxLayout()
+
+        # Create Vbox for authority and suggested speed
+        train_data_small_layout = QVBoxLayout()
+
+        # Create the combo box to select a train
+        self.train_data_combo_box = QComboBox()
+        self.train_data_combo_box.setPlaceholderText('Select a Train')
+        self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 20px")
+        self.train_data_combo_box.addItems(["Train 0", "Train 1"])  # Example speed options
+        self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
+        train_data_big_layout.addWidget(self.train_data_combo_box)
+
+        # Create the label for train authority
+        train_authority_label = QLabel("Authority = x")
+        train_authority_label.setStyleSheet("color: white; font-size: 20px;")
+        train_authority_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
+        train_data_small_layout.addWidget(train_authority_label)
+
+        #Create the label for suggested speed
+        train_suggested_speed_label = QLabel("Suggested Speed = v")
+        train_suggested_speed_label.setStyleSheet("color: white; font-size: 20px;")
+        train_suggested_speed_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
+        train_data_small_layout.addWidget(train_suggested_speed_label)
+
+        train_data_big_layout.addLayout(train_data_small_layout)
+        train_layout.addLayout(train_data_big_layout)
         train_frame.setLayout(train_layout)
         grid_layout.addWidget(train_frame, 2, 1)
 
@@ -262,7 +296,7 @@ class MyWindow(QMainWindow):
 
         # Upper portion of Block Occupancies
         upper_blocks_label = QLabel("Block Occupancies")
-        upper_blocks_label.setStyleSheet("color: white; font-size: 18px;")
+        upper_blocks_label.setStyleSheet("color: white; font-size: 20px;")
         upper_blocks_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         blocks_layout.addWidget(upper_blocks_label)
 
@@ -473,7 +507,6 @@ class MyWindow(QMainWindow):
             self.opening_button.setEnabled(False)  # Disable the button
             self.opening_button.setStyleSheet("background-color: gray; color: white;")
 
-
     # The functionality of the user selecting the Simulation Speed of the system
     def simSpeedSelected(self, s):
         print("The simulation is now running at", s, "speed!")
@@ -557,9 +590,90 @@ class MyWindow(QMainWindow):
     def upload_clicked(self):
         print('Uploading a schedule...')
 
+        # Open file explorer on the user's device
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Text Files (*.txt);;Text Files (*.txt)")
+        if file_name:
+            print('Now running', file_name)
+
     def dispatch_clicked(self):
         print('Dispatching a train...')
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Train Dispatcher")
 
+        # Apply styles to the dialog
+        dialog.setStyleSheet("""
+            QDialog {
+                background-color: #171717;
+            }
+            QLabel {
+                color: white;
+            }
+            QComboBox {
+                background-color: #772ce8;
+                color: #ffffff;
+                border: 1px solid #ffffff;
+                padding: 5px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #772ce8;
+                color: #ffffff;
+                selection-background-color: #CCCCFF;
+                selection-color: #000000;
+            }
+            QLineEdit {
+                background-color: #772ce8;
+                color: #ffffff;
+                padding: 5px;
+                border: 1px solid #ffffff;
+            }
+            QPushButton {
+                background-color: green;
+                color: white;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QPushButton:hover {
+                background-color: #ffffff;
+            }
+        """)
+
+        layout = QVBoxLayout(dialog)
+
+        # Create label
+        label = QLabel("Where and when would you like to dispatch a train?")
+        layout.addWidget(label)
+
+        # Create horizontal layout for combo box and text entry box
+        h_layout = QHBoxLayout()
+
+        # Create combo box with options
+        combo_box = QComboBox()
+        combo_box.addItems(["Station B", "Station C"])
+        h_layout.addWidget(combo_box)
+
+        # Create text entry box
+        text_entry = QLineEdit()
+        text_entry.setPlaceholderText("HH:MM:SS")
+        h_layout.addWidget(text_entry)
+
+        # Add horizontal layout to the main layout
+        layout.addLayout(h_layout)
+
+        # Create 'Submit' button
+        button = QPushButton("Submit")
+        button.clicked.connect(lambda: self.submit_dispatch(dialog, combo_box.currentText(), text_entry.text()))
+        layout.addWidget(button)
+
+        dialog.setLayout(layout)
+        dialog.exec()
+
+    def submit_dispatch(self, dialog, station, time):
+        Train0 = Train('Train0', 'Blue', station, time)
+        print('Dispatching',Train0.name, 'on the', Train0.line, 'line, to', Train0.destination, 'at', Train0.arrival_time)
+        dialog.accept()
+
+    def train_selected(self):
+        print('You selected a train')
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
