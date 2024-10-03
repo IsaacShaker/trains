@@ -33,7 +33,7 @@ class MyWindow(QMainWindow):
         self.setWindowTitle("CTC Office")
 
         # Set a fixed size for the window
-        self.setFixedSize(850, 875)  # Width: 850, Height: 875
+        self.setFixedSize(700, 875)  # Width: 850, Height: 875
 
         # Set the background color of the window using a color code
         self.setStyleSheet("background-color: #171717;")  # Dark background
@@ -111,9 +111,10 @@ class MyWindow(QMainWindow):
         self.opening_button = QPushButton("Opening")
 
         # 1. Initial setup for Maintenance Section (Top left)
-        maintenance_frame = self.create_section_frame(400, 80)  # Reduced height
+        maintenance_frame = self.create_section_frame(250, 80)
         maintenance_layout = QHBoxLayout()
         maintenance_label = QLabel("Maintenance")
+        maintenance_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         maintenance_label.setStyleSheet("color: white; font-size: 20px;")
         maintenance_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the label
         maintenance_layout.addWidget(maintenance_label)
@@ -123,12 +124,12 @@ class MyWindow(QMainWindow):
 
         # Define Maintenance Closure button
         closure_button = QPushButton("Closure")
-        closure_button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        closure_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         closure_button.setStyleSheet("background-color: yellow; color: black;")
         closure_button.clicked.connect(self.closureClicked)
         button_layout.addWidget(closure_button)  # Add the Closure button to the horizontal layout
 
-        self.opening_button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        self.opening_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         # Add the Opening button to the layout
         button_layout.addWidget(self.opening_button)
 
@@ -142,9 +143,10 @@ class MyWindow(QMainWindow):
 
 
         # 2. Simulation Speed Section (Top right)
-        speed_frame = self.create_section_frame(400, 80)  # Reduced height
+        speed_frame = self.create_section_frame(250, 80)  # Reduced height
         speed_layout = QHBoxLayout()  # Using QHBoxLayout to align items horizontally
         speed_label = QLabel("Simulation Speed")
+        speed_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         speed_label.setStyleSheet("color: white; font-size: 20px;")
         speed_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         speed_layout.addWidget(speed_label)
@@ -154,6 +156,7 @@ class MyWindow(QMainWindow):
 
         # Add the clock label
         self.clock_label = QLabel(self.format_time(0))
+        self.clock_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.clock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.clock_label.setStyleSheet("color: white; font-size: 18px;")
         sim_layout.addWidget(self.clock_label)
@@ -163,7 +166,7 @@ class MyWindow(QMainWindow):
 
         # Create a QComboBox for simulation speed
         self.speed_combo_box = QComboBox()
-        self.speed_combo_box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        self.speed_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.speed_combo_box.setStyleSheet("color: white; background-color: #772CE8;")
         self.speed_combo_box.addItems(["1x", "10x", "50x"])  # Example speed options
         self.speed_combo_box.currentTextChanged.connect(self.simSpeedSelected)
@@ -171,7 +174,7 @@ class MyWindow(QMainWindow):
 
         # Create on/off button for the simulation
         operational_button = QPushButton("Start")
-        operational_button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        operational_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         operational_button.setStyleSheet("background-color: green; color: white;")
         operational_button.clicked.connect(self.operationalClicked)
         simOptions_layout.addWidget(operational_button)
@@ -189,7 +192,7 @@ class MyWindow(QMainWindow):
 
 
         # 3. Schedule Builder Section (Middle)
-        schedule_frame = self.create_section_frame(800, 200)  # Reduced height
+        schedule_frame = self.create_section_frame(650, 200)  # Reduced height
         schedule_layout = QVBoxLayout()
         schedule_label = QLabel("Schedule Builder")
         schedule_label.setStyleSheet("color: white; font-size: 20px;")
@@ -202,7 +205,7 @@ class MyWindow(QMainWindow):
         # Add the Mode button
         self.mode_button = QPushButton('Current Mode: Automatic Mode')
         self.mode_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.mode_button.setStyleSheet("background-color: #00ffff; color: black;")
+        self.mode_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 18px")
         self.mode_button.clicked.connect(self.mode_clicked)
         mode_layout.addWidget(self.mode_button)
 
@@ -212,14 +215,14 @@ class MyWindow(QMainWindow):
         # Add the upload button
         self.upload_button = QPushButton('Upload a Schedule')
         self.upload_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.upload_button.setStyleSheet("background-color: #00ffff; color: black;")
+        self.upload_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 18px")
         self.upload_button.clicked.connect(self.upload_clicked)
         upload_dispatch_layout.addWidget(self.upload_button)
 
         # Add the dispatch button (we want this disabled since starting in auto mode)
         self.dispatch_button = QPushButton('Dispatch a Train')
         self.dispatch_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.dispatch_button.setStyleSheet("background-color: gray; color: white;")
+        self.dispatch_button.setStyleSheet("background-color: gray; color: white; font-size: 18px")
         self.dispatch_button.clicked.connect(self.dispatch_clicked)
         self.dispatch_button.setEnabled(False)
         upload_dispatch_layout.addWidget(self.dispatch_button)
@@ -235,7 +238,7 @@ class MyWindow(QMainWindow):
         grid_layout.addWidget(schedule_frame, 1, 0, 1, 2)
 
         # 4. Dispatch Rate Section (Lower left)
-        dispatch_frame = self.create_section_frame(400, 200)
+        dispatch_frame = self.create_section_frame(250, 200)
         dispatch_layout = QVBoxLayout()
         dispatch_label = QLabel("Dispatch Rate")
         dispatch_label.setStyleSheet("color: white; font-size: 20px;")
@@ -244,14 +247,14 @@ class MyWindow(QMainWindow):
 
         # Add widgets for dispatch rate (placeholders)
         rate_label = QLabel("x Trains/hr")
-        rate_label.setStyleSheet("background-color: blue; color: white; font-size: 32px;")
+        rate_label.setStyleSheet("background-color: blue; color: white; font-size: 16px;")
         rate_label.setAlignment(Qt.AlignmentFlag.AlignCenter) # Center the text
         dispatch_layout.addWidget(rate_label)
         dispatch_frame.setLayout(dispatch_layout)
         grid_layout.addWidget(dispatch_frame, 2, 0)
 
         # 5. Train Data Section (Lower right)
-        train_frame = self.create_section_frame(400, 200)
+        train_frame = self.create_section_frame(250, 200)
         train_layout = QVBoxLayout()
         train_label = QLabel("Train Data")
         train_label.setStyleSheet("color: white; font-size: 20px;")
@@ -266,22 +269,24 @@ class MyWindow(QMainWindow):
 
         # Create the combo box to select a train
         self.train_data_combo_box = QComboBox()
-        self.train_data_combo_box.setPlaceholderText('Select a Train')
-        self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-        self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 20px")
+        self.train_data_combo_box.setPlaceholderText('Train')
+        self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
         self.train_data_combo_box.addItems(["Train 0", "Train 1"])  # Example speed options
         self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
         train_data_big_layout.addWidget(self.train_data_combo_box)
 
         # Create the label for train authority
-        train_authority_label = QLabel("Authority = x")
-        train_authority_label.setStyleSheet("color: white; font-size: 20px;")
+        train_authority_label = QLabel("Authority = x m")
+        train_authority_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        train_authority_label.setStyleSheet("background-color: blue; color: white; font-size: 16px;")
         train_authority_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         train_data_small_layout.addWidget(train_authority_label)
 
         #Create the label for suggested speed
-        train_suggested_speed_label = QLabel("Suggested Speed = v")
-        train_suggested_speed_label.setStyleSheet("color: white; font-size: 20px;")
+        train_suggested_speed_label = QLabel("Suggested Speed = v mph")
+        train_suggested_speed_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        train_suggested_speed_label.setStyleSheet("background-color: blue; color: white; font-size: 16px;")
         train_suggested_speed_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         train_data_small_layout.addWidget(train_suggested_speed_label)
 
@@ -291,7 +296,7 @@ class MyWindow(QMainWindow):
         grid_layout.addWidget(train_frame, 2, 1)
 
         # 6. Block Occupancies (Bottom, spanning both columns)
-        blocks_frame = self.create_section_frame(800, 275)
+        blocks_frame = self.create_section_frame(650, 275)
         blocks_layout = QVBoxLayout()
 
         # Upper portion of Block Occupancies
@@ -299,9 +304,6 @@ class MyWindow(QMainWindow):
         upper_blocks_label.setStyleSheet("color: white; font-size: 20px;")
         upper_blocks_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         blocks_layout.addWidget(upper_blocks_label)
-
-        # Spacer to take up remaining space and push the lower part down
-        blocks_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
 
         # Lower portion of Block Occupancies
         blocks_layout.addWidget(QLabel("Block occupancies go here", alignment=Qt.AlignmentFlag.AlignCenter))  # Placeholder for the lower section
@@ -559,12 +561,12 @@ class MyWindow(QMainWindow):
             # Switch to Automatic Mode
             print('Switched to Automatic Mode')
             self.mode_button.setText('Current Mode: Automatic Mode')
-            self.mode_button.setStyleSheet("background-color: #00ffff; color: black;")
+            self.mode_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 18px")
         else:
             # Switch to Manual Mode
             print('Switched to Manual Mode')
             self.mode_button.setText('Current Mode: Manual Mode')
-            self.mode_button.setStyleSheet("background-color: green; color: white;")
+            self.mode_button.setStyleSheet("background-color: green; color: white; font-size: 18px")
 
         # Update the button states based on the new mode
         self.update_mode_button_state()
@@ -575,17 +577,17 @@ class MyWindow(QMainWindow):
         if self.automatic_mode:
             # Automatic Mode: Enable Upload, Disable Dispatch
             self.upload_button.setEnabled(True)
-            self.upload_button.setStyleSheet("background-color: #00ffff; color: black;")
+            self.upload_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 18px")
             
             self.dispatch_button.setEnabled(False)
-            self.dispatch_button.setStyleSheet("background-color: gray; color: white;")
+            self.dispatch_button.setStyleSheet("background-color: gray; color: white; font-size: 18px")
         else:
             # Manual Mode: Enable Dispatch, Disable Upload
             self.dispatch_button.setEnabled(True)
-            self.dispatch_button.setStyleSheet("background-color: green; color: white;")
+            self.dispatch_button.setStyleSheet("background-color: green; color: white; font-size: 18px")
             
             self.upload_button.setEnabled(False)
-            self.upload_button.setStyleSheet("background-color: gray; color: white;")
+            self.upload_button.setStyleSheet("background-color: gray; color: white; font-size: 18px")
 
     def upload_clicked(self):
         print('Uploading a schedule...')
