@@ -1,7 +1,7 @@
 import sys
 import time
 from train import Train
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea
 from PyQt6.QtCore import Qt, QTimer
 
 class MyWindow(QMainWindow):
@@ -17,7 +17,7 @@ class MyWindow(QMainWindow):
 
         # Create the open block list, everything should open upon creation
         self.open_blocks = []
-        for i in range(1,16): # fill the list with all necesary blocks
+        for i in range(1,17): # fill the list with all necesary blocks
             self.open_blocks.append(('Blue',i))
 
         # Create the maintenance blocks list
@@ -28,6 +28,9 @@ class MyWindow(QMainWindow):
 
         # Create the trains list
         trains = []
+
+        # Dictionary for block labels in block occupancy tab
+        self.block_labels = {}
 
         # Set the window title
         self.setWindowTitle("CTC Office")
@@ -295,7 +298,7 @@ class MyWindow(QMainWindow):
         train_frame.setLayout(train_layout)
         grid_layout.addWidget(train_frame, 2, 1)
 
-        # 6. Block Occupancies (Bottom, spanning both columns)
+        # 6. Block Occupancies (Bottom)
         blocks_frame = self.create_section_frame(650, 275)
         blocks_layout = QVBoxLayout()
 
@@ -306,9 +309,75 @@ class MyWindow(QMainWindow):
         blocks_layout.addWidget(upper_blocks_label)
 
         # Lower portion of Block Occupancies
-        blocks_layout.addWidget(QLabel("Block occupancies go here", alignment=Qt.AlignmentFlag.AlignCenter))  # Placeholder for the lower section
+        # Create a scroll area
+        scroll_area = QScrollArea()
+        scroll_area.setStyleSheet("""
+            QScrollBar:vertical {
+                background: #ffffff;        /* Background color of the scrollbar */
+                width: 15px;
+                margin: 15px 3px 15px 3px;
+            }
+
+            QScrollBar::handle:vertical {
+                background: #772ec8;        /* Handle (thumb) color */
+                min-height: 20px;
+            }
+
+            QScrollBar::add-line:vertical {
+                background: #333;
+                height: 15px;
+                subcontrol-position: bottom;
+                subcontrol-origin: margin;
+            }
+
+            QScrollBar::sub-line:vertical {
+                background: #333;
+                height: 15px;
+                subcontrol-position: top;
+                subcontrol-origin: margin;
+            }
+
+            QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+                border: 2px solid grey;
+                width: 3px;
+                height: 3px;
+                background: white;
+            }
+
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                background: none;
+            }
+        """)
+
+        # Create a widget to hold all the lines of data
+        data_widget = QWidget()
+        data_layout = QVBoxLayout()
+
+        # Create a widget to hold all the lines of data
+        data_widget = QWidget()
+        data_layout = QVBoxLayout()
+
+        # Example of 15 blocks
+        blocks = [('Blue', i+1) for i in range(15)]  # Block names are ('Blue', 1), ('Blue', 2), ..., ('Blue', 15)
+
+        # Add 15 lines of data as QLabel widgets and update their background color
+        for block in blocks:
+            block_label = QLabel(f"Block #{block[1]}")
+            self.block_labels[block] = block_label #store the label in the dictionary
+            block_label.setMinimumHeight(30)
+            block_label.setMinimumWidth(600)
+            # Pass the label and the block to the function to update the background color
+            self.update_label_background(block_label, block)
+            data_layout.addWidget(block_label)
+
+
+        data_widget.setLayout(data_layout)
+        scroll_area.setWidget(data_widget)
+
+        # Add the scroll area to the main layout
+        blocks_layout.addWidget(scroll_area)
         blocks_frame.setLayout(blocks_layout)
-        grid_layout.addWidget(blocks_frame, 3, 0, 1, 2)  # Span two columns
+        grid_layout.addWidget(blocks_frame, 3, 0, 1, 2)
 
         layout.addLayout(grid_layout)
 
@@ -381,7 +450,7 @@ class MyWindow(QMainWindow):
 
         # Create text entry box
         text_entry = QLineEdit()
-        text_entry.setPlaceholderText("1 - 15")
+        text_entry.setPlaceholderText("1 - 16")
         h_layout.addWidget(text_entry)
 
         # Add horizontal layout to the main layout
@@ -404,6 +473,13 @@ class MyWindow(QMainWindow):
         self.occupied_blocks.append((line, block))
         self.occupied = sorted(self.occupied_blocks, key=lambda x: x[1])
         self.open_blocks.remove((line, block))
+        new_block = (line, block)
+
+        # Change background color accordingly
+        if new_block in self.block_labels:
+            block_label = self.block_labels[new_block]
+            self.update_label_background(block_label, new_block)
+
         print("Block", block, "on the", line, "line has been closed for maintenance!")
         dialog.accept()
 
@@ -487,6 +563,11 @@ class MyWindow(QMainWindow):
         self.maintenance_blocks.remove(block)
         self.update_opening_button_state()
         self.occupied_blocks.remove(block)
+
+        # Change background color accordingly
+        if block in self.block_labels:
+            block_label = self.block_labels[block]
+            self.update_label_background(block_label, block)
 
         print("Block", block_line, "on the", block_number, "line has been reopened from maintenance!")
         dialog.accept()  
@@ -676,6 +757,18 @@ class MyWindow(QMainWindow):
 
     def train_selected(self):
         print('You selected a train')
+
+    # Function to update label background based on block status
+    def update_label_background(self, label, block):
+        if block in self.maintenance_blocks:
+            label.setStyleSheet("background-color: yellow; color: black;")
+        elif block in self.open_blocks:
+            label.setStyleSheet("background-color: green; color: white;")
+        elif block in self.occupied_blocks:
+            label.setStyleSheet("background-color: red; color: white;")
+        else:
+            label.setStyleSheet("background-color: gray; color: white;")  # Default color
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
