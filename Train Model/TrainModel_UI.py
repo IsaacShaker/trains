@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QTabWidget,
     QLabel,
     QPushButton,
+    QLineEdit,
     QComboBox,
 )
 from PyQt6.QtGui import QFont, QPixmap
@@ -138,7 +139,7 @@ class SelectTrainPage(QWidget):
         super().__init__()
 
         # List of available trains
-        available_trains = ["Train 1", "Train 2", "Train 3", "Train 4"]
+        available_trains = ["Train 0", "Train 1", "Train 2", "Train 3"]
 
         layout = QVBoxLayout()
         layout.addWidget(QLabel("Select a Train:", font=QFont('Arial', 14)))
@@ -150,6 +151,120 @@ class SelectTrainPage(QWidget):
         layout.addWidget(self.train_dropdown)
 
         self.setLayout(layout)
+
+class TestBenchPage(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        # Main layout for the Test Bench
+        layout = QVBoxLayout()
+
+        # Inputs for Authority, Commanded Speed, Power, and Announcement
+        authority_layout = QHBoxLayout()
+        authority_layout.addWidget(QLabel("Authority (m):"))
+        self.authority_input = QLineEdit()
+        authority_layout.addWidget(self.authority_input)
+        authority_button = QPushButton("Send")
+        authority_layout.addWidget(authority_button)
+
+        speed_layout = QHBoxLayout()
+        speed_layout.addWidget(QLabel("Commanded Speed (mph):"))
+        self.speed_input = QLineEdit()
+        speed_layout.addWidget(self.speed_input)
+        speed_button = QPushButton("Send")
+        speed_layout.addWidget(speed_button)
+
+        power_layout = QHBoxLayout()
+        power_layout.addWidget(QLabel("Power Command (W):"))
+        self.power_input = QLineEdit()
+        power_layout.addWidget(self.power_input)
+        power_button = QPushButton("Send")
+        power_layout.addWidget(power_button)
+
+        announcement_layout = QHBoxLayout()
+        announcement_layout.addWidget(QLabel("Announcement:"))
+        self.announcement_input = QLineEdit()
+        announcement_layout.addWidget(self.announcement_input)
+        announcement_button = QPushButton("Send")
+        announcement_layout.addWidget(announcement_button)
+
+        # Commanded Temperature and Service Brake
+        temperature_layout = QHBoxLayout()
+        temperature_layout.addWidget(QLabel("Commanded Temperature (°F):"))
+        self.temperature_input = QLineEdit()
+        temperature_layout.addWidget(self.temperature_input)
+        temperature_button = QPushButton("Send")
+        temperature_layout.addWidget(temperature_button)
+
+        brake_button = QPushButton("Service Brake")
+        brake_button.setStyleSheet("background-color: red; color: white;")
+
+        # Doors Control (Left and Right) and Lights (Headlights and Inside Lights)
+        doors_lights_layout = QHBoxLayout()
+
+        # Left Door Toggle
+        left_door_layout = QVBoxLayout()
+        left_door_layout.addWidget(QLabel("Left Door:"))
+        self.left_door_open_button = self.create_toggle_button("Open", True)
+        self.left_door_closed_button = self.create_toggle_button("Closed", False)
+        left_door_layout.addWidget(self.left_door_open_button)
+        left_door_layout.addWidget(self.left_door_closed_button)
+        doors_lights_layout.addLayout(left_door_layout)
+
+        # Right Door Toggle
+        right_door_layout = QVBoxLayout()
+        right_door_layout.addWidget(QLabel("Right Door:"))
+        self.right_door_open_button = self.create_toggle_button("Open", True)
+        self.right_door_closed_button = self.create_toggle_button("Closed", False)
+        right_door_layout.addWidget(self.right_door_open_button)
+        right_door_layout.addWidget(self.right_door_closed_button)
+        doors_lights_layout.addLayout(right_door_layout)
+
+        # Headlights Toggle
+        headlights_layout = QVBoxLayout()
+        headlights_layout.addWidget(QLabel("Headlights:"))
+        self.headlights_on_button = self.create_toggle_button("On", True)
+        self.headlights_off_button = self.create_toggle_button("Off", False)
+        headlights_layout.addWidget(self.headlights_on_button)
+        headlights_layout.addWidget(self.headlights_off_button)
+        doors_lights_layout.addLayout(headlights_layout)
+
+        # Inside Lights Toggle
+        inside_lights_layout = QVBoxLayout()
+        inside_lights_layout.addWidget(QLabel("Inside Lights:"))
+        self.inside_lights_on_button = self.create_toggle_button("On", True)
+        self.inside_lights_off_button = self.create_toggle_button("Off", False)
+        inside_lights_layout.addWidget(self.inside_lights_on_button)
+        inside_lights_layout.addWidget(self.inside_lights_off_button)
+        doors_lights_layout.addLayout(inside_lights_layout)
+
+        # Add all layouts to the main layout
+        layout.addLayout(authority_layout)
+        layout.addLayout(speed_layout)
+        layout.addLayout(power_layout)
+        layout.addLayout(announcement_layout)
+        layout.addLayout(temperature_layout)
+        layout.addWidget(brake_button)
+        layout.addLayout(doors_lights_layout)
+
+        self.setLayout(layout)
+
+    def create_toggle_button(self, label_text, checked):
+        """Create a toggle button with two states (on/off)."""
+        button = QPushButton(label_text)
+        button.setCheckable(True)
+        button.setChecked(checked)
+        button.setFixedSize(QSize(50, 30))
+        button.setStyleSheet("background-color: green;" if checked else "background-color: gray;")
+        button.clicked.connect(lambda: self.toggle_button_state(button))
+        return button
+
+    def toggle_button_state(self, button):
+        """Toggle the button color between red (on) and green (off)."""
+        if button.isChecked():
+            button.setStyleSheet("background-color: green;")
+        else:
+            button.setStyleSheet("background-color: gray;")
 
 
 class MainWindow(QMainWindow):
@@ -168,11 +283,12 @@ class MainWindow(QMainWindow):
         # Create pages
         select_train_page = SelectTrainPage()
         user_mode_page = UserModePage()
+        test_bench_page = TestBenchPage()
 
         # Add tabs
         self.tabs.addTab(select_train_page, "Select a Train")
         self.tabs.addTab(user_mode_page, "User Mode")
-        self.tabs.addTab(QWidget(), "Testing")  # Placeholder for Testing tab
+        self.tabs.addTab(test_bench_page, "Testing")
 
         # Add tabs to the main layout
         main_layout.addWidget(self.tabs)
