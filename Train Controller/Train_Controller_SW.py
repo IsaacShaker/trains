@@ -17,7 +17,7 @@ class Train_Controller:
         self.i_light = False
         self.o_light = False
         self.failure_engine = False
-        self.failure_brakes = False
+        self.failure_brake = False
         self.failure_signal = False
 
         #Floats

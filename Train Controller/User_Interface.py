@@ -623,7 +623,6 @@ class MainWindow(QMainWindow):
         self.i_light_button.setEnabled(False)
         self.temperature_control.setEnabled(False)
         self.s_brake_button.setEnabled(False)
-        self.e_brake_button.setEnabled(False)
         self.kp_button.setEnabled(False)
         self.ki_button.setEnabled(False)
         self.input_kp.setEnabled(False)
@@ -840,6 +839,13 @@ class MainWindow(QMainWindow):
         self.manual_mode()
 
     def manual_mode(self):
+
+        #check to see if e_brake has been pressed
+        if train_list[self.current_train].e_brake == False:
+            self.e_brake_button.setEnabled(True)
+        else:
+            self.e_brake_button.setEnabled(False)
+
         if train_list[self.current_train].manual_mode == True:
             #enable all widgets
             self.manual_widget.setChecked(True)
@@ -855,10 +861,6 @@ class MainWindow(QMainWindow):
             self.ki_button.setEnabled(True)
             self.input_kp.setEnabled(True)
             self.input_ki.setEnabled(True)
-
-            #check to see if e_brake has been pressed
-            if train_list[self.current_train].e_brake == False:
-                self.e_brake_button.setEnabled(True)
         else:
             #disable all widgets
             self.manual_widget.setChecked(False)
@@ -870,12 +872,12 @@ class MainWindow(QMainWindow):
             self.i_light_button.setEnabled(False)
             self.temperature_control.setEnabled(False)
             self.s_brake_button.setEnabled(False)
-            self.e_brake_button.setEnabled(False)
             self.kp_button.setEnabled(False)
             self.ki_button.setEnabled(False)
             self.input_kp.setEnabled(False)
             self.input_ki.setEnabled(False)
             
+
     def check_errors(self):
         if train_list[self.current_train].failure_engine == True:
             self.engine_light.setStyleSheet("""
