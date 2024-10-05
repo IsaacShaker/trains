@@ -269,22 +269,22 @@ class MyWindow(QMainWindow):
         self.train_data_big_layout = QHBoxLayout()
 
         # Create Vbox for authority and suggested speed
-        train_data_small_layout = QVBoxLayout()
+        self.train_data_small_layout = QVBoxLayout()
 
         # Create the label for train authority
-        train_authority_label = QLabel("Authority")
-        train_authority_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        train_authority_label.setStyleSheet("background-color: blue; color: white; font-size: 16px;")
-        train_authority_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-        train_data_small_layout.addWidget(train_authority_label)
+        self.train_authority_label = QLabel("Authority")
+        self.train_authority_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.train_authority_label.setStyleSheet("background-color: blue; color: white; font-size: 16px;")
+        self.train_authority_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
+        self.train_data_small_layout.addWidget(self.train_authority_label)
 
         #Create the label for suggested speed
-        train_suggested_speed_label = QLabel("Suggested Speed")
-        train_suggested_speed_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        train_suggested_speed_label.setStyleSheet("background-color: blue; color: white; font-size: 16px;")
-        train_suggested_speed_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-        train_data_small_layout.addWidget(train_suggested_speed_label)
-        self.train_data_big_layout.addLayout(train_data_small_layout)
+        self.train_suggested_speed_label = QLabel("Suggested Speed")
+        self.train_suggested_speed_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.train_suggested_speed_label.setStyleSheet("background-color: blue; color: white; font-size: 16px;")
+        self.train_suggested_speed_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
+        self.train_data_small_layout.addWidget(self.train_suggested_speed_label)
+        self.train_data_big_layout.addLayout(self.train_data_small_layout)
 
         # Create the label for train selection
         self.train_label = QLabel("Train")
@@ -824,7 +824,16 @@ class MyWindow(QMainWindow):
 
         print('Displaying info on', selected_train)
         print('Authority =', my_train.authority)
-        print('Suggested Speed =', my_train.suggested_speed)
+        imperial_authority = my_train.authority * 3.28084 # Convert from metric
+        imperial_authority = round(imperial_authority)
+        auth_str = 'Auhtority = '+str(imperial_authority)+' ft'
+        self.train_authority_label.setText(auth_str)
+        imperial_suggested_speed = my_train.suggested_speed * 0.621371 # Convert from metric
+        imperial_suggested_speed = round(imperial_suggested_speed)
+        speed_str = 'Suggested Speed = '+str(imperial_suggested_speed)+' mph'
+        self.train_suggested_speed_label.setText(speed_str)
+        print('Suggested Speed =', imperial_suggested_speed, 'mph')
+
 
     # Function to update label background based on block status
     def update_label_background(self, label, block):
