@@ -1,5 +1,6 @@
 import sys
 import time
+import pandas as pd
 from train import Train
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea
 from PyQt6.QtCore import Qt, QTimer
@@ -27,7 +28,7 @@ class MyWindow(QMainWindow):
         self.occupied_blocks = []
 
         # Create the trains list
-        trains = []
+        self.trains = []
 
         # Dictionary for block labels in block occupancy tab
         self.block_labels = {}
@@ -259,42 +260,40 @@ class MyWindow(QMainWindow):
         # 5. Train Data Section (Lower right)
         train_frame = self.create_section_frame(250, 200)
         train_layout = QVBoxLayout()
-        train_label = QLabel("Train Data")
-        train_label.setStyleSheet("color: white; font-size: 20px;")
-        train_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-        train_layout.addWidget(train_label)
+        self.train_date_label = QLabel("Train Data")
+        self.train_date_label.setStyleSheet("color: white; font-size: 20px;")
+        self.train_date_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
+        train_layout.addWidget(self.train_date_label)
 
         # Create Hbox for Train Data widgets
-        train_data_big_layout = QHBoxLayout()
+        self.train_data_big_layout = QHBoxLayout()
 
         # Create Vbox for authority and suggested speed
         train_data_small_layout = QVBoxLayout()
 
-        # Create the combo box to select a train
-        self.train_data_combo_box = QComboBox()
-        self.train_data_combo_box.setPlaceholderText('Train')
-        self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
-        self.train_data_combo_box.addItems(["Train 0", "Train 1"])  # Example speed options
-        self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
-        train_data_big_layout.addWidget(self.train_data_combo_box)
-
         # Create the label for train authority
-        train_authority_label = QLabel("Authority = x m")
+        train_authority_label = QLabel("Authority")
         train_authority_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         train_authority_label.setStyleSheet("background-color: blue; color: white; font-size: 16px;")
         train_authority_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         train_data_small_layout.addWidget(train_authority_label)
 
         #Create the label for suggested speed
-        train_suggested_speed_label = QLabel("Suggested Speed = v mph")
+        train_suggested_speed_label = QLabel("Suggested Speed")
         train_suggested_speed_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         train_suggested_speed_label.setStyleSheet("background-color: blue; color: white; font-size: 16px;")
         train_suggested_speed_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         train_data_small_layout.addWidget(train_suggested_speed_label)
+        self.train_data_big_layout.addLayout(train_data_small_layout)
 
-        train_data_big_layout.addLayout(train_data_small_layout)
-        train_layout.addLayout(train_data_big_layout)
+        # Create the label for train selection
+        self.train_label = QLabel("Train")
+        self.train_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.train_label.setStyleSheet("background-color: #772ce8; color: white; font-size: 16px;")
+        self.train_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
+        self.train_data_big_layout.addWidget(self.train_label)
+
+        train_layout.addLayout(self.train_data_big_layout)
         train_frame.setLayout(train_layout)
         grid_layout.addWidget(train_frame, 2, 1)
 
@@ -357,8 +356,8 @@ class MyWindow(QMainWindow):
         data_widget = QWidget()
         data_layout = QVBoxLayout()
 
-        # Example of 15 blocks
-        blocks = [('Blue', i+1) for i in range(15)]  # Block names are ('Blue', 1), ('Blue', 2), ..., ('Blue', 15)
+        # Blocks for making our labels
+        blocks = [('Blue', i+1) for i in range(16)]
 
         # Add 15 lines of data as QLabel widgets and update their background color
         for block in blocks:
@@ -615,12 +614,14 @@ class MyWindow(QMainWindow):
             sender.setText("Start")  # Change the button text back to "Start" when stopped
             sender.setStyleSheet("background-color: green; color: white;")
 
+    # Format the time to the form of a clock
     def format_time(self, seconds: int) -> str:
         hours = (seconds // 3600) % 24
         minutes = (seconds % 3600) // 60
         seconds = seconds % 60
         return f"{hours:02}:{minutes:02}:{seconds:02}"
 
+    # Update the clock every realtime second that passes
     def update_clock(self):
         # Only update the clock if the simulation is running
         if self.simulationRunning:
@@ -634,6 +635,7 @@ class MyWindow(QMainWindow):
             # Update oldTime to the newTime for the next call
             self.oldTime = self.newTime
 
+    # What happens when the user presses Current Mode button
     def mode_clicked(self):        
         # Toggle the mode first
         self.automatic_mode = not self.automatic_mode
@@ -670,14 +672,69 @@ class MyWindow(QMainWindow):
             self.upload_button.setEnabled(False)
             self.upload_button.setStyleSheet("background-color: gray; color: white; font-size: 18px")
 
+    # Open file explorer on the user's device
     def upload_clicked(self):
         print('Uploading a schedule...')
-
+        
         # Open file explorer on the user's device
-        file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Text Files (*.txt);;Text Files (*.txt)")
-        if file_name:
-            print('Now running', file_name)
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Microsoft Excel Worksheet (*.xlsx);")
+        if file_path:
+            print('Now running', file_path)
+            
+            try:
+                # Read the Excel file
+                df = pd.read_excel(file_path, na_filter=False)
+            
+            except Exception as e:
+                print(f"Error reading the Excel file: {e}")
+        else:
+            print("No file selected.")
 
+        # Access row 0, column 1 using .iloc
+        new_line = df.iloc[0,0]
+        new_destination = df.iloc[0, 1]
+        new_time = df.iloc[0, 2]
+        train_count = len(self.trains)
+        if train_count == 0:
+            new_train = 'Train0'
+        else:
+            new_train = 'Train'+str(train_count)
+
+        print(new_train, 'on the', new_line, 'line will arrive at', new_destination, 'in', new_time, 'minutes!')
+        new_train = Train(new_train, new_line, new_destination, new_time)
+        if new_train.destination == 'STATION: B':
+            new_train.setAuthority(550)
+            new_train.setSuggestedSpeed(50)
+        elif new_train.destination == 'STATION: C':
+            new_train.setAuthority(500)
+            new_train.setSuggestedSpeed(50)
+        else:
+            print('Station does not exist')
+
+        if len(self.trains) == 0: # If we are adding the first train, delete the label
+            # Remove the current QLabel
+            self.train_data_big_layout.removeWidget(self.train_label)
+            self.train_label.deleteLater()  # Delete QLabel
+        else:
+            # Remove the QComboBox
+            self.train_data_big_layout.removeWidget(self.train_data_combo_box)
+            self.train_data_combo_box.deleteLater() # Delete QComboBox
+
+        self.trains.append(new_train)
+
+        # Create the QComboBox
+        self.train_data_combo_box = QComboBox()
+        self.train_data_combo_box.setPlaceholderText('Train')
+        self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+        for train in self.trains:
+            self.train_data_combo_box.addItem(train.name)
+        self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
+
+        # Add the QComboBox to the layout
+        self.train_data_big_layout.addWidget(self.train_data_combo_box)
+
+    # Allow the user to select the destination and time of a train
     def dispatch_clicked(self):
         print('Dispatching a train...')
         dialog = QDialog(self)
@@ -750,13 +807,24 @@ class MyWindow(QMainWindow):
         dialog.setLayout(layout)
         dialog.exec()
 
+    # Create the train object
     def submit_dispatch(self, dialog, station, time):
         Train0 = Train('Train0', 'Blue', station, time)
         print('Dispatching',Train0.name, 'on the', Train0.line, 'line, to', Train0.destination, 'at', Train0.arrival_time)
         dialog.accept()
 
-    def train_selected(self):
-        print('You selected a train')
+
+    def train_selected(self, selected_train):
+        print('You selected', selected_train)
+        for train in self.trains:
+            if train.name == selected_train:
+                my_train = train
+            else:
+                pass
+
+        print('Displaying info on', selected_train)
+        print('Authority =', my_train.authority)
+        print('Suggested Speed =', my_train.suggested_speed)
 
     # Function to update label background based on block status
     def update_label_background(self, label, block):
