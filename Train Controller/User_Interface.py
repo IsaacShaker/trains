@@ -125,6 +125,8 @@ class MainWindow(QMainWindow):
         #get value of current index of train
         self.current_train = self.train_selection.currentIndex()
 
+        self.train_selection.setEditable(True)
+
         #############################################
         #Driver and Engineer Sections
         #############################################
@@ -631,6 +633,25 @@ class MainWindow(QMainWindow):
         #fill in the failures lights correctly
         self.check_errors()
 
+
+
+        #############################################
+        #All Test Bench Widgets
+        #############################################
+
+        #condense code since all these input fields involve putting text in
+        self.input_authority = self.test_bench_input("Authority:", self.confirm_authority, 0)
+        self.input_actual_velocity = self.test_bench_input("Acutual Velocity:", self.confirm_actual_velocity, 1)
+        self.input_commanded_velocity = self.test_bench_input("Commanded Velocity:", self.confirm_commanded_velocity, 2)
+        self.input_beacon_info = self.test_bench_input("Beacon Info:", self.confirm_beacon_info, 3)
+
+
+
+
+
+
+
+
         #############################################
         #Addding the frames to the Test Bench UI
         #############################################
@@ -640,6 +661,82 @@ class MainWindow(QMainWindow):
 
 
 
+    def test_bench_input(self, input_label, confirm_func, row):
+        
+        #setup layout and frame for input
+        temp_layout = QHBoxLayout()
+        temp_frame = QFrame()
+        temp_frame.setLayout(temp_layout)
+
+        #setup label for field
+        label = QLabel(input_label)
+        input_field = QLineEdit()
+
+
+        #confirm button set up to connect to function
+        confirm_button = QPushButton("Confirm")
+        confirm_button.clicked.connect(confirm_func)
+
+        #combine 3 elements into layout
+        temp_layout.addWidget(label)
+        temp_layout.addWidget(input_field)
+        temp_layout.addWidget(confirm_button)
+
+        #add temp frame to test_bench_layout
+        self.test_bench_layout.addWidget(temp_frame, row, 1)         
+
+        #return edit box
+        return input_field
+    
+
+    #############################################
+    #Functions for confirming test bench inputs
+    #############################################
+    def confirm_authority(self):
+        # Get the text from the input field and update the label
+        input_value = self.input_authority.text()
+
+        #update label  
+        self.input_authority.setPlaceholderText(input_value)
+        self.input_authority.setText("")
+
+        #set authority in train list
+        train_list[self.current_train].authority = input_value
+
+
+    def confirm_actual_velocity(self):
+        # Get the text from the input field and update the label
+        input_value = self.input_actual_velocity.text()
+
+        #update label  
+        self.input_actual_velocity.setPlaceholderText(input_value)
+        self.input_actual_velocity.setText("")
+
+        #set authority in train list
+        train_list[self.current_train].actual_velocity = input_value
+
+
+    def confirm_commanded_velocity(self):
+        # Get the text from the input field and update the label
+        input_value = self.input_commanded_velocity.text()
+
+        #update label  
+        self.input_commanded_velocity.setPlaceholderText(input_value)
+        self.input_commanded_velocity.setText("")
+
+        #set authority in train list
+        train_list[self.current_train].commanded_velocity = input_value
+
+    def confirm_beacon_info(self):
+        # Get the text from the input field and update the label
+        input_value = self.input_beacon_info.text()
+
+        #update label  
+        self.input_beacon_info.setPlaceholderText(input_value)
+        self.input_beacon_info.setText("")
+
+        #set beacon info in train list
+        train_list[self.current_train].beacon_info = input_value
 
 
 
@@ -963,10 +1060,14 @@ class MainWindow(QMainWindow):
         self.test_bench_layout.addWidget(self.train_selection, 1, 0)
         self.test_bench_layout.addWidget(self.manual_widget, 0, 0)
         self.test_bench_layout.addWidget(self.divider, 0, 1, 4, 1)
+        
 
 
     #switches to control screen
     def to_control(self):
+        
+        #update information
+        self.index_changed(self.current_train)
 
         #update screen
         self.stacked_widget.setCurrentIndex(0)
@@ -977,7 +1078,7 @@ class MainWindow(QMainWindow):
         self.control_layout.addWidget(self.train_selection, 1, 0)
         self.control_layout.addWidget(self.manual_widget, 0, 0)
         self.control_layout.addWidget(self.divider, 0, 1, 4, 1)
-
+        
 
 
 
