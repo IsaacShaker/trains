@@ -2,7 +2,8 @@ import sys
 import time
 import pandas as pd
 from train import Train
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea
+from TrackController import TrackController
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem
 from PyQt6.QtCore import Qt, QTimer
 
 class MyWindow(QMainWindow):
@@ -14,6 +15,7 @@ class MyWindow(QMainWindow):
         self.oldTime = 21600 # the system will began at 6AM
         self.speed = 1 # the system will be running at 1x speed by default
 
+        # Helps with toggling mode button text
         self.automatic_mode = True # the system begins in automatic mode
 
         # Create the open block list, everything should open upon creation
@@ -27,8 +29,14 @@ class MyWindow(QMainWindow):
         # Create the occupied block list
         self.occupied_blocks = []
 
+        # Create the occupied blocks list that includes maintenance
+        self.nates_occupied_blocks = []
+
         # Create the trains list
         self.trains = []
+
+        # Create a Track Controller
+        self.wayside = TrackController()
 
         # Dictionary for block labels in block occupancy tab
         self.block_labels = {}
@@ -75,6 +83,15 @@ class MyWindow(QMainWindow):
         self.total_elapsed_time = 0  # New variable to keep track of total elapsed time
         self.timer.start(1000)  # Update every second
 
+        # Helps with toggling switch button text
+        self.switch_status = True
+
+        # Helps with toggling top light text
+        self.top_light_status = True
+
+        # Helps with toggling bottom light text
+        self.bottom_light_status = True
+
     def create_tabs(self):
         # Home Tab content
         home = QWidget()
@@ -82,26 +99,139 @@ class MyWindow(QMainWindow):
 
         # Call the layout with frames to organize the UI for Home tab
         self.create_home_layout(home_layout)
-
         home.setLayout(home_layout)
         home.setStyleSheet("background-color: #171717;")  # Black background
 
-        # Test Bench Tab content
+        # Test Bench content
         test_bench = QWidget()
         test_bench_layout = QVBoxLayout()
 
-        # Add a placeholder for Test Bench
-        test_bench_label = QLabel("Test Bench content goes here.")
-        test_bench_label.setStyleSheet("color: white; font-size: 20px;")
-        test_bench_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-        test_bench_layout.addWidget(test_bench_label)
-
+        # Call the layout with frames to organize the UI for Test Bench tab
+        self.create_test_bench_layout(test_bench_layout)
         test_bench.setLayout(test_bench_layout)
-        test_bench.setStyleSheet("background-color: #171717;")  # Black background
+        test_bench.setStyleSheet("background-color: #171717;")  # Black background        
 
         # Add the tabs to the tab widget
         self.tab_widget.addTab(home, "Home")
         self.tab_widget.addTab(test_bench, "Test Bench")
+
+    def create_test_bench_layout(self, layout):
+        # Main grid layout for Test Bench tab
+        grid_layout = QGridLayout()
+
+        # Set the layout margins and spacing
+        grid_layout.setContentsMargins(10, 10, 10, 10)  # Adjust margins as needed
+        grid_layout.setSpacing(10)  # Adjust spacing between widgets
+
+        # Create the widget for Wayside Controller label
+        wayside_frame = self.create_section_frame(250, 200)
+        wayside_layout = QVBoxLayout()
+        
+        # Add the label to the frame
+        wayside_label = QLabel("Block Occupancies")
+        wayside_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        wayside_label.setStyleSheet("color: white; font-size: 20px;")
+        wayside_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the label
+        wayside_layout.addWidget(wayside_label)
+
+        # Create the QListWidget for the wayside occupancies checklist
+        self.wayside_occupancies = QListWidget()
+        self.wayside_occupancies.setStyleSheet("""
+            QListWidget::item {
+                padding: 1px;  /* Add padding to increase item size */
+                font-size: 20px;  /* Increase font size to make items larger */
+            }
+        """)
+
+        # Create the wayside blocks list
+        self.wayside_blocks = [f'Blue {i}' for i in range(1, 17)]  # Create block labels dynamically
+
+        # Add the wayside blocks as options for the checklist
+        for block in self.wayside_blocks:
+            block_option = QListWidgetItem(block)
+            block_option.setFlags(block_option.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            block_option.setCheckState(Qt.CheckState.Unchecked)  # Initial status is unchecked
+            self.wayside_occupancies.addItem(block_option)
+
+        # Add the QListWidget to the layout
+        wayside_layout.addWidget(self.wayside_occupancies)
+
+        # Set the final layout for the frame and add it to the grid layout
+        wayside_frame.setLayout(wayside_layout)
+        grid_layout.addWidget(wayside_frame, 0, 0, 1, 2)
+
+        # Layout for buttons
+        signals_frame = self.create_section_frame(250, 200)
+
+        # Layout for bottom half
+        signals_big_layout = QVBoxLayout()
+
+        # Label for Signals
+        signals_label = QLabel('Traffic Signals')
+        signals_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        signals_label.setStyleSheet("color: white; font-size: 20px;")
+        signals_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the label
+        signals_big_layout.addWidget(signals_label)
+
+        # Layout for the interactives
+        signals_small_layout = QHBoxLayout()
+
+        # Button for switch
+        self.switch_button = QPushButton("5-6")
+        self.switch_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px;")
+        self.switch_button.clicked.connect(self.switch_clicked)
+        signals_small_layout.addWidget(self.switch_button)
+
+        # Light on Blue #6
+        self.top_light = QPushButton("Top Track")
+        self.top_light.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.top_light.setStyleSheet("background-color: green; color: white; font-size: 20px;")
+        self.top_light.clicked.connect(self.top_light_clicked)
+        signals_small_layout.addWidget(self.top_light)        
+
+
+        # Light on Blue #11
+        self.bottom_light = QPushButton("Bottom Track")
+        self.bottom_light.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.bottom_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
+        self.bottom_light.clicked.connect(self.bottom_light_clicked)
+        signals_small_layout.addWidget(self.bottom_light)
+
+        signals_big_layout.addLayout(signals_small_layout)
+        signals_frame.setLayout(signals_big_layout)
+        grid_layout.addWidget(signals_frame, 1, 0, 1, 2)
+        
+        # Add the grid layout to the main layout provided as a parameter
+        layout.addLayout(grid_layout)
+
+    def switch_clicked(self):
+        self.switch_status = not(self.switch_status)
+
+        if self.switch_status == False:
+            self.switch_button.setText('5-11')
+            self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
+        else:
+            self.switch_button.setText('5-6')
+            self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
+
+    def top_light_clicked(self):
+        self.top_light_status = not(self.top_light_status)
+        if self.top_light_status == False:
+            self.top_light.setText('Top Track')
+            self.top_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
+        else:
+            self.top_light.setText('Top Track')
+            self.top_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
+
+    def bottom_light_clicked(self):
+        self.bottom_light_status = not(self.bottom_light_status)
+        if self.bottom_light_status == False:
+            self.bottom_light.setText('Bottom Track')
+            self.bottom_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
+        else:
+            self.bottom_light.setText('Bottom Track')
+            self.bottom_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
 
     def create_home_layout(self, layout):
         # Main layout grid for Home tab
@@ -469,8 +599,8 @@ class MyWindow(QMainWindow):
         self.maintenance_blocks.append((line, block))
         self.maintenance_blocks = sorted(self.maintenance_blocks, key=lambda x: x[1])
         self.update_opening_button_state()
-        self.occupied_blocks.append((line, block))
-        self.occupied = sorted(self.occupied_blocks, key=lambda x: x[1])
+        self.nates_occupied_blocks.append((line, block))
+        self.nates_occupied_blocks = sorted(self.nates_occupied_blocks, key=lambda x: x[1])
         self.open_blocks.remove((line, block))
         new_block = (line, block)
 
@@ -560,8 +690,8 @@ class MyWindow(QMainWindow):
         self.open_blocks.append(block)
         self.open_blocks = sorted(self.open_blocks, key=lambda x: x[1])
         self.maintenance_blocks.remove(block)
+        self.nates_occupied_blocks.remove(block)
         self.update_opening_button_state()
-        self.occupied_blocks.remove(block)
 
         # Change background color accordingly
         if block in self.block_labels:
@@ -634,6 +764,17 @@ class MyWindow(QMainWindow):
 
             # Update oldTime to the newTime for the next call
             self.oldTime = self.newTime
+
+            print('updating occupancies')
+            new_block = self.wayside.send_occupancies()
+            if self.open_blocks.count(new_block) > 0:
+                self.open_blocks.remove(new_block)
+                self.occupied_blocks.append(new_block)
+                # Change background color accordingly
+                if new_block in self.block_labels:
+                    print('Updating label')
+                    block_label = self.block_labels[new_block]
+                    self.update_label_background(block_label, new_block)
 
     # What happens when the user presses Current Mode button
     def mode_clicked(self):        
@@ -813,7 +954,7 @@ class MyWindow(QMainWindow):
         print('Dispatching',Train0.name, 'on the', Train0.line, 'line, to', Train0.destination, 'at', Train0.arrival_time)
         dialog.accept()
 
-
+    # Display the correct data based on the train selected
     def train_selected(self, selected_train):
         print('You selected', selected_train)
         for train in self.trains:
@@ -847,6 +988,17 @@ class MyWindow(QMainWindow):
             label.setStyleSheet("background-color: gray; color: white;")  # Default color
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+
+    # Function to move the train through the track
+    def move_trains(self):
+        for train in self.trains:
+            if train.on_track == False: # Check if train needs dispatched
+                train_speed = train.suggested_speed*1000/3600 # Convert to m/s
+                time_of_trip = train.authority/train_speed # Time of trip in seconds
+                self.wayside.simulate_train(time_of_trip)
+            else: # train is already dispatched
+                pass
+            
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     

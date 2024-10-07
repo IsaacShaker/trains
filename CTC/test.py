@@ -1,9 +1,13 @@
 from train import Train
+from TrackController import TrackController
 
-Train0 = Train('Train 0', 'Blue', 'Station B')
+Train0 = Train('Train 0', 'Blue', 'STATION: B', 3)
 
-new_authority = 50
+wayside = TrackController(Train0)
 
-Train0.setAuthority(new_authority)
+switch = wayside.change_switch()
 
-print(Train0.name, 'is going to', Train0.destination, 'with authority', Train0.authority,'m!')
+if switch == True:
+    print(Train0.name, 'is going to Station B')
+else:
+    print(Train0.name, 'is going to Station C')

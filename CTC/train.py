@@ -7,6 +7,8 @@ class Train:
         self.authority = 0
         self.suggested_speed = 0
         self.arrival_time = arrival_time
+        self.on_track = False
+        self.current_block = ()
 
     def setName(self, new_name):
         self.name = new_name
@@ -25,3 +27,6 @@ class Train:
 
     def setArrivalTime(self, new_time):
         self.arrival_time = new_time
+
+    def setStatus(self, status):
+        self.status = status
