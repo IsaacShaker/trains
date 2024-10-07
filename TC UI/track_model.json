@@ -84,8 +84,8 @@
             ],
             "crossings": [
                 {
-                    "name_1": "Crossing 3 - UP",
-                    "name_2": "Crossing 3 - DOWN",
+                    "name_1": "Block 3 - UP",
+                    "name_2": "Block 3 - DOWN",
                     "toggled": false
                 }
             ]
