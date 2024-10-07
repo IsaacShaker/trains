@@ -23,7 +23,7 @@ from PyQt6.QtCore import Qt
 train_list = []
 
 def addTrain(): 
-    new_train = TrainModel()  # Assuming TrainModel does not need self
+    new_train = TrainModel()
     train_list.append(new_train)
 
 # Call addTrain to populate the list
@@ -43,6 +43,11 @@ class MainWindow(QMainWindow):
 
         # Create the tab widget
         self.tabs = QTabWidget()
+
+        #Initialize
+        select_train_page=QWidget()
+        create_user_mode_page=QWidget()
+        test_bench_page=QWidget()
 
         # Create pages
         select_train_page = self.create_select_train_page()
@@ -470,7 +475,7 @@ class MainWindow(QMainWindow):
     def select_train(self):
         selected_index = self.train_dropdown.currentIndex()
         selected_train = train_list[selected_index]
-        #self.train_select_update(selected_train)
+        self.train_select_update(selected_train)
 
     #This function will update all other information in UI to match the train which was selected
     def train_select_update(self, selected_train): # i is an int which represent the index of the train
@@ -500,7 +505,7 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     import sys
     from PyQt6.QtWidgets import QApplication
-
+    
     app = QApplication(sys.argv)
     main_window = MainWindow()
     main_window.show()
