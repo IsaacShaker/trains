@@ -41,7 +41,7 @@ class TrainModel:
         self.CAR_MASS = 40.9
         self.E_BRAKE_ACC = 2.73
         self.S_BRAKE_ACC = 1.2
-        self.ACCELERATION_LIMIT
+        self.ACCELERATION_LIMIT=0.5
 
         # Update the UI initially
         #self.update_ui()
@@ -56,6 +56,14 @@ class TrainModel:
     #     """Simulate a change in velocity and update the UI."""
     #     self.currentVelocity += 5  # Example of changing the velocity
     #     #self.update_ui()
+    
+    def mps_to_mph(self, vel):
+        vel=vel*2.2369
+        return vel
+
+    def ms2_to_fts2(self, num):
+        num=num*3.2808
+        return num
 
     def adjust_temperature(self, target_temperature):
         while abs(self.temperature - target_temperature) > 0.1:
