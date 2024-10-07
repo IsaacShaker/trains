@@ -31,6 +31,11 @@ addTrain()
 addTrain()
 addTrain()
 
+#train_list[1].atStation=False
+#train_list[1].passCount=100
+#train_list[1].update_passengers()
+
+
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
@@ -43,6 +48,26 @@ class MainWindow(QMainWindow):
 
         # Create the tab widget
         self.tabs = QTabWidget()
+
+        self.tabs.setStyleSheet("""
+            QTabWidget::pane {
+                border: 2px solid #772ce8;
+                padding: 5px;
+            }
+            QTabBar::tab {
+                border: 2px solid #772ce8;
+                padding: 10px;
+                margin: 1px;
+            }
+            QTabBar::tab:selected {
+                color: black;
+                background-color: #f0f0ff;
+                border-bottom-color: #772ce8;  /* Ensure no overlap between tabs */
+            }
+            QTabBar::tab:hover {
+                background-color: #dcdcdc;
+            }
+        """)
 
         #Initialize
         select_train_page=QWidget()
@@ -332,7 +357,7 @@ class MainWindow(QMainWindow):
         select_train_button = QPushButton("Confirm Train Selection")
         select_train_button.setStyleSheet("""
             QPushButton {
-                background-color: #2ecc71;
+                background-color: #772ce8;
                 color: white;
                 border: none;
                 padding: 15px 20px;
@@ -340,7 +365,7 @@ class MainWindow(QMainWindow):
                 border-radius: 8px;
             }
             QPushButton:hover {
-                background-color: #27ae60;
+                background-color: #9e30ff;
             }
         """)
         select_train_button.clicked.connect(self.select_train)  # Connect button to selection logic
@@ -369,6 +394,7 @@ class MainWindow(QMainWindow):
         self.authority_input = QLineEdit()
         authority_layout.addWidget(self.authority_input)
         authority_button = QPushButton("Send")
+        authority_button.setStyleSheet("background-color: #772ce8; color: white;")
         authority_layout.addWidget(authority_button)
 
         speed_layout = QHBoxLayout()
@@ -376,6 +402,7 @@ class MainWindow(QMainWindow):
         self.speed_input = QLineEdit()
         speed_layout.addWidget(self.speed_input)
         speed_button = QPushButton("Send")
+        speed_button.setStyleSheet("background-color: #772ce8; color: white;")
         speed_layout.addWidget(speed_button)
 
         power_layout = QHBoxLayout()
@@ -383,6 +410,7 @@ class MainWindow(QMainWindow):
         self.power_input = QLineEdit()
         power_layout.addWidget(self.power_input)
         power_button = QPushButton("Send")
+        power_button.setStyleSheet("background-color: #772ce8; color: white;")
         power_layout.addWidget(power_button)
 
         announcement_layout = QHBoxLayout()
@@ -390,6 +418,7 @@ class MainWindow(QMainWindow):
         self.announcement_input = QLineEdit()
         announcement_layout.addWidget(self.announcement_input)
         announcement_button = QPushButton("Send")
+        announcement_button.setStyleSheet("background-color: #772ce8; color: white;")
         announcement_layout.addWidget(announcement_button)
 
         # Commanded Temperature
@@ -398,6 +427,7 @@ class MainWindow(QMainWindow):
         self.temperature_input = QLineEdit()
         temperature_layout.addWidget(self.temperature_input)
         temperature_button = QPushButton("Send")
+        temperature_button.setStyleSheet("background-color: #772ce8; color: white;")
         temperature_layout.addWidget(temperature_button)
 
         # Add all input layouts to the main layout
@@ -488,7 +518,6 @@ class MainWindow(QMainWindow):
 
         update_inside_lights_state(selected_train.insideLights)
 
-        # Update door status for the train
         update_door_states(selected_train.rightDoor, selected_train.leftDoor)
 
         self.height_label.setText(selected_train.trainHeight)
