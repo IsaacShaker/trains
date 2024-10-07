@@ -14,14 +14,56 @@ from PyQt6.QtWidgets import (
     QGroupBox,
     QSizePolicy
 )
+from TrainModel import TrainModel
 from PyQt6.QtGui import QFont, QPixmap
 from PyQt6.QtCore import QSize
 from PyQt6.QtCore import Qt
 
+# Define train_list globally
+train_list = []
 
-class UserModePage(QWidget):
-    def __init__(self):
-        super().__init__()
+def addTrain(): 
+    new_train = TrainModel()  # Assuming TrainModel does not need self
+    train_list.append(new_train)
+
+# Call addTrain to populate the list
+addTrain()
+addTrain()
+addTrain()
+
+class MainWindow(QMainWindow):
+    def __init__(self, parent=None):
+        super(MainWindow, self).__init__(parent)
+
+        self.setWindowTitle("Train Model")
+        self.setGeometry(100, 100, 800, 600)
+
+        # Create the main layout
+        main_layout = QHBoxLayout()
+
+        # Create the tab widget
+        self.tabs = QTabWidget()
+
+        # Create pages
+        select_train_page = self.create_select_train_page()
+        user_mode_page = self.create_user_mode_page()
+        test_bench_page = self.create_test_bench_page()
+
+        # Add tabs
+        self.tabs.addTab(select_train_page, "Select a Train")
+        self.tabs.addTab(user_mode_page, "User Mode")
+        self.tabs.addTab(test_bench_page, "Testing")
+
+        # Add tabs to the main layout
+        main_layout.addWidget(self.tabs)
+
+        # Set the central widget
+        container = QWidget()
+        container.setLayout(main_layout)
+        self.setCentralWidget(container)
+
+    def create_user_mode_page(self):
+        user_mode_widget=QWidget()
 
         # Create main layout
         main_layout = QVBoxLayout()
@@ -31,7 +73,7 @@ class UserModePage(QWidget):
 
         # Display an image using a relative path
         image_label = QLabel()
-        image_path = os.path.join(os.path.dirname(__file__), 'images', 'kennywood_ad.jpg')
+        image_path = os.path.join(os.path.dirname(__file__), 'images', 'dlc.png')
         pixmap = QPixmap(image_path).scaled(700, 150, Qt.AspectRatioMode.KeepAspectRatio)  # Adjust size as needed
         image_label.setPixmap(pixmap)
         image_label.setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -234,8 +276,8 @@ class UserModePage(QWidget):
         # Add horizontal layout to the main layout
         main_layout.addLayout(horizontal_layout)
 
-        # Set the main layout to the main widget
-        self.setLayout(main_layout)
+        user_mode_widget.setLayout(main_layout)
+        return user_mode_widget
 
     def update_headlights_state(self, headlights_on):
         self.headlights_label.setText("On" if headlights_on else "Off")
@@ -252,52 +294,37 @@ class UserModePage(QWidget):
         self.left_door_label.setText("Open" if left_door_open else "Closed")
         self.left_door_label.setStyleSheet("background-color: red;" if left_door_open else "background-color: green;")
 
-class SelectTrainPage(QWidget):
-    def __init__(self):
-        super().__init__()
-
-        # List of available trains
-        available_trains = ["Train 0", "Train 1", "Train 2", "Train 3"]
-
-        # Set a larger font for the title
-        title_font = QFont('Arial', 20, QFont.Weight.Bold)
-        label_font = QFont('Arial', 14)
-
+    def create_select_train_page(self):
+        # Create a widget for the Select Train page
+        select_train_widget = QWidget()
         layout = QVBoxLayout()
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center align the layout
 
-        # Title Section
-        self.selected_train_display = QLabel("Selected Train: ")
-        self.selected_train_display.setFont(title_font)
-        self.selected_train_display.setStyleSheet("color: white;")
+        # Add a label to display the currently selected train
+        selected_train_label = QLabel("Selected Train: None")
+        selected_train_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        selected_train_label.setFont(QFont('Arial', 20, QFont.Weight.Bold))
+        layout.addWidget(selected_train_label)
 
-        self.selected_train_number = QLabel("Train 1")  # Default selected train number
-        self.selected_train_number.setFont(title_font)
-        self.selected_train_number.setStyleSheet("color: white;")
+        # Add instructions label below the selected train label
+        instructions_label = QLabel("Select a train and press 'Confirm' to select a new train.")
+        instructions_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        instructions_label.setFont(QFont('Arial', 16, QFont.Weight.Bold))
+        layout.addWidget(instructions_label)
 
-        selected_train_layout = QHBoxLayout()
-        selected_train_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        selected_train_layout.addWidget(self.selected_train_display)
-        selected_train_layout.addWidget(self.selected_train_number)
-        layout.addLayout(selected_train_layout)
+        self.train_dropdown = QComboBox()  # Make this an instance variable
+        self.train_dropdown.setStyleSheet("font-size: 18px;") 
 
-        # Instructions
-        select_train_txt = QLabel("Select a train to view and press confirm")
-        select_train_txt.setFont(label_font)
-        # For any QLabel where you see a box behind the text
+        # Create a dropdown for available trains
+        for i in range(len(train_list)):
+            self.train_dropdown.addItem(f"Train {i}")  # Update dropdown with train names
 
-        select_train_txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(select_train_txt)
+        # Connect the dropdown selection to the train_selected function
+        self.train_dropdown.currentIndexChanged.connect(self.train_selected)
 
-        # Create dropdown (combo box) for train selection
-        self.train_dropdown = QComboBox()
-        self.train_dropdown.addItems(available_trains)
-        self.train_dropdown.setFont(label_font)
         layout.addWidget(self.train_dropdown)
 
         # Button to confirm selection with improved styling
         select_train_button = QPushButton("Confirm Train Selection")
-        select_train_button.setFont(label_font)
         select_train_button.setStyleSheet("""
             QPushButton {
                 background-color: #2ecc71;
@@ -311,23 +338,25 @@ class SelectTrainPage(QWidget):
                 background-color: #27ae60;
             }
         """)
-        select_train_button.clicked.connect(self.select_train)
+        select_train_button.clicked.connect(self.select_train)  # Connect button to selection logic
         layout.addWidget(select_train_button)
 
         layout.addStretch()
-        self.setLayout(layout)
+        select_train_widget.setLayout(layout)
+        return select_train_widget
 
-    def select_train(self):
-        selected_train = self.train_dropdown.currentText()  # Get selected train
-        self.selected_train_number.setText(selected_train)  # Update label to show selection
-        # Add more logic to handle the selected train (e.g., pass it to another system)
-
-class TestBenchPage(QWidget):
-    def __init__(self):
-        super().__init__()
+    def create_test_bench_page(self):
+        test_bench_widget = QWidget()
 
         # Main layout for the Test Bench
         layout = QVBoxLayout()
+
+        # Add centered text at the top
+        instruction_label = QLabel("Enter an input and press send to enter")
+        instruction_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        instruction_label.setFont(QFont('Arial', 16, QFont.Weight.Bold))
+        instruction_label.setContentsMargins(0, 10, 0, 10)  # Reduce space around the label
+        layout.addWidget(instruction_label)
 
         # Inputs for Authority, Commanded Speed, Power, and Announcement
         authority_layout = QHBoxLayout()
@@ -358,7 +387,7 @@ class TestBenchPage(QWidget):
         announcement_button = QPushButton("Send")
         announcement_layout.addWidget(announcement_button)
 
-        # Commanded Temperature and Service Brake
+        # Commanded Temperature
         temperature_layout = QHBoxLayout()
         temperature_layout.addWidget(QLabel("Commanded Temperature (°F):"))
         self.temperature_input = QLineEdit()
@@ -366,58 +395,56 @@ class TestBenchPage(QWidget):
         temperature_button = QPushButton("Send")
         temperature_layout.addWidget(temperature_button)
 
-        brake_button = QPushButton("Service Brake")
-        brake_button.setStyleSheet("background-color: red; color: white;")
-
-        # Doors Control (Left and Right) and Lights (Headlights and Inside Lights)
-        doors_lights_layout = QHBoxLayout()
-
-        # Left Door Toggle
-        left_door_layout = QVBoxLayout()
-        left_door_layout.addWidget(QLabel("Left Door:"))
-        self.left_door_open_button = self.create_toggle_button("Open", True)
-        self.left_door_closed_button = self.create_toggle_button("Closed", False)
-        left_door_layout.addWidget(self.left_door_open_button)
-        left_door_layout.addWidget(self.left_door_closed_button)
-        doors_lights_layout.addLayout(left_door_layout)
-
-        # Right Door Toggle
-        right_door_layout = QVBoxLayout()
-        right_door_layout.addWidget(QLabel("Right Door:"))
-        self.right_door_open_button = self.create_toggle_button("Open", True)
-        self.right_door_closed_button = self.create_toggle_button("Closed", False)
-        right_door_layout.addWidget(self.right_door_open_button)
-        right_door_layout.addWidget(self.right_door_closed_button)
-        doors_lights_layout.addLayout(right_door_layout)
-
-        # Headlights Toggle
-        headlights_layout = QVBoxLayout()
-        headlights_layout.addWidget(QLabel("Headlights:"))
-        self.headlights_on_button = self.create_toggle_button("On", True)
-        self.headlights_off_button = self.create_toggle_button("Off", False)
-        headlights_layout.addWidget(self.headlights_on_button)
-        headlights_layout.addWidget(self.headlights_off_button)
-        doors_lights_layout.addLayout(headlights_layout)
-
-        # Inside Lights Toggle
-        inside_lights_layout = QVBoxLayout()
-        inside_lights_layout.addWidget(QLabel("Inside Lights:"))
-        self.inside_lights_on_button = self.create_toggle_button("On", True)
-        self.inside_lights_off_button = self.create_toggle_button("Off", False)
-        inside_lights_layout.addWidget(self.inside_lights_on_button)
-        inside_lights_layout.addWidget(self.inside_lights_off_button)
-        doors_lights_layout.addLayout(inside_lights_layout)
-
-        # Add all layouts to the main layout
+        # Add all input layouts to the main layout
         layout.addLayout(authority_layout)
         layout.addLayout(speed_layout)
         layout.addLayout(power_layout)
         layout.addLayout(announcement_layout)
         layout.addLayout(temperature_layout)
-        layout.addWidget(brake_button)
+
+        # Doors Control (Left) and Lights Control (Right)
+        doors_lights_layout = QHBoxLayout()
+
+        # Left: Doors Toggle
+        doors_layout = QVBoxLayout()
+        doors_layout.addWidget(QLabel("Doors:"))
+
+        self.left_door_button = QPushButton("Open Left Door")
+        self.left_door_button.setCheckable(True)
+        doors_layout.addWidget(self.left_door_button)
+
+        self.right_door_button = QPushButton("Open Right Door")
+        self.right_door_button.setCheckable(True)
+        doors_layout.addWidget(self.right_door_button)
+
+        doors_lights_layout.addLayout(doors_layout)
+
+        # Right: Lights Toggle
+        lights_layout = QVBoxLayout()
+        lights_layout.addWidget(QLabel("Lights:"))
+
+        self.headlights_button = QPushButton("Turn On Headlights")
+        self.headlights_button.setCheckable(True)
+        lights_layout.addWidget(self.headlights_button)
+
+        self.inside_lights_button = QPushButton("Turn On Inside Lights")
+        self.inside_lights_button.setCheckable(True)
+        lights_layout.addWidget(self.inside_lights_button)
+
+        doors_lights_layout.addLayout(lights_layout)
+
+        # Add doors and lights layout below the brake button
         layout.addLayout(doors_lights_layout)
 
-        self.setLayout(layout)
+        # Service Brake Button (below inputs but above doors/lights)
+        brake_button = QPushButton("Service Brake")
+        brake_button.setFixedSize(100, 80)  # Make it less wide and taller
+        brake_button.setStyleSheet("background-color: yellow; color: black;")
+        layout.addWidget(brake_button, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        test_bench_widget.setLayout(layout)
+        return test_bench_widget
+
 
     def create_toggle_button(self, label_text, checked):
         """Create a toggle button with two states (on/off)."""
@@ -436,258 +463,45 @@ class TestBenchPage(QWidget):
         else:
             button.setStyleSheet("background-color: gray;")
 
-    #this function will be called anytime inside lights button is pressed 
-    def i_light_pressed(self):
-        #checks if light is currently on or off
-        if train_list[self.current_train].i_light == False:
-            #light must turn on
-            train_list[self.current_train].i_light = True
-            self.i_light_button.setText("💡 ON")
-            self.i_light_button.setStyleSheet("background-color: yellow; color:black")
-        else:
-            #light must turn off
-            train_list[self.current_train].i_light = False
-            self.i_light_button.setText("💡 OFF")
-            self.i_light_button.setStyleSheet("background-color: gray;")
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
+    def train_selected(self):
+        """Handle train selection change."""
+        selected_index = self.train_dropdown.currentIndex()
 
-        self.setWindowTitle("Train Control System")
-        self.setGeometry(100, 100, 800, 600)
-
-        # Create the main layout
-        main_layout = QHBoxLayout()
-
-        # Create the tab widget
-        self.tabs = QTabWidget()
-
-        # Create pages
-        select_train_page = SelectTrainPage()
-        user_mode_page = UserModePage()
-        test_bench_page = TestBenchPage()
-
-        # Add tabs
-        self.tabs.addTab(select_train_page, "Select a Train")
-        self.tabs.addTab(user_mode_page, "User Mode")
-        self.tabs.addTab(test_bench_page, "Testing")
-
-        # Add tabs to the main layout
-        main_layout.addWidget(self.tabs)
-
-        # Set the central widget
-        container = QWidget()
-        container.setLayout(main_layout)
-        self.setCentralWidget(container)
+    def select_train(self):
+        selected_index = self.train_dropdown.currentIndex()
+        selected_train = train_list[selected_index]
+        #self.train_select_update(selected_train)
 
     #This function will update all other information in UI to match the train which was selected
-    def index_changed(self, i): # i is an int which represent the index of the train
-        print(f"Train {i} has been selected")
-
-        self.current_train = i
-
+    def train_select_update(self, selected_train): # i is an int which represent the index of the train
+            
         #update every widget in the UI
-        #self.authority_widget.setText(f"  Authority: {train_list[i].authority} ft")
-        self.actual_velocity_widget.setText(f"  Actual Velocity: {train_list[i].actual_velocity} MPH")
-        self.commanded_velocity_widget.setText(f"  Commanded Velocity: {train_list[i].commanded_velocity} MPH")
-        self.setpoint_velocity_widget.setText(f"  Setpoint Velocity: {train_list[i].setpoint_velocity} MPH")
-        self.temperature_control.setValue(train_list[i].temperature)
-        
-        #check inside light
-        if train_list[i].i_light == True:
-            #light must turn on
-            self.i_light_button.setText("💡 ON")
-            self.i_light_button.setStyleSheet("background-color: yellow; color:black")
-        else:
-            #light must turn off
-            self.i_light_button.setText("💡 OFF")
-            self.i_light_button.setStyleSheet("background-color: gray;")
+        self.velocity_label.setText(selected_train.currentVelocity)
+        self.acceleration_label.setText(selected_train.acceleration)
+            
+        update_headlights_state(selected_train.headLights)
 
-        #check headlight
-        if train_list[i].o_light == True:
-            #light must turn on
-            self.o_light_button.setText("💡 ON")
-            self.o_light_button.setStyleSheet("background-color: yellow; color:black")
-        else:
-            #light must turn off
-            self.o_light_button.setText("💡 OFF")
-            self.o_light_button.setStyleSheet("background-color: gray;")
-
+        update_inside_lights_state(selected_train.insideLights)
 
         # Update door status for the train
-        if train_list[i].l_door == True:
-            self.l_door_button.setText("Operating")
-            self.l_door_button.setEnabled(False)
-        else:
-            self.l_door_button.setText("Open")
-            self.l_door_button.setEnabled(True)
+        update_door_states(selected_train.rightDoor, selected_train.leftDoor)
 
-        if train_list[i].r_door == True:
-            self.r_door_button.setText("Operating")
-            self.r_door_button.setEnabled(False)
-        else:
-            self.r_door_button.setText("Open")
-            self.r_door_button.setEnabled(True)
+        self.height_label.setText(selected_train.trainHeight)
+        self.width_label.setText(selected_train.trainWidth)
+        self.length_label.setText(selected_train.trainLength)
+        self.mass_label.setText(selected_train.trainMass)
+        self.num_cars_label.setText(selected_train.numberOfCars)
 
-        #set kp and Ki values
-        self.input_kp.setPlaceholderText(f"{train_list[i].k_p}")
-        self.input_ki.setPlaceholderText(f"{train_list[i].k_i}")
-        
+        self.temperature_label.setText(selected_train.temperature)
+        self.crew_count_label.setText(select_train.crewCount)
+        self.passenger_count_label.setText(selected_train.passCount)
 
-        #check manual mode
-        self.manual_mode()
-
-        #check for errors
-        self.check_errors()
-
-    #this function will be called whenever the temperature is changed
-    def value_changed(self, temperature):
-
-        #update train temperature
-        train_list[self.train_selection.currentIndex()].temperature = temperature
-
-        print(temperature)
-
-    #this function will be called anytime inside lights button is pressed 
-    def i_light_pressed(self):
-        #checks if light is currently on or off
-        if train_list[self.current_train].i_light == False:
-            #light must turn on
-            train_list[self.current_train].i_light = True
-            self.i_light_button.setText("💡 ON")
-            self.i_light_button.setStyleSheet("background-color: yellow; color:black")
-        else:
-            #light must turn off
-            train_list[self.current_train].i_light = False
-            self.i_light_button.setText("💡 OFF")
-            self.i_light_button.setStyleSheet("background-color: gray;")
-
-    #this function will be called anytime inside headlights button is pressed 
-    def o_light_pressed(self):
-        #checks if light is currently on or off
-        if train_list[self.current_train].o_light == False:
-            #light must turn on
-            train_list[self.current_train].o_light = True
-            self.o_light_button.setText("💡 ON")
-            self.o_light_button.setStyleSheet("background-color: yellow; color:black")
-        else:
-            #light must turn off
-            train_list[self.current_train].o_light = False
-            self.o_light_button.setText("💡 OFF")
-            self.o_light_button.setStyleSheet("background-color: gray;")
-
-    #this function handles when the l_door_button is pressed
-    def open_l_door(self):
-        #updates signal to tell train model to open door
-        train_list[self.current_train].l_door = True
-
-        #disables button
-        self.l_door_button.setEnabled(False)
-
-        #change button text
-        self.l_door_button.setText("Operating")
-
-        #start 60s timer
-        self.l_door_timer.start(4000)
-
-        print(f"The current train is {self.current_train}")
-
-    #activates door button again
-    def close_l_door(self):
-        #door is now closed
-        train_list[self.current_train].l_door = False
-
-        #change text back
-        self.l_door_button.setText("Open")
-
-        #activates door button again if in manual mode
-        if train_list[self.current_train].manual_mode:
-            self.l_door_button.setEnabled(True)
-
-        print(f"The current train is {self.current_train}")
-    
-
-    #this function handles when the l_door_button is pressed
-    def open_r_door(self):
-        #updates signal to tell train model to open door
-        train_list[self.current_train].r_door = True
-
-        #disables button
-        self.r_door_button.setEnabled(False)
-
-        #change button text
-        self.r_door_button.setText("Operating")
-
-        #start 60s timer
-        self.r_door_timer.start(4000)
-
-    #activates door button again
-    def close_r_door(self):
-        #door is now closed
-        train_list[self.current_train].r_door = False
-
-        #change text back
-        self.r_door_button.setText("Open")
-
-        #activates door button again if in manual mode
-        if train_list[self.current_train].manual_mode:
-            self.r_door_button.setEnabled(True)
-            
-
-    def check_errors(self):
-        if train_list[self.current_train].failure_engine == True:
-            self.engine_light.setStyleSheet("""
-            background-color: red;
-            border-radius: 25px;
-            border: 2px solid black;
-        """)
-        else:
-            self.engine_light.setStyleSheet("""
-            background-color: gray;
-            border-radius: 25px;
-            border: 2px solid black;
-        """)
-            
-        if train_list[self.current_train].failure_brake == True:
-            self.brake_light.setStyleSheet("""
-            background-color: red;
-            border-radius: 25px;
-            border: 2px solid black;
-        """)
-        else:
-            self.brake_light.setStyleSheet("""
-            background-color: gray;
-            border-radius: 25px;
-            border: 2px solid black;
-        """)
-            
-        if train_list[self.current_train].failure_signal == True:
-            self.signal_light.setStyleSheet("""
-            background-color: red;
-            border-radius: 25px;
-            border: 2px solid black;
-        """)
-        else:
-            self.signal_light.setStyleSheet("""
-            background-color: gray;
-            border-radius: 25px;
-            border: 2px solid black;
-        """)
-            
-    #handles when service brake is pressed
-    def s_brake_pressed(self):
-        train_list[self.current_train].s_brake = True
-
-    #hands when emergency brake is clicked
-    def e_brake_clicked(self):
-        train_list[self.current_train].e_brake = True
-        self.e_brake_button.setEnabled(False)
-
-        #call the brake function to slow down train
-
+# Run the application
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec())
+    import sys
+    from PyQt6.QtWidgets import QApplication
 
+    app = QApplication(sys.argv)
+    main_window = MainWindow()
+    main_window.show()
+    sys.exit(app.exec())
