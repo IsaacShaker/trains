@@ -25,6 +25,12 @@ class Train_Controller:
         self.k_i = 0.0
         self.power = 0.0
         self.time_world = 0.0
+        self.commanded_power = 0.0
+        self.ek = 0.0
+        self.ek_1 = 0.0
+        self.T = 0.05 #time samples of 50 ms
+        self.uk = 0.0
+        self.uk_1 = 0.0
 
         #Ints
         self.authority = 0
@@ -60,20 +66,46 @@ class Train_Controller:
         else:
             return False                        #lights will be off at other times
 
-    #this function will return true if a failure mode has occured and the E-brake has be pulled. Otherwise it will return false
-    def FailureModes(failure_e, failure_b, failure_s):
-        if failure_e or failure_b or failure_s:
-            return True
-        else:
-            return False
         
     #this function will decode the beacon signal
-    def DecodeSignal():
-        return True
+    def Decode_Signal(self):
 
-    #this function will return the commanded Power
-    def Commaned_Power():
-        return
+        if self.beacon_info == 0:
+            return ""
+        elif self.beacon_info == 1:
+            return "Now Arriving at Station B"
+        elif self.beacon_info == 2:
+            return "Now Arriving at Station C"
+        else:
+            return ""
+
+    #this function will return the commanded Power and will be called every 50 ms
+    def Set_Commanded_Power(self):
+
+        #check setpoint speed first
+        if self.setpoint_velocity <= self.actual_velocity:
+            self.commanded_power = 0
+            self.ek = 0
+            self.ek_1 = 0
+            self.uk = 0
+            self.uk_1 = 0
+            return
+        
+        #update ek_1 and uk_1
+        self.ek_1 = self.ek
+        self.uk_1 = self.uk
+
+        #calculate current ek (setpoint velocity - actual velocity)
+        self.ek = self.setpoint_velocity - self.actual_velocity
+
+        #calculate uk
+        if self.commanded_power < 120000:   #commanded vs maximum power
+            self.uk = self.uk_1 + self.T/2*(self.ek + self.ek_1)     
+        else:
+            self.uk = self.uk_1
+
+        #calculate commaneded power (kp*ek + ki*uk)
+        self.commanded_power = self.k_p*self.ek + self.k_i*self.uk
 
     # Initialize the counter at the current time (in seconds)
     start_time = time.time()
