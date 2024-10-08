@@ -153,8 +153,16 @@ class MyWindow(QMainWindow):
             block_option.setCheckState(Qt.CheckState.Unchecked)  # Initial status is unchecked
             self.wayside_occupancies.addItem(block_option)
 
+        # Add submit button
+        self.submit_button = QPushButton("Submit")
+        self.submit_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.submit_button.setStyleSheet("background-color: green; color: white;")
+        self.submit_button.clicked.connect(self.submit_test_bench)
+
         # Add the QListWidget to the layout
         wayside_layout.addWidget(self.wayside_occupancies)
+
+        wayside_layout.addWidget(self.submit_button)
 
         # Set the final layout for the frame and add it to the grid layout
         wayside_frame.setLayout(wayside_layout)
@@ -184,15 +192,14 @@ class MyWindow(QMainWindow):
         signals_small_layout.addWidget(self.switch_button)
 
         # Light on Blue #6
-        self.top_light = QPushButton("Top Track")
+        self.top_light = QPushButton("Top Track Light")
         self.top_light.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.top_light.setStyleSheet("background-color: green; color: white; font-size: 20px;")
         self.top_light.clicked.connect(self.top_light_clicked)
         signals_small_layout.addWidget(self.top_light)        
 
-
         # Light on Blue #11
-        self.bottom_light = QPushButton("Bottom Track")
+        self.bottom_light = QPushButton("Bottom Track Light")
         self.bottom_light.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.bottom_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
         self.bottom_light.clicked.connect(self.bottom_light_clicked)
@@ -218,20 +225,35 @@ class MyWindow(QMainWindow):
     def top_light_clicked(self):
         self.top_light_status = not(self.top_light_status)
         if self.top_light_status == False:
-            self.top_light.setText('Top Track')
+            self.top_light.setText('Top Track Light')
             self.top_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
         else:
-            self.top_light.setText('Top Track')
+            self.top_light.setText('Top Track Light')
             self.top_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
 
     def bottom_light_clicked(self):
         self.bottom_light_status = not(self.bottom_light_status)
         if self.bottom_light_status == False:
-            self.bottom_light.setText('Bottom Track')
+            self.bottom_light.setText('Bottom Track Light')
             self.bottom_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
         else:
-            self.bottom_light.setText('Bottom Track')
+            self.bottom_light.setText('Bottom Track Light')
             self.bottom_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
+
+    def submit_test_bench(self):
+        for i in range(self.wayside_occupancies.count()):
+            block = self.wayside_occupancies.item(i)
+            block_text = block.text()
+            block_number = int(block_text.split()[1])
+            new_block = ('Blue', block_number)
+            if block.checkState() == Qt.CheckState.Checked:
+                if self.occupied_blocks.count(new_block) == 0:
+                    self.occupied_blocks.append(new_block)
+                    self.open_blocks.remove(new_block)
+            if block.checkState() == Qt.CheckState.Unchecked:
+                if self.open_blocks.count(new_block) == 0:
+                    self.open_blocks.append(new_block)
+                    self.occupied_blocks.remove(new_block)
 
     def create_home_layout(self, layout):
         # Main layout grid for Home tab
@@ -380,10 +402,10 @@ class MyWindow(QMainWindow):
         dispatch_layout.addWidget(dispatch_label)
 
         # Add widgets for dispatch rate (placeholders)
-        rate_label = QLabel("x Trains/hr")
-        rate_label.setStyleSheet("background-color: blue; color: white; font-size: 16px;")
-        rate_label.setAlignment(Qt.AlignmentFlag.AlignCenter) # Center the text
-        dispatch_layout.addWidget(rate_label)
+        self.rate_label = QLabel("Trains/hr")
+        self.rate_label.setStyleSheet("background-color: blue; color: white; font-size: 16px;")
+        self.rate_label.setAlignment(Qt.AlignmentFlag.AlignCenter) # Center the text
+        dispatch_layout.addWidget(self.rate_label)
         dispatch_frame.setLayout(dispatch_layout)
         grid_layout.addWidget(dispatch_frame, 2, 0)
 
@@ -765,16 +787,17 @@ class MyWindow(QMainWindow):
             # Update oldTime to the newTime for the next call
             self.oldTime = self.newTime
 
-            print('updating occupancies')
-            new_block = self.wayside.send_occupancies()
-            if self.open_blocks.count(new_block) > 0:
-                self.open_blocks.remove(new_block)
-                self.occupied_blocks.append(new_block)
-                # Change background color accordingly
-                if new_block in self.block_labels:
-                    print('Updating label')
-                    block_label = self.block_labels[new_block]
-                    self.update_label_background(block_label, new_block)
+            for block in self.open_blocks:
+                block_label = self.block_labels[block]
+                self.update_label_background(block_label, block)
+
+            for block in self.maintenance_blocks:
+                block_label = self.block_labels[block]
+                self.update_label_background(block_label, block)
+
+            for block in self.occupied_blocks:
+                block_label = self.block_labels[block]
+                self.update_label_background(block_label, block)
 
     # What happens when the user presses Current Mode button
     def mode_clicked(self):        
@@ -842,6 +865,8 @@ class MyWindow(QMainWindow):
             new_train = 'Train'+str(train_count)
 
         print(new_train, 'on the', new_line, 'line will arrive at', new_destination, 'in', new_time, 'minutes!')
+        rate_string = str(len(self.trains) + 1)+' Trains/hr'
+        self.rate_label.setText(rate_string)
         new_train = Train(new_train, new_line, new_destination, new_time)
         if new_train.destination == 'STATION: B':
             new_train.setAuthority(550)
@@ -951,6 +976,8 @@ class MyWindow(QMainWindow):
     # Create the train object
     def submit_dispatch(self, dialog, station, time):
         Train0 = Train('Train0', 'Blue', station, time)
+        rate_string = str(len(self.trains) + 1)+' Trains/hr'
+        self.rate_label.setText(rate_string)
         print('Dispatching',Train0.name, 'on the', Train0.line, 'line, to', Train0.destination, 'at', Train0.arrival_time)
         dialog.accept()
 
@@ -963,41 +990,32 @@ class MyWindow(QMainWindow):
             else:
                 pass
 
-        print('Displaying info on', selected_train)
-        print('Authority =', my_train.authority)
+        print('Displaying info on', selected_train,':')
+        print('Authority =', my_train.authority, 'm')
+        print('Suggested Speed =', my_train.suggested_speed, 'kph')
         imperial_authority = my_train.authority * 3.28084 # Convert from metric
         imperial_authority = round(imperial_authority)
-        auth_str = 'Auhtority = '+str(imperial_authority)+' ft'
+        auth_str = 'Authority = '+str(imperial_authority)+' ft'
         self.train_authority_label.setText(auth_str)
         imperial_suggested_speed = my_train.suggested_speed * 0.621371 # Convert from metric
         imperial_suggested_speed = round(imperial_suggested_speed)
         speed_str = 'Suggested Speed = '+str(imperial_suggested_speed)+' mph'
         self.train_suggested_speed_label.setText(speed_str)
-        print('Suggested Speed =', imperial_suggested_speed, 'mph')
-
 
     # Function to update label background based on block status
     def update_label_background(self, label, block):
         if block in self.maintenance_blocks:
+            #print('Yellow')
             label.setStyleSheet("background-color: yellow; color: black;")
         elif block in self.open_blocks:
+            #print('Green')
             label.setStyleSheet("background-color: green; color: white;")
         elif block in self.occupied_blocks:
+            #print('Red')
             label.setStyleSheet("background-color: red; color: white;")
         else:
             label.setStyleSheet("background-color: gray; color: white;")  # Default color
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-
-    # Function to move the train through the track
-    def move_trains(self):
-        for train in self.trains:
-            if train.on_track == False: # Check if train needs dispatched
-                train_speed = train.suggested_speed*1000/3600 # Convert to m/s
-                time_of_trip = train.authority/train_speed # Time of trip in seconds
-                self.wayside.simulate_train(time_of_trip)
-            else: # train is already dispatched
-                pass
             
 if __name__ == "__main__":
     app = QApplication(sys.argv)
