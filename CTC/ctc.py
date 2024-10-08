@@ -83,6 +83,9 @@ class MyWindow(QMainWindow):
         self.total_elapsed_time = 0  # New variable to keep track of total elapsed time
         self.timer.start(1000)  # Update every second
 
+        # Helps with toggling crossing button text
+        self.crossing_status = True
+
         # Helps with toggling switch button text
         self.switch_status = True
 
@@ -92,6 +95,7 @@ class MyWindow(QMainWindow):
         # Helps with toggling bottom light text
         self.bottom_light_status = True
 
+    # Create the Home and Test Bench tab for the window
     def create_tabs(self):
         # Home Tab content
         home = QWidget()
@@ -115,6 +119,7 @@ class MyWindow(QMainWindow):
         self.tab_widget.addTab(home, "Home")
         self.tab_widget.addTab(test_bench, "Test Bench")
 
+    # Create the layout for all the Test Bench widgets
     def create_test_bench_layout(self, layout):
         # Main grid layout for Test Bench tab
         grid_layout = QGridLayout()
@@ -184,8 +189,15 @@ class MyWindow(QMainWindow):
         # Layout for the interactives
         signals_small_layout = QHBoxLayout()
 
+        # Button for railway crossing
+        self.crossing_button = QPushButton("Railway Crossing")
+        self.crossing_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.crossing_button.setStyleSheet("background-color: green; color: white; font-size: 20px;")
+        self.crossing_button.clicked.connect(self.crossing_clicked)
+        signals_small_layout.addWidget(self.crossing_button)
+
         # Button for switch
-        self.switch_button = QPushButton("5-6")
+        self.switch_button = QPushButton("5-->6")
         self.switch_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px;")
         self.switch_button.clicked.connect(self.switch_clicked)
@@ -212,16 +224,26 @@ class MyWindow(QMainWindow):
         # Add the grid layout to the main layout provided as a parameter
         layout.addLayout(grid_layout)
 
+    # Handle what happend when the crossing is changed
+    def crossing_clicked(self):
+        self.crossing_status = not(self.crossing_status)
+        if self.crossing_status == False:
+            self.crossing_button.setStyleSheet("background-color: red; color: white; font-size: 20px")
+        else:
+            self.crossing_button.setStyleSheet("background-color: green; color: white; font-size: 20px")
+
+    # Handle what happens when the switch is changed
     def switch_clicked(self):
         self.switch_status = not(self.switch_status)
 
         if self.switch_status == False:
-            self.switch_button.setText('5-11')
+            self.switch_button.setText('5-->12')
             self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
         else:
-            self.switch_button.setText('5-6')
+            self.switch_button.setText('5-->6')
             self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
 
+    # Handle what happens when the top light changes states
     def top_light_clicked(self):
         self.top_light_status = not(self.top_light_status)
         if self.top_light_status == False:
@@ -231,6 +253,7 @@ class MyWindow(QMainWindow):
             self.top_light.setText('Top Track Light')
             self.top_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
 
+    # Handle what happens when the bottom light changes states
     def bottom_light_clicked(self):
         self.bottom_light_status = not(self.bottom_light_status)
         if self.bottom_light_status == False:
@@ -240,6 +263,7 @@ class MyWindow(QMainWindow):
             self.bottom_light.setText('Bottom Track Light')
             self.bottom_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
 
+    # Handle the user confirming their Test Bench selection for occupancies
     def submit_test_bench(self):
         for i in range(self.wayside_occupancies.count()):
             block = self.wayside_occupancies.item(i)
@@ -255,6 +279,7 @@ class MyWindow(QMainWindow):
                     self.open_blocks.append(new_block)
                     self.occupied_blocks.remove(new_block)
 
+    # Create the layout for all the Home widgets
     def create_home_layout(self, layout):
         # Main layout grid for Home tab
         grid_layout = QGridLayout()
@@ -532,6 +557,7 @@ class MyWindow(QMainWindow):
 
         layout.addLayout(grid_layout)
 
+    # Function for making all frames for widgets consistent
     def create_section_frame(self, width=None, height=None):
         """Helper function to create a QFrame with consistent styling and size."""
         frame = QFrame()
@@ -632,6 +658,7 @@ class MyWindow(QMainWindow):
             self.update_label_background(block_label, new_block)
 
         print("Block", block, "on the", line, "line has been closed for maintenance!")
+        print("Sending proper signals to prevent trains from entering block Blue #"+str(block)+"...")
         dialog.accept()
 
     # The functionality for user opening a block from maintenance
@@ -798,6 +825,42 @@ class MyWindow(QMainWindow):
             for block in self.occupied_blocks:
                 block_label = self.block_labels[block]
                 self.update_label_background(block_label, block)
+
+            print('-------------Switch Safety-------------')
+            # Perform possible safety meaures relating to the switch
+            for train in self.trains:
+                if train.destination == "STATION: B" and self.switch_status == False and self.occupied_blocks.count(('Blue', 4)):
+                    print('Wrong Switch scenario')
+                    # Prevent train for going the wrong way
+                    train.setSuggestedSpeed(0)
+                    self.train_suggested_speed_label.setText('Suggested Speed = 0 mph')
+                elif train.destination == "STATION: C" and self.switch_status == True and self.occupied_blocks.count(('Blue', 4)):
+                    print('Wrong Switch Scenario')
+                    # Prevent train for going the wrong way
+                    train.setSuggestedSpeed(0)
+                    self.train_suggested_speed_label.setText('Suggested Speed = 0 mph')
+                elif train.destination == "STATION: B" and self.top_light_status == False and self.occupied_blocks.count(('Blue', 6)):
+                    print('Top Light Scenario')
+                    # Prevent train from running the light
+                    train.setSuggestedSpeed(0)
+                    self.train_suggested_speed_label.setText('Suggested Speed = 0 mph')
+                elif train.destination == "STATION: C" and self.bottom_light_status == False and self.occupied_blocks.count(('Blue', 12)):
+                    print('Bottom Light Measure')
+                    # Prevent train from running the light
+                    train.setSuggestedSpeed(0)
+                    self.train_suggested_speed_label.setText('Suggested Speed = 0 mph')
+                elif self.crossing_status == False and self.occupied_blocks.count(('Blue', 3)):
+                    print('Railway Crossing Measure')
+                    # Prevent train from running the railway crossing
+                    train.setSuggestedSpeed(0)
+                    self.train_suggested_speed_label.setText('Suggested Speed = 0 mph')
+                else:
+                    print('Good')
+                    # Keep Suggested Speed the same
+                    if train.suggested_speed == 0:
+                        train.setSuggestedSpeed(50)
+                        self.train_suggested_speed_label.setText('Suggested Speed = 31 mph')
+                print('---------------------------------')
 
     # What happens when the user presses Current Mode button
     def mode_clicked(self):        
