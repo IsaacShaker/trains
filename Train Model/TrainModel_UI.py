@@ -35,6 +35,35 @@ addTrain()
 #train_list[1].passCount=100
 #train_list[1].update_passengers()
 
+# train_list[1].numberOfCars=3
+# train_list[1].calc_total_length()
+# train_list[1].numberOfCars=4
+# train_list[1].calc_total_length()
+
+# train_list[1].serviceBrake=True
+# train_list[1].limit_accel()
+# train_list[1].serviceBrake=False
+# train_list[1].emergencyBrake=True
+# train_list[1].limit_accel()
+# train_list[1].serviceBrake=True
+# train_list[1].limit_accel()
+# train_list[1].serviceBrake=False
+# train_list[1].emergencyBrake=False
+# train_list[1].currAccel=1
+# train_list[1].limit_accel()
+
+# train_list[1].currPower=0
+# train_list[1].engineFailure=False
+# train_list[1].currentVelocity=30
+# #train_list[1].serviceBrake=True
+# train_list[1].calc_total_mass()
+# print(f"Current Mass: {train_list[1].totalMass}")
+# print(f"Current Power: {train_list[1].currPower}")
+# print(f"Engine Failure: {train_list[1].engineFailure}")
+# print(f"Current Velocity: {train_list[1].currentVelocity}")
+# train_list[1].receive_power()
+
+
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -115,11 +144,11 @@ class MainWindow(QMainWindow):
         # Announcement Label
         announcement_label = QLabel("Announcement:")
         announcement_label.setFont(QFont('Arial', 16, QFont.Weight.Bold))  # Set font size for the announcement label
-        announcement_text = QLabel("Stay clear of doors")
-        announcement_text.setFont(QFont('Arial', 20, QFont.Weight.Bold))  # Set larger font for the announcement text
-        announcement_text.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center align the announcement text
+        self.announcement_text = QLabel("Stay clear of doors")
+        self.announcement_text.setFont(QFont('Arial', 20, QFont.Weight.Bold))  # Set larger font for the announcement text
+        self.announcement_text.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center align the announcement text
         main_layout.addWidget(announcement_label)
-        main_layout.addWidget(announcement_text)
+        main_layout.addWidget(self.announcement_text)
 
         # Create a horizontal layout for left and right sections for group boxes
         horizontal_layout = QHBoxLayout()
@@ -143,15 +172,15 @@ class MainWindow(QMainWindow):
         # Velocity
         velocity_layout = QHBoxLayout()
         velocity_layout.addWidget(QLabel("Velocity:"))
-        velocity_label = QLabel("60 mph")  # Change from button to QLabel
-        velocity_layout.addWidget(velocity_label)
+        self.velocity_label = QLabel("60 mph")  # Change from button to QLabel
+        velocity_layout.addWidget(self.velocity_label)
         speed_layout.addLayout(velocity_layout)
 
         # Acceleration
         acceleration_layout = QHBoxLayout()
         acceleration_layout.addWidget(QLabel("Acceleration:"))
-        acceleration_label = QLabel("2 feet/s²")  # Change from button to QLabel
-        acceleration_layout.addWidget(acceleration_label)
+        self.acceleration_label = QLabel("2 ft/s^2")  # Change from button to QLabel
+        acceleration_layout.addWidget(self.acceleration_label)
         speed_layout.addLayout(acceleration_layout)
 
         speed_group_box.setLayout(speed_layout)
@@ -163,36 +192,36 @@ class MainWindow(QMainWindow):
         # Length
         length_layout = QHBoxLayout()
         length_layout.addWidget(QLabel("Length:"))
-        length_label = QLabel("105.6 ft")  # Change from button to QLabel
-        length_layout.addWidget(length_label)
+        self.length_label = QLabel("105.6 ft")  # Change from button to QLabel
+        length_layout.addWidget(self.length_label)
         train_dimensions_layout.addLayout(length_layout)
 
         # Width
         width_layout = QHBoxLayout()
         width_layout.addWidget(QLabel("Width:"))
-        width_label = QLabel("8.6 ft")  # Change from button to QLabel
-        width_layout.addWidget(width_label)
+        self.width_label = QLabel("8.6 ft")  # Change from button to QLabel
+        width_layout.addWidget(self.width_label)
         train_dimensions_layout.addLayout(width_layout)
 
         # Height
         height_layout = QHBoxLayout()
         height_layout.addWidget(QLabel("Height:"))
-        height_label = QLabel("11.2 ft")  # Change from button to QLabel
-        height_layout.addWidget(height_label)
+        self.height_label = QLabel("11.2 ft")  # Change from button to QLabel
+        height_layout.addWidget(self.height_label)
         train_dimensions_layout.addLayout(height_layout)
 
         # Mass
         mass_layout = QHBoxLayout()
         mass_layout.addWidget(QLabel("Mass:"))
-        mass_label = QLabel("90,000 lbs")  # Change from button to QLabel
-        mass_layout.addWidget(mass_label)
+        self.mass_label = QLabel("90,000 lbs")  # Change from button to QLabel
+        mass_layout.addWidget(self.mass_label)
         train_dimensions_layout.addLayout(mass_layout)
 
         # Number of Cars
         num_cars_layout = QHBoxLayout()
         num_cars_layout.addWidget(QLabel("Number of Cars:"))
-        num_cars_label = QLabel("1")  # Change from button to QLabel
-        num_cars_layout.addWidget(num_cars_label)
+        self.num_cars_label = QLabel("1")  # Change from button to QLabel
+        num_cars_layout.addWidget(self.num_cars_label)
         train_dimensions_layout.addLayout(num_cars_layout)
 
         train_dimensions_group_box.setLayout(train_dimensions_layout)
@@ -204,22 +233,22 @@ class MainWindow(QMainWindow):
         # Passenger Count
         passenger_count_layout = QHBoxLayout()
         passenger_count_layout.addWidget(QLabel("Passenger Count:"))
-        passenger_count_label = QLabel("50")  # Change from button to QLabel
-        passenger_count_layout.addWidget(passenger_count_label)
+        self.passenger_count_label = QLabel("50")  # Change from button to QLabel
+        passenger_count_layout.addWidget(self.passenger_count_label)
         train_status_layout.addLayout(passenger_count_layout)
 
         # Crew Count
         crew_count_layout = QHBoxLayout()
         crew_count_layout.addWidget(QLabel("Crew Count:"))
-        crew_count_label = QLabel("2")  # Change from button to QLabel
-        crew_count_layout.addWidget(crew_count_label)
+        self.crew_count_label = QLabel("2")  # Change from button to QLabel
+        crew_count_layout.addWidget(self.crew_count_label)
         train_status_layout.addLayout(crew_count_layout)
 
         # Temperature
         temperature_layout = QHBoxLayout()
         temperature_layout.addWidget(QLabel("Temperature:"))
-        temperature_label = QLabel("68 °F")  # Change from button to QLabel
-        temperature_layout.addWidget(temperature_label)
+        self.temperature_label = QLabel("68 °F")  # Change from button to QLabel
+        temperature_layout.addWidget(self.temperature_label)
         train_status_layout.addLayout(temperature_layout)
 
         train_status_group_box.setLayout(train_status_layout)
@@ -507,28 +536,25 @@ class MainWindow(QMainWindow):
         selected_train = train_list[selected_index]
         self.train_select_update(selected_train)
 
-    #This function will update all other information in UI to match the train which was selected
-    def train_select_update(self, selected_train): # i is an int which represent the index of the train
-            
-        #update every widget in the UI
-        self.velocity_label.setText(selected_train.currentVelocity)
-        self.acceleration_label.setText(selected_train.acceleration)
-            
-        update_headlights_state(selected_train.headLights)
+    def train_select_update(self, selected_train):
+        # Convert float values to strings before setting the text
+        self.velocity_label.setText(str(selected_train.currentVelocity))
+        self.acceleration_label.setText(str(selected_train.currAccel))
+        
+        self.update_headlights_state(selected_train.headLights)
+        self.update_inside_lights_state(selected_train.insideLights)
+        self.update_door_states(selected_train.rightDoor, selected_train.leftDoor)
+        
+        self.height_label.setText(str(selected_train.trainHeight))
+        self.width_label.setText(str(selected_train.trainWidth))
+        self.length_label.setText(str(selected_train.trainLength))
+        self.mass_label.setText(str(selected_train.totalMass))
+        self.num_cars_label.setText(str(selected_train.numberOfCars))
+        
+        self.temperature_label.setText(str(selected_train.temperature))
+        self.crew_count_label.setText(str(selected_train.crewCount))
+        self.passenger_count_label.setText(str(selected_train.passCount))
 
-        update_inside_lights_state(selected_train.insideLights)
-
-        update_door_states(selected_train.rightDoor, selected_train.leftDoor)
-
-        self.height_label.setText(selected_train.trainHeight)
-        self.width_label.setText(selected_train.trainWidth)
-        self.length_label.setText(selected_train.trainLength)
-        self.mass_label.setText(selected_train.trainMass)
-        self.num_cars_label.setText(selected_train.numberOfCars)
-
-        self.temperature_label.setText(selected_train.temperature)
-        self.crew_count_label.setText(select_train.crewCount)
-        self.passenger_count_label.setText(selected_train.passCount)
 
 # Run the application
 if __name__ == "__main__":
