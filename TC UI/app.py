@@ -1,13 +1,13 @@
 import sys
 import json
-from PyQt6.QtWidgets import QApplication, QWidget, QTabWidget, QComboBox, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QSpacerItem, QSizePolicy, QCheckBox
-from PyQt6.QtCore import QMargins
-from ModeToggle import ModeToggle
-from AutoToggle import AutoToggle
-from switch_button import SwitchButton
-from traffic_light_buttons import TrafficLightButton
-from crossing_button import CrossingButton
-from block_occupancy import BlockOccupancy
+import copy
+from PyQt6.QtWidgets import QApplication, QWidget, QTabWidget, QComboBox, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton
+from Components.Toggle_Buttons.AutoToggle import AutoToggle
+from Components.Toggle_Buttons.ModeToggle import ModeToggle
+from Components.Switches.Switches import Switches
+from Components.Traffic_Lights.TrafficLights import TrafficLights
+from Components.Crossings.Crossings import Crossings
+from Components.Block_Occupancy.block_occupancy import BlockOccupancy
 
 # Load the JSON file with block and switch data
 with open('track_model.json', 'r') as json_file:
@@ -23,7 +23,8 @@ class MyApp(QWidget):
         self.line = "Blue"
         self.mode = "HW"
         self.auto = True
-
+        self.data_main = copy.deepcopy(data)
+        self.data_test = copy.deepcopy(data)
         self.saved_values = []  # List to store saved input values
 
         with open("styles.qss", "r") as f:
@@ -41,8 +42,9 @@ class MyApp(QWidget):
 
         self.create_main_tab()
         self.create_test_tab()
+        self.tabs.currentChanged.connect(self.update_content)
 
-    def create_shared_content(self, editable):
+    def create_shared_content(self, test=False):
         tab_widget = QWidget()
 
         # Main layout for the entire tab
@@ -55,6 +57,7 @@ class MyApp(QWidget):
         lines_dropdown_menu = QComboBox()
         lines_dropdown_menu.addItems(["Blue", "Green", "Red"])
         lines_dropdown_menu.setFixedHeight(40)  # Adjust height for a consistent look
+        lines_dropdown_menu.setCurrentText(self.line)
         left_layout.addWidget(lines_dropdown_menu)
 
         # Add label for Block Occupancy
@@ -62,9 +65,7 @@ class MyApp(QWidget):
 
         # Create scroll area for block occupancy (left side)
         block_scroll = QScrollArea()
-        block_scroll_widget = QWidget()
-        block_layout = QVBoxLayout(block_scroll_widget)
-        block_layout.setSpacing(10)  # Ensure consistent spacing for checkboxes
+        block_scroll_widget = BlockOccupancy((self.data_test if test else self.data_main), self.line, self.mode, test)
         block_scroll.setWidget(block_scroll_widget)
         block_scroll.setWidgetResizable(True)
         left_layout.addWidget(block_scroll)
@@ -73,11 +74,11 @@ class MyApp(QWidget):
         right_layout = QVBoxLayout()
 
         # Add HW/SW toggle button
-        hw_sw_toggle_button = QPushButton("Hardware")
+        hw_sw_toggle_button = ModeToggle(self.mode)
         right_layout.addWidget(hw_sw_toggle_button)
 
         # Add Manual/Auto toggle button
-        manual_auto_toggle_button = QPushButton("Auto")
+        manual_auto_toggle_button = AutoToggle(self.auto)
         right_layout.addWidget(manual_auto_toggle_button)
 
         # Add label for Traffic Lights
@@ -85,9 +86,7 @@ class MyApp(QWidget):
 
         # Scroll area for traffic lights (right side)
         traffic_lights_scroll = QScrollArea()
-        traffic_lights_widget = QWidget()
-        traffic_lights_layout = QVBoxLayout(traffic_lights_widget)
-        traffic_lights_layout.setSpacing(10)  # Ensure consistent spacing for traffic light buttons
+        traffic_lights_widget = TrafficLights((self.data_test if test else self.data_main), self.line, self.mode, editable=(False if self.auto else True))
         traffic_lights_scroll.setWidget(traffic_lights_widget)
         traffic_lights_scroll.setWidgetResizable(True)
         right_layout.addWidget(traffic_lights_scroll)
@@ -97,9 +96,7 @@ class MyApp(QWidget):
 
         # Scroll area for switches (right side)
         switches_scroll = QScrollArea()
-        switches_widget = QWidget()
-        switches_layout = QVBoxLayout(switches_widget)
-        switches_layout.setSpacing(10)  # Ensure consistent spacing for switches
+        switches_widget = Switches((self.data_test if test else self.data_main), self.line, self.mode, editable=(False if self.auto else True))
         switches_scroll.setWidget(switches_widget)
         switches_scroll.setWidgetResizable(True)
         right_layout.addWidget(switches_scroll)
@@ -109,117 +106,25 @@ class MyApp(QWidget):
 
         # Scroll area for crossings (right side)
         crossings_scroll = QScrollArea()
-        crossings_widget = QWidget()
-        crossings_layout = QVBoxLayout(crossings_widget)
-        crossings_layout.setSpacing(10)  # Ensure consistent spacing for crossings
+        crossings_widget = Crossings((self.data_test if test else self.data_main), self.line, self.mode)
         crossings_scroll.setWidget(crossings_widget)
         crossings_scroll.setWidgetResizable(True)
         right_layout.addWidget(crossings_scroll)
 
-        # Function to update content when switching lines
-        def update_content():
-            self.line = lines_dropdown_menu.currentText()
-
-            # Clear the current content in all scroll areas
-            clear_layout(block_layout)
-            clear_layout(traffic_lights_layout)
-            clear_layout(switches_layout)
-            clear_layout(crossings_layout)
-
-            # Check if the selected line exists in the data
-            if self.line in data:
-                # Check the mode (HW/SW) and make sure the mode exists in the JSON
-                if self.mode in data[self.line]:
-                    mode_data = data[self.line][self.mode]
-
-                    # Add blocks (if any)
-                    if 'blocks' in mode_data and mode_data['blocks']:
-                        for block in mode_data['blocks']:
-                            block_checkbox = QCheckBox(f"Block {block['block']}")
-                            block_checkbox.setChecked(block['occupied'])
-                            block_checkbox.setFixedHeight(40)  # Ensure consistent height for block checkboxes
-                            block_layout.addWidget(block_checkbox)
-
-                    # Add traffic lights (if any)
-                    if 'traffic_lights' in mode_data and mode_data['traffic_lights']:
-                        for light in mode_data['traffic_lights']:
-                            traffic_light_button = TrafficLightButton(
-                                name_1=light['name_1'],
-                                name_2=light['name_2']
-                            )
-                            traffic_light_button.setFixedHeight(40)  # Ensure consistent height for traffic light buttons
-                            traffic_lights_layout.addWidget(traffic_light_button)
-
-                    # Add switches (if any)
-                    if 'switches' in mode_data and mode_data['switches']:
-                        for switch in mode_data['switches']:
-                            switch_button = SwitchButton(
-                                name_1=switch['name_1'],
-                                name_2=switch['name_2']
-                            )
-                            switch_button.setFixedHeight(40)  # Ensure consistent height for switch buttons
-                            switches_layout.addWidget(switch_button)
-
-                    # Add crossings (if any)
-                    if 'crossings' in mode_data and mode_data['crossings']:
-                        for crossing in mode_data['crossings']:
-                            crossing_button = CrossingButton(
-                                name_1=crossing['name_1'],
-                                name_2=crossing['name_2']
-                            )
-                            crossing_button.setFixedHeight(40)  # Ensure consistent height for crossing buttons
-                            crossings_layout.addWidget(crossing_button)
-
-                # Set updated widgets and layouts
-                block_scroll.setWidget(block_scroll_widget)
-                traffic_lights_scroll.setWidget(traffic_lights_widget)
-                switches_scroll.setWidget(switches_widget)
-                crossings_scroll.setWidget(crossings_widget)
-
-        # Function to clear layouts
-        def clear_layout(layout):
-            while layout.count():
-                child = layout.takeAt(0)
-                if child.widget():
-                    child.widget().deleteLater()
-
         # Connect dropdown menu to update content function
-        lines_dropdown_menu.currentIndexChanged.connect(update_content)
+        lines_dropdown_menu.currentIndexChanged.connect(lambda: self.update_line(lines_dropdown_menu))
 
-        # Toggle between Hardware and Software modes
-        def toggle_hw_sw_mode():
-            if self.mode == "HW":
-                self.mode = "SW"
-                hw_sw_toggle_button.setText("Software")  # Change text to "Software"
-            else:
-                self.mode = "HW"
-                hw_sw_toggle_button.setText("Hardware")  # Change text to "Hardware"
-            update_content()
-
-        hw_sw_toggle_button.clicked.connect(toggle_hw_sw_mode)
-
-        # Toggle between Manual and Auto modes
-        def toggle_manual_auto_mode():
-            if manual_auto_toggle_button.text() == "Auto":
-                manual_auto_toggle_button.setText("Manual")
-                # Add additional logic for switching to Manual mode here
-            else:
-                manual_auto_toggle_button.setText("Auto")
-                # Add additional logic for switching to Auto mode here
-
-        manual_auto_toggle_button.clicked.connect(toggle_manual_auto_mode)
-
-        # Initial content load
-        update_content()
+        hw_sw_toggle_button.clicked.connect(self.toggle_hw_sw_mode)
+        manual_auto_toggle_button.clicked.connect(self.toggle_manual_auto_mode)
 
         # Add left and right layouts to the main layout
         main_layout.addLayout(left_layout)
         main_layout.addLayout(right_layout)
 
         return tab_widget
-
+    
     def create_main_tab(self):
-        self.main_tab = self.create_shared_content(editable=False)
+        self.main_tab = self.create_shared_content(test=False)
         self.tabs.addTab(self.main_tab, "Main")
 
     def create_test_tab(self):
@@ -256,11 +161,95 @@ class MyApp(QWidget):
         test_layout.addLayout(input_layout_in_frame)
 
         # Create and add the shared content (similar to main tab but editable)
-        test_content = self.create_shared_content(editable=True)
+        test_content = self.create_shared_content(test=True)
         test_layout.addWidget(test_content)
 
         self.tabs.addTab(self.test_tab, "Test")
 
+    # Function to update content when switching lines, mode, or Auto/Manual
+    def update_content(self):
+        current_tab_index = self.tabs.currentIndex()
+        
+        if self.tabs.tabText(current_tab_index) == "Test":
+            dropdown = self.test_tab.findChild(QComboBox)
+            if dropdown:
+                dropdown.setCurrentText(self.line)
+            
+            hw_sw_btn = self.test_tab.findChild(ModeToggle)
+            if hw_sw_btn:
+                hw_sw_btn.refresh(self.mode)
+            
+            man_auto_btn = self.test_tab.findChild(AutoToggle)
+            if man_auto_btn:
+                man_auto_btn.refresh(self.auto)
+
+            block_occupancy = self.test_tab.findChild(BlockOccupancy)
+            if block_occupancy:
+                block_occupancy.refresh(self.line, self.mode, editable=True)
+
+            traffic_lights = self.test_tab.findChild(TrafficLights)
+            if traffic_lights:
+                traffic_lights.refresh(self.line, self.mode, editable=(False if self.auto else True))
+            
+            crossings = self.test_tab.findChild(Crossings)
+            if crossings:
+                crossings.refresh(self.line, self.mode, editable=(False if self.auto else True))
+            
+            switches = self.test_tab.findChild(Switches)
+            if switches:
+                switches.refresh(self.line, self.mode, editable=(False if self.auto else True))
+
+        if self.tabs.tabText(current_tab_index) == "Main":
+            dropdown = self.main_tab.findChild(QComboBox)
+            if dropdown:
+                dropdown.setCurrentText(self.line)
+            
+            hw_sw_btn = self.main_tab.findChild(ModeToggle)
+            if hw_sw_btn:
+                hw_sw_btn.refresh(self.mode)
+            
+            man_auto_btn = self.main_tab.findChild(AutoToggle)
+            if man_auto_btn:
+                man_auto_btn.refresh(self.auto)
+            
+            dropdown = self.main_tab.findChild(QComboBox)
+            if dropdown:
+                dropdown.setCurrentText(self.line)
+
+            block_occupancy = self.main_tab.findChild(BlockOccupancy)
+            if block_occupancy:
+                block_occupancy.refresh(self.line, self.mode, editable=False)
+
+            traffic_lights = self.main_tab.findChild(TrafficLights)
+            if traffic_lights:
+                traffic_lights.refresh(self.line, self.mode, editable=(False if self.auto else True))
+            crossings = self.main_tab.findChild(Crossings)
+            if crossings:
+                crossings.refresh(self.line, self.mode, editable=(False if self.auto else True))
+            switches = self.main_tab.findChild(Switches)
+            if switches:
+                switches.refresh(self.line, self.mode, editable=(False if self.auto else True))
+
+    # Swtich between lines
+    def update_line(self, dropdown):
+        self.line = dropdown.currentText()
+        self.update_content()
+
+    # Toggle between Hardware and Software modes
+    def toggle_hw_sw_mode(self):
+        if self.mode == "HW":
+            self.mode = "SW"
+        else:
+            self.mode = "HW"
+        self.update_content()
+
+    # Toggle between Manual and Auto modes
+    def toggle_manual_auto_mode(self):
+        if self.auto == True:
+            self.auto = False
+        else:
+            self.auto = True
+        self.update_content()
 
 
     def save_value(self, text, index):
@@ -270,11 +259,9 @@ class MyApp(QWidget):
         self.saved_values[index] = text
         print(f"Saved value at index {index}: {text}")
 
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MyApp()
     ex.show()
     sys.exit(app.exec())
-
-
-
