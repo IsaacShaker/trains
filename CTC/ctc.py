@@ -1017,12 +1017,12 @@ class MyWindow(QMainWindow):
 
         # Create combo box with options
         combo_box = QComboBox()
-        combo_box.addItems(["Station B", "Station C"])
+        combo_box.addItems(["STATION: B", "STATION: C"])
         h_layout.addWidget(combo_box)
 
         # Create text entry box
         text_entry = QLineEdit()
-        text_entry.setPlaceholderText("HH:MM:SS")
+        text_entry.setPlaceholderText("total time to station w/ dwell (min)")
         h_layout.addWidget(text_entry)
 
         # Add horizontal layout to the main layout
@@ -1038,10 +1038,46 @@ class MyWindow(QMainWindow):
 
     # Create the train object
     def submit_dispatch(self, dialog, station, time):
-        Train0 = Train('Train0', 'Blue', station, time)
+        if len(self.trains) == 0:
+            new_train = 'Train0'
+        else:
+            new_train = 'Train'+str(len(self.trains))
+
+        print(new_train, 'on the Blue line will arrive at', station, 'in', time, 'minutes!')
         rate_string = str(len(self.trains) + 1)+' Trains/hr'
         self.rate_label.setText(rate_string)
-        print('Dispatching',Train0.name, 'on the', Train0.line, 'line, to', Train0.destination, 'at', Train0.arrival_time)
+        new_train = Train(new_train, 'Blue', station, time)
+        if new_train.destination == 'STATION: B':
+            new_train.setAuthority(550)
+            new_train.setSuggestedSpeed(50)
+        elif new_train.destination == 'STATION: C':
+            new_train.setAuthority(500)
+            new_train.setSuggestedSpeed(50)
+        else:
+            print('Station does not exist')
+
+        if len(self.trains) == 0: # If we are adding the first train, delete the label
+            # Remove the current QLabel
+            self.train_data_big_layout.removeWidget(self.train_label)
+            self.train_label.deleteLater()  # Delete QLabel
+        else:
+            # Remove the QComboBox
+            self.train_data_big_layout.removeWidget(self.train_data_combo_box)
+            self.train_data_combo_box.deleteLater() # Delete QComboBox
+
+        self.trains.append(new_train)
+
+        # Create the QComboBox
+        self.train_data_combo_box = QComboBox()
+        self.train_data_combo_box.setPlaceholderText('Train')
+        self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+        for train in self.trains:
+            self.train_data_combo_box.addItem(train.name)
+        self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
+
+        # Add the QComboBox to the layout
+        self.train_data_big_layout.addWidget(self.train_data_combo_box)
         dialog.accept()
 
     # Display the correct data based on the train selected
