@@ -3,36 +3,61 @@
 import time
 import random
 
-class TrainModel:
+from PyQt6.QtCore import pyqtSignal, QObject, QTimer
+
+class TrainModel(QObject):
+
+    temperature_changed = pyqtSignal(float)
+
     def __init__(self):
+        super().__init__()
+        self.adjust_timer = QTimer()
+        self.adjust_timer.timeout.connect(self.update_temperature)
 
         # Initialize variables
+
+        #Train number
+        self.ID=0
+
+        #Key outputs
         self.commandedSpeed = 0.0
         self.currentVelocity = 0.0
         self.currAccel = 0.0
         self.authority = False
         self.power = 0.0
-        self.temperature = 70.0 #F
-        self.stationName = ""
+
+        #Brakes
         self.emergencyBrake = False
         self.serviceBrake = False
+
+        #User mode other outputs
         self.headLights = False
         self.insideLights = False
         self.advertisements = False
-        self.announcements = False
+        self.announcements = ""
         self.rightDoor = False
         self.leftDoor = False
+        self.temperature = 68.0 #F
+        self.commandedTemperature = 0
+
+        #Dimensions
         self.trainLength = 32.2 #m
         self.trainWidth = 2.65 #m
         self.trainHeight = 3.42 #m
-        self.totalMass = 0
+        self.totalMass = 204.65 #tons
         self.numberOfCars = 5
         self.crewCount = 2
         self.passCount = 0
+
+        #Failure Mode
         self.signalPickupFailure = False
         self.engineFailure = False
         self.brakeFailure = False
+
+        self.stationName = ""
         self.atStation = False
+
+        #Calculations
         self.currForce = 0
         self.currPower = 0
         self.samplePeriod = 0.5
@@ -50,20 +75,27 @@ class TrainModel:
         vel=vel*2.2369
         return vel
 
-    def ms2_to_fts2(self, num):
+    def m_to_ft(self, num):
         num=num*3.2808
         return num
 
-    def adjust_temperature(self, target_temperature):
-        while abs(self.temperature - target_temperature) > 0.1:
+    def tons_to_kg(self, mass):
+        mass=mass*907.18474
+        return num
+
+    def start_adjusting_temperature(self):
+        self.adjust_timer.start(100)  # Update every 100 ms
+
+    def update_temperature(self):
+        if abs(self.temperature - self.commandedTemperature) > 0.01:
             # First-order differential equation update
-            self.temperature += .1 * (target_temperature - self.temperature)
-
-            # Simulate time passage (you can adjust the sleep duration)
-            time.sleep(0.1)  # Sleep for 100ms for a smoother transition
+            self.temperature += 0.1 * (self.commandedTemperature - self.temperature)
             print(f"Current Temperature: {self.temperature:.2f}°C")
-
-        print("Target temperature reached.")
+            # Update the temperature label in the UI
+            self.temperature_changed.emit(self.temperature)
+        else:
+            print("Target temperature reached.")
+            self.adjust_timer.stop()  # Stop the timer when the target is reached
 
     def calc_total_mass(self):
     
@@ -112,7 +144,7 @@ class TrainModel:
     #     return vel
 
     def limit_force(self):
-        max_force = self.totalMass * 0.5
+        max_force = tons_to_kg(totalMass) * 0.5
         #If our force passes the max allowed
         if self.currForce > max_force:
             self.currForce = max_force
@@ -179,7 +211,7 @@ class TrainModel:
 
             # ACCELERATION
         if self.totalMass != 0:
-            self.currAccel = self.currForce / self.totalMass  # Ensure totalMass is not zero
+            self.currAccel = self.currForce / (tons_to_kg(self.totalMass))  # Ensure totalMass is not zero
         else:
             self.currAccel = 0
 
