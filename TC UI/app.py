@@ -1,7 +1,10 @@
 import sys
+import os
+import shutil
 import json
 import copy
-from PyQt6.QtWidgets import QApplication, QWidget, QTabWidget, QComboBox, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication, QWidget, QTabWidget, QComboBox, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog
 from Components.Toggle_Buttons.AutoToggle import AutoToggle
 from Components.Toggle_Buttons.ModeToggle import ModeToggle
 from Components.Switches.Switches import Switches
@@ -42,6 +45,7 @@ class MyApp(QWidget):
 
         self.create_main_tab()
         self.create_test_tab()
+        self.create_upload_tab()
         self.tabs.currentChanged.connect(self.update_content)
 
     def create_shared_content(self, test=False):
@@ -166,6 +170,70 @@ class MyApp(QWidget):
 
         self.tabs.addTab(self.test_tab, "Test")
 
+    def create_upload_tab(self):
+        """Creates an upload tab and adds it to the provided QTabWidget."""
+        # Create the upload tab widget
+        upload_tab = QWidget()
+        upload_layout = QVBoxLayout()
+        
+        # Create dropdown menu for line selection
+        lines_dropdown_menu = QComboBox()
+        lines_dropdown_menu.addItems(["Blue", "Green", "Red"])
+        lines_dropdown_menu.setFixedHeight(40)  # Adjust height for a consistent look
+        lines_dropdown_menu.setFixedWidth(120)  # Adjust height for a consistent look
+        lines_dropdown_menu.setCurrentText(self.line)
+        lines_dropdown_menu.currentIndexChanged.connect(lambda: self.update_line(lines_dropdown_menu))
+
+        # Create a label to show the uploaded file path
+        file_label = QLabel("No file uploaded")
+        
+        # Create an upload button
+        upload_button = QPushButton("+")  # Set the button text to a plus sign
+        upload_button.setFixedSize(100, 100)  # Adjust the size to make the plus sign more prominent
+
+        # Style the button to center the plus symbol and make it look larger
+        upload_button.setStyleSheet("font-size: 40px;")
+
+        # Connect the button to the upload_file function
+        upload_button.clicked.connect(lambda: self.upload_file(file_label))
+
+        # Add the label and button to the layout
+        upload_layout.addWidget(lines_dropdown_menu, alignment=Qt.AlignmentFlag.AlignCenter)
+        upload_layout.addWidget(upload_button, alignment=Qt.AlignmentFlag.AlignCenter)
+        upload_layout.addWidget(file_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Set alignment for the entire layout to center
+        upload_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Set the layout for the upload tab
+        upload_tab.setLayout(upload_layout)
+
+        # Add the upload tab to the provided tab widget
+        self.tabs.addTab(upload_tab, "Upload Tab")
+
+    def upload_file(self, file_label):
+        """Handles the file upload process and saves the file to a folder."""
+        # Open a file dialog to select a Python script
+        file_path, _ = QFileDialog.getOpenFileName(None, "Select Python Script", "", "Python Files (*.py)")
+
+        # Check if a file was selected
+        if file_path:
+            # Specify the folder where the uploaded file will be saved
+            save_folder = "./uploaded_scripts"
+            os.makedirs(save_folder, exist_ok=True)  # Create the folder if it doesn't exist
+
+            # Extract the file name from the file path
+            file_name = os.path.basename(file_path)
+            new_file_name = self.line + "_line_PLC.py"
+            # Set the destination path (in the 'uploaded_scripts' folder)
+            destination = os.path.join(save_folder, new_file_name)
+
+            # Copy the selected file to the destination folder
+            shutil.copy(file_path, destination)
+
+            # Update the label to show the uploaded file path
+            file_label.setText(f"Uploaded: {file_name}")
+    
     # Function to update content when switching lines, mode, or Auto/Manual
     def update_content(self):
         current_tab_index = self.tabs.currentIndex()
@@ -250,7 +318,6 @@ class MyApp(QWidget):
         else:
             self.auto = True
         self.update_content()
-
 
     def save_value(self, text, index):
         # Ensure the saved_values list has at least the needed number of elements
