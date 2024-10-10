@@ -17,14 +17,21 @@ class Train_Controller:
         self.i_light = False
         self.o_light = False
         self.failure_engine = False
-        self.failure_brakes = False
+        self.failure_brake = False
         self.failure_signal = False
+        self.station_reached = False
 
         #Floats
         self.k_p = 0.0
         self.k_i = 0.0
         self.power = 0.0
         self.time_world = 0.0
+        self.commanded_power = 0.0
+        self.ek = 0.0
+        self.ek_1 = 0.0
+        self.T = 0.05 #time samples of 50 ms
+        self.uk = 0.0
+        self.uk_1 = 0.0
 
         #Ints
         self.authority = 0
@@ -39,18 +46,12 @@ class Train_Controller:
     #  Function Declaration 
     ############################
 
-    #this function will calculate the velocity
-    def SetActualVelocity():
-        v = 5 #############NOT DONE################
-        return v
 
     #this function will return the setpoint velocity based on the commaned velocity and user inputed set point velocity
     #if the user inputs a value higher than commaned velocity, the set point will default to the commanded velocity
-    def SetSetPointVelocity(user_setpoint_v, commanded_v):
-        if user_setpoint_v > commanded_v:
-            return commanded_v
-        else:
-            return user_setpoint_v
+    def SetSetPointVelocity(self):
+        if float(self.setpoint_velocity) > float(self.commanded_velocity):
+            self.setpoint_velocity = self.commanded_velocity
 
 
     #this function will be for automode to set the lights on or off (WILL HAVE TO ADJUST FOR TUNNELS)
@@ -60,20 +61,46 @@ class Train_Controller:
         else:
             return False                        #lights will be off at other times
 
-    #this function will return true if a failure mode has occured and the E-brake has be pulled. Otherwise it will return false
-    def FailureModes(failure_e, failure_b, failure_s):
-        if failure_e or failure_b or failure_s:
-            return True
-        else:
-            return False
         
     #this function will decode the beacon signal
-    def DecodeSignal():
-        return True
+    def Decode_Signal(self):
 
-    #this function will return the commanded Power
-    def Commaned_Power():
-        return
+        if self.beacon_info == 0:
+            return ""
+        elif self.beacon_info == 1:
+            return "Now Arriving at Station B"
+        elif self.beacon_info == 2:
+            return "Now Arriving at Station C"
+        else:
+            return ""
+
+    #this function will return the commanded Power and will be called every 50 ms
+    def Set_Commanded_Power(self):
+
+        #check setpoint speed first or if any brakes are being pressed
+        if self.setpoint_velocity <= self.actual_velocity or self.s_brake or self.e_brake:
+            self.commanded_power = 0
+            self.ek = 0
+            self.ek_1 = 0
+            self.uk = 0
+            self.uk_1 = 0
+            return
+        
+        #update ek_1 and uk_1
+        self.ek_1 = self.ek
+        self.uk_1 = self.uk
+
+        #calculate current ek (setpoint velocity - actual velocity)
+        self.ek = self.setpoint_velocity - self.actual_velocity
+
+        #calculate uk
+        if self.commanded_power < 120000:   #commanded vs maximum power
+            self.uk = self.uk_1 + self.T/2*(self.ek + self.ek_1)     
+        else:
+            self.uk = self.uk_1
+
+        #calculate commaneded power (kp*ek + ki*uk)
+        self.commanded_power = self.k_p*self.ek + self.k_i*self.uk
 
     # Initialize the counter at the current time (in seconds)
     start_time = time.time()
@@ -81,3 +108,4 @@ class Train_Controller:
     # To get the number of seconds that have passed since the start
     #def get_seconds_since_start():
         #return int(time.time() - start_time)
+
