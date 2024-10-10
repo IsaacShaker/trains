@@ -9,6 +9,7 @@ class TrainModel(QObject):
 
     temperature_changed = pyqtSignal(float)
     power_changed = pyqtSignal(float)
+    passengers_changed = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -36,8 +37,8 @@ class TrainModel(QObject):
         self.insideLights = False
         self.advertisements = False
         self.announcements = ""
-        self.rightDoor = False
-        self.leftDoor = False
+        self.rightDoor = True
+        self.leftDoor = True
         self.temperature = 68.0 #F
         self.commandedTemperature = 0
 
@@ -179,7 +180,7 @@ class TrainModel(QObject):
 
     def update_passengers(self):
         # If the doors are open and the train was not at a station in the previous loop
-        if (not self.leftDoor or not self.rightDoor) and not self.atStation:
+        #if (not self.leftDoor or not self.rightDoor) and not self.atStation:
             self.atStation = True  # Set variable to indicate the train is at a station
             print(f"Current Passengers: {self.passCount}")
             # Randomly generate the number of passengers leaving the train
@@ -197,9 +198,11 @@ class TrainModel(QObject):
             # Calculate new mass based on passenger count
             self.calc_total_mass()
 
+            self.passengers_changed.emit()
+
         #leaving the station
-        elif not self.leftDoor and not self.rightDoor:
-            self.atStation = False  # Reset boolean when the doors are closed
+        #elif not self.leftDoor and not self.rightDoor:
+            #self.atStation = False  # Reset boolean when the doors are closed
 
     def receive_power(self):
         if(self.engineFailure):

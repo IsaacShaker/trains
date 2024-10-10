@@ -16,7 +16,7 @@ from PyQt6.QtWidgets import (
 )
 from TrainModel import TrainModel
 from PyQt6.QtGui import QFont, QPixmap
-from PyQt6.QtCore import QSize
+from PyQt6.QtCore import QSize, QTimer
 from PyQt6.QtCore import Qt
 
 # Define train_list globally
@@ -128,6 +128,7 @@ class MainWindow(QMainWindow):
         # Connect the signal to the slot
         self.selected_train.temperature_changed.connect(self.update_temperature_label)
         self.selected_train.power_changed.connect(self.update_speeds_label)
+        self.selected_train.passengers_changed.connect(self.update_beacon_label)
 
     def create_user_mode_page(self):
         user_mode_widget=QWidget()
@@ -619,17 +620,50 @@ class MainWindow(QMainWindow):
         # Connect mouse events
         self.service_brake_button.pressed.connect(self.apply_service_brake)
         self.service_brake_button.released.connect(self.release_service_brake)
-        layout.addWidget(self.service_brake_button, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Beacon Info Button (Styled Purple)
+        self.beacon_info_button = QPushButton("Send Beacon Info")
+        self.beacon_info_button.setStyleSheet("background-color: #772ce8; color: white;")
+        self.beacon_info_button.setFixedSize(100, 80)
+        self.beacon_info_button.clicked.connect(self.send_beacon_info)
 
         # Create the toggle button
         self.toggle_brake_button = QPushButton("Toggle Service Brake")
-        layout.addWidget(self.toggle_brake_button, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.toggle_brake_button.setStyleSheet("background-color: #772ce8; color: white;")
 
         # Connect the button's click event to the toggle function
         self.toggle_brake_button.clicked.connect(self.toggle_service_brake)
 
+        # Layout for Service Brake, Beacon Info, and Toggle Service Brake buttons
+        bottom_layout = QVBoxLayout()  # Changed to QVBoxLayout to stack the buttons
+        button_row_layout = QHBoxLayout()  # Add a row layout for service brake and beacon
+        button_row_layout.addWidget(self.service_brake_button)
+        button_row_layout.addWidget(self.beacon_info_button)
+        
+        bottom_layout.addLayout(button_row_layout)  # Add the row layout to the bottom layout
+        bottom_layout.addWidget(self.toggle_brake_button)  # Add the toggle button below
+
+        layout.addLayout(bottom_layout)
+
         test_bench_widget.setLayout(layout)
         return test_bench_widget
+
+    #Function to send our beacon info
+    def send_beacon_info(self):
+        print("SEND BEACON")
+        self.selected_train.announcements="Station B"
+        self.selected_train.update_passengers()
+
+    def update_beacon_label(self):
+        self.passenger_count_label.setText(f"{self.selected_train.passCount}")  # Update the UI label with new temperature
+        self.mass_label.setText(f"{self.selected_train.totalMass:.2f}")
+        self.announcement_text.setText(self.selected_train.announcements)
+
+        # Open the right doors
+        self.toggle_right_door_state()
+
+        # Close the right doors after 10 seconds using a QTimer
+        QTimer.singleShot(10000, lambda: self.toggle_right_door_state())  # 10,000 milliseconds = 10 seconds
 
     # Function to handle authority input
     def send_authority(self):
@@ -666,7 +700,6 @@ class MainWindow(QMainWindow):
     def update_speeds_label(self):
         self.velocity_label.setText(f"{self.selected_train.mps_to_mph(self.selected_train.currentVelocity):.2f}")
         self.acceleration_label.setText(f"{self.selected_train.m_to_ft(self.selected_train.currAccel):.2f}")
-
 
     # Function to handle announcement input
     def send_announcement(self):
