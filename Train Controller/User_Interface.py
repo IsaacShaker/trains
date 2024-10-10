@@ -345,7 +345,7 @@ class MainWindow(QMainWindow):
 
 
         #############################################
-        #Addding the frames to the UI
+        #Addding the frames to the Controls UI
         #############################################
         layout.addWidget(driver_widget, 1, 0)
         layout.addWidget(engineer_widget, 5, 0)
@@ -422,6 +422,15 @@ class MainWindow(QMainWindow):
 
         #check manual mode
         self.manual_mode()
+
+
+        #check for errors
+        self.check_errors()
+
+        #update outputs in test bench
+        self.update_outputs()
+        
+
 
 
     

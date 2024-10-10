@@ -81,4 +81,3 @@ class Train_Controller:
     # To get the number of seconds that have passed since the start
     #def get_seconds_since_start():
         #return int(time.time() - start_time)
-
