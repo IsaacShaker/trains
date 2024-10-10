@@ -800,6 +800,9 @@ class MainWindow(QMainWindow):
         #set beacon info in train list
         train_list[self.current_train].beacon_info = input_value
 
+        #set this variable to true so doors open when velocity is 0
+        train_list[self.current_train].station_reached = True
+
         #update display on test bench
         self.update_outputs()
 
@@ -955,6 +958,7 @@ class MainWindow(QMainWindow):
     def open_l_door(self):
         #updates signal to tell train model to open door
         train_list[self.current_train].l_door = True
+        train_list[self.current_train].station_reached = False
 
         #disables button
         self.l_door_button.setEnabled(False)
@@ -979,6 +983,7 @@ class MainWindow(QMainWindow):
         if train_list[self.current_train].manual_mode:
             self.l_door_button.setEnabled(True)
 
+
         print(f"The current train is {self.current_train}")
     
 
@@ -986,6 +991,7 @@ class MainWindow(QMainWindow):
     def open_r_door(self):
         #updates signal to tell train model to open door
         train_list[self.current_train].r_door = True
+        train_list[self.current_train].station_reached = False
 
         #disables button
         self.r_door_button.setEnabled(False)
@@ -1249,6 +1255,11 @@ class MainWindow(QMainWindow):
 
         #update power in test bench
         self.commanded_power_output.setText(f"Commanded Power: {train_list[self.current_train].commanded_power} Watts")
+
+        #check if doors have to open if train has stopped, auhority is 0, and doors haven't opened
+        if train_list[self.current_train].authority == 0 and train_list[self.current_train].actual_velocity == 0 and train_list[self.current_train].station_reached:
+            self.open_l_door()
+            self.open_r_door()
 
 
 

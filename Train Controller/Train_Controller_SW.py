@@ -19,6 +19,7 @@ class Train_Controller:
         self.failure_engine = False
         self.failure_brake = False
         self.failure_signal = False
+        self.station_reached = False
 
         #Floats
         self.k_p = 0.0
