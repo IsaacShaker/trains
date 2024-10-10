@@ -2,7 +2,7 @@ import sys
 import time
 import pandas as pd
 from train import Train
-from TrackController import TrackController
+#from TrackController import TrackController
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem
 from PyQt6.QtCore import Qt, QTimer
 
@@ -271,7 +271,9 @@ class MyWindow(QMainWindow):
             block_number = int(block_text.split()[1])
             new_block = ('Blue', block_number)
             if block.checkState() == Qt.CheckState.Checked:
-                if self.occupied_blocks.count(new_block) == 0:
+                if self.maintenance_blocks.count(new_block) > 0:
+                    print("Train cannot move to block Blue #"+str(block_number)+" since it is under maintenance")
+                elif self.occupied_blocks.count(new_block) == 0 and self.maintenance_blocks.count(new_block) == 0:
                     self.occupied_blocks.append(new_block)
                     self.open_blocks.remove(new_block)
             if block.checkState() == Qt.CheckState.Unchecked:
@@ -644,26 +646,28 @@ class MyWindow(QMainWindow):
     # Handle the selection when 'Submit' is pressed
     def submit_closure(self, dialog, line, block):
         block = int(block)
-        self.maintenance_blocks.append((line, block))
-        self.maintenance_blocks = sorted(self.maintenance_blocks, key=lambda x: x[1])
-        self.update_opening_button_state()
-        self.nates_occupied_blocks.append((line, block))
-        self.nates_occupied_blocks = sorted(self.nates_occupied_blocks, key=lambda x: x[1])
-        self.open_blocks.remove((line, block))
         new_block = (line, block)
+        if self.occupied_blocks.count(new_block) > 0:
+            print('Cannot place block under maintenance since train is occupying block')
+        else:
+            self.maintenance_blocks.append((line, block))
+            self.maintenance_blocks = sorted(self.maintenance_blocks, key=lambda x: x[1])
+            self.update_opening_button_state()
+            self.nates_occupied_blocks.append((line, block))
+            self.nates_occupied_blocks = sorted(self.nates_occupied_blocks, key=lambda x: x[1])
+            self.open_blocks.remove((line, block))
 
-        # Change background color accordingly
-        if new_block in self.block_labels:
-            block_label = self.block_labels[new_block]
-            self.update_label_background(block_label, new_block)
+            # Change background color accordingly
+            if new_block in self.block_labels:
+                block_label = self.block_labels[new_block]
+                self.update_label_background(block_label, new_block)
 
-        print("Block", block, "on the", line, "line has been closed for maintenance!")
-        print("Sending proper signals to prevent trains from entering block Blue #"+str(block)+"...")
-        dialog.accept()
+            print("Block", block, "on the", line, "line has been closed for maintenance!")
+            print("Sending proper signals to prevent trains from entering block Blue #"+str(block)+"...")
+            dialog.accept()
 
     # The functionality for user opening a block from maintenance
     def openingClicked(self):
-        print('in openingClicked')
         dialog = QDialog(self)
         dialog.setWindowTitle("Maintenance Report")
 
@@ -748,6 +752,7 @@ class MyWindow(QMainWindow):
             self.update_label_background(block_label, block)
 
         print("Block", block_line, "on the", block_number, "line has been reopened from maintenance!")
+        print("Sending proper signals to allow trains to enter block Blue #"+str(block_number)+"...")
         dialog.accept()  
 
     # Method to update the Opening button's state dynamically
@@ -906,8 +911,7 @@ class MyWindow(QMainWindow):
         # Open file explorer on the user's device
         file_path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Microsoft Excel Worksheet (*.xlsx);")
         if file_path:
-            print('Now running', file_path)
-            
+            pass            
             try:
                 # Read the Excel file
                 df = pd.read_excel(file_path, na_filter=False)
@@ -1082,7 +1086,6 @@ class MyWindow(QMainWindow):
 
     # Display the correct data based on the train selected
     def train_selected(self, selected_train):
-        print('You selected', selected_train)
         for train in self.trains:
             if train.name == selected_train:
                 my_train = train
