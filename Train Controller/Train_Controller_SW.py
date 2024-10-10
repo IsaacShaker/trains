@@ -45,18 +45,12 @@ class Train_Controller:
     #  Function Declaration 
     ############################
 
-    #this function will calculate the velocity
-    def SetActualVelocity():
-        v = 5 #############NOT DONE################
-        return v
 
     #this function will return the setpoint velocity based on the commaned velocity and user inputed set point velocity
     #if the user inputs a value higher than commaned velocity, the set point will default to the commanded velocity
-    def SetSetPointVelocity(user_setpoint_v, commanded_v):
-        if user_setpoint_v > commanded_v:
-            return commanded_v
-        else:
-            return user_setpoint_v
+    def SetSetPointVelocity(self):
+        if float(self.setpoint_velocity) > float(self.commanded_velocity):
+            self.setpoint_velocity = self.commanded_velocity
 
 
     #this function will be for automode to set the lights on or off (WILL HAVE TO ADJUST FOR TUNNELS)
@@ -82,8 +76,8 @@ class Train_Controller:
     #this function will return the commanded Power and will be called every 50 ms
     def Set_Commanded_Power(self):
 
-        #check setpoint speed first
-        if self.setpoint_velocity <= self.actual_velocity:
+        #check setpoint speed first or if any brakes are being pressed
+        if self.setpoint_velocity <= self.actual_velocity or self.s_brake or self.e_brake:
             self.commanded_power = 0
             self.ek = 0
             self.ek_1 = 0
