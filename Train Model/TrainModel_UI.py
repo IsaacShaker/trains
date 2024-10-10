@@ -127,6 +127,7 @@ class MainWindow(QMainWindow):
 
         # Connect the signal to the slot
         self.selected_train.temperature_changed.connect(self.update_temperature_label)
+        self.selected_train.power_changed.connect(self.update_speeds_label)
 
     def create_user_mode_page(self):
         user_mode_widget=QWidget()
@@ -387,6 +388,14 @@ class MainWindow(QMainWindow):
         self.service_brake_button.setText("Service Brake")
         print("Brakes released.")
 
+    def toggle_service_brake(self):
+        if self.selected_train.serviceBrake:
+            self.release_service_brake()  # If the brake is applied, release it
+            self.toggle_brake_button.setText("Apply Service Brake")  # Change button text
+        else:
+            self.apply_service_brake()  # If the brake is not applied, apply it
+            self.toggle_brake_button.setText("Release Service Brake")  # Change button text
+
     def update_failure_mode_button(self):
         if self.selected_train.engineFailure:
             self.engine_button.setText("Engine Failed")
@@ -612,6 +621,13 @@ class MainWindow(QMainWindow):
         self.service_brake_button.released.connect(self.release_service_brake)
         layout.addWidget(self.service_brake_button, alignment=Qt.AlignmentFlag.AlignCenter)
 
+        # Create the toggle button
+        self.toggle_brake_button = QPushButton("Toggle Service Brake")
+        layout.addWidget(self.toggle_brake_button, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Connect the button's click event to the toggle function
+        self.toggle_brake_button.clicked.connect(self.toggle_service_brake)
+
         test_bench_widget.setLayout(layout)
         return test_bench_widget
 
@@ -643,8 +659,14 @@ class MainWindow(QMainWindow):
             power = float(power_value)
             self.selected_train.currPower = power
             print(f"Power command set to {self.selected_train.currPower} W.")
+            self.selected_train.receive_power()
         except ValueError:
             print("Invalid Power value")
+
+    def update_speeds_label(self):
+        self.velocity_label.setText(f"{self.selected_train.mps_to_mph(self.selected_train.currentVelocity):.2f}")
+        self.acceleration_label.setText(f"{self.selected_train.m_to_ft(self.selected_train.currAccel):.2f}")
+
 
     # Function to handle announcement input
     def send_announcement(self):

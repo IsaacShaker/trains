@@ -8,6 +8,7 @@ from PyQt6.QtCore import pyqtSignal, QObject, QTimer
 class TrainModel(QObject):
 
     temperature_changed = pyqtSignal(float)
+    power_changed = pyqtSignal(float)
 
     def __init__(self):
         super().__init__()
@@ -81,7 +82,7 @@ class TrainModel(QObject):
 
     def tons_to_kg(self, mass):
         mass=mass*907.18474
-        return num
+        return mass
 
     def start_adjusting_temperature(self):
         self.adjust_timer.start(100)  # Update every 100 ms
@@ -144,29 +145,36 @@ class TrainModel(QObject):
     #     return vel
 
     def limit_force(self):
-        max_force = tons_to_kg(totalMass) * 0.5
+        max_force = self.tons_to_kg(self.totalMass) * 0.5
         #If our force passes the max allowed
         if self.currForce > max_force:
             self.currForce = max_force
         #If the power is at 0 and we are not moving or the emergency brake is pulled
-        elif (self.currPower == 0 and self.lastVel == 0) or self.emergencyBrake:
+        elif (self.currPower == 0 and self.lastVel == 0) or self.emergencyBrake or self.signalPickupFailure or self.engineFailure or self.brakeFailure:
             self.currForce = 0
         #If the train is not moving, add limiter so the force is not infinite
         elif self.lastVel == 0:
             self.currForce = max_force
 
     def limit_accel(self):
+        failure_mode_active= self.signalPickupFailure or self.engineFailure or self.signalPickupFailure
         if (self.currAccel > self.ACCELERATION_LIMIT and not self.serviceBrake and not self.emergencyBrake):
             # If all brakes are OFF and self.currAccel is above the limit
             self.currAccel = self.ACCELERATION_LIMIT
-        elif (self.serviceBrake and not self.emergencyBrake): # self.currAccel < self.DECELERATION_LIMIT_SERVICE and
+        elif (self.serviceBrake and not self.emergencyBrake and not failure_mode_active): # self.currAccel < self.DECELERATION_LIMIT_SERVICE and
             # If the service brake is ON and self.currAccel is below the limit
             self.currAccel = self.S_BRAKE_ACC
-        elif (not self.serviceBrake and self.emergencyBrake): # self.currAccel < self.DECELERATION_LIMIT_EMERGENCY and
+        elif (not self.serviceBrake and (self.emergencyBrake or failure_mode_active)): # self.currAccel < self.DECELERATION_LIMIT_EMERGENCY and
             # If the emergency brake is ON and self.currAccel is below the limit
-            self.currAccel = self.E_BRAKE_ACC
-        elif (self.serviceBrake and self.emergencyBrake): # Edge case if both emergency brake and service brake are turned on
-            self.currAccel = self.E_BRAKE_ACC # Emergency brake takes priority
+            if(self.currentVelocity !=0):
+                self.currAccel = self.E_BRAKE_ACC
+            else:
+                self.currAccel = 0
+        elif (self.serviceBrake and (self.emergencyBrake or failure_mode_active)): # Edge case if both emergency brake and service brake are turned on
+            if(self.currentVelocity !=0):
+                self.currAccel = self.E_BRAKE_ACC
+            else:
+                self.currAccel = 0
         print(f"Current Acceleration: {self.currAccel}")
 
     def update_passengers(self):
@@ -204,14 +212,14 @@ class TrainModel(QObject):
             self.currForce = self.currPower / self.currentVelocity
         else:
             self.currForce = 0  # Set force to zero if velocity is zero
-
+        print(f"Force: {self.currForce}")
         self.limit_force()
 
         print(f"Force: {self.currForce}")
 
             # ACCELERATION
         if self.totalMass != 0:
-            self.currAccel = self.currForce / (tons_to_kg(self.totalMass))  # Ensure totalMass is not zero
+            self.currAccel = self.currForce / (self.tons_to_kg(self.totalMass))  # Ensure totalMass is not zero
         else:
             self.currAccel = 0
 
@@ -232,6 +240,10 @@ class TrainModel(QObject):
 
         print(f"Velocity: {self.currentVelocity}")
 
+        
+        self.power_changed.emit(self.temperature)
+
+        self.lastVel=self.currentVelocity
         # currentPosition = 0
         # positionCalc = 0
 
