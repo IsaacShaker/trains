@@ -1038,6 +1038,11 @@ class MainWindow(QMainWindow):
             self.i_light_button.setEnabled(True)
             self.temperature_control.setEnabled(True)
             self.s_brake_button.setEnabled(True)
+
+            #auto brake turns off
+            self.s_brake_released
+            self.s_brake_button.setCheckable(False)
+            self.s_brake_button.setChecked(False)
         else:
             #disable all widgets
             self.manual_widget.setChecked(False)
