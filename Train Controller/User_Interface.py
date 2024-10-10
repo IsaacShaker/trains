@@ -89,7 +89,6 @@ class MainWindow(QMainWindow):
         #Train Selection Tab
         #############################################
 
-
         #create dropdown menu with 3 trains in it already
         self.train_selection = QComboBox(self)
         self.train_selection.addItems(["Train 0", "Train 1", "Train 2"])
@@ -326,7 +325,6 @@ class MainWindow(QMainWindow):
         #############################################
         #Errors
         #############################################
-
 
 
 
