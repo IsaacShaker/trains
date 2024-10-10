@@ -3,7 +3,7 @@ import os
 import shutil
 import json
 import copy
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QApplication, QWidget, QTabWidget, QComboBox, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog
 from Components.Toggle_Buttons.AutoToggle import AutoToggle
 from Components.Toggle_Buttons.ModeToggle import ModeToggle
@@ -11,6 +11,8 @@ from Components.Switches.Switches import Switches
 from Components.Traffic_Lights.TrafficLights import TrafficLights
 from Components.Crossings.Crossings import Crossings
 from Components.Block_Occupancy.block_occupancy import BlockOccupancy
+from Components.PLC_Manager import PLCManager
+
 
 # Load the JSON file with block and switch data
 with open('track_model.json', 'r') as json_file:
@@ -24,11 +26,12 @@ class MyApp(QWidget):
 
         # Initial properties of the UI
         self.line = "Blue"
-        self.mode = "HW"
+        self.mode = "SW"
         self.auto = True
         self.data_main = copy.deepcopy(data)
         self.data_test = copy.deepcopy(data)
         self.saved_values = []  # List to store saved input values
+        self.blue_line_plc_manager = PLCManager(self.data_test["Blue"]["SW"], self.auto)
 
         with open("styles.qss", "r") as f:
             style = f.read()
@@ -48,6 +51,21 @@ class MyApp(QWidget):
         self.create_upload_tab()
         self.tabs.currentChanged.connect(self.update_content)
 
+        # Create a QTimer instance
+        self.update_ui_timer = QTimer(self)
+
+        # Connect the timer's timeout signal to the update_content method
+        self.update_ui_timer.timeout.connect(self.update_content)
+
+        # Start the timer to call update_content every 500 milliseconds
+        self.update_ui_timer.start(500)
+
+    def closeEvent(self, event):
+        """Override the close event to stop the timer before closing."""
+        self.blue_line_plc_manager.stop_current_plc()  # Stop the PLC if running
+        self.update_ui_timer.stop()  # Stop the timer when the app closes
+        event.accept()  # Accept the event to close the window
+        
     def create_shared_content(self, test=False):
         tab_widget = QWidget()
 
@@ -146,20 +164,63 @@ class MyApp(QWidget):
         input_layout_in_frame.setSpacing(10)  # Reduced spacing between input fields and buttons
 
         # Create input fields and save buttons
-        labels = ["Authority", "Suggested Speed", "Switch Bool", "Commanded Speed"]
+        labels = ["Authority", "Suggested Speed", "Switch Suggested", "Commanded Speed"]
 
-        for idx in range(len(labels)):
-            # Create input field
-            input_field = QLineEdit()
-            input_field.setPlaceholderText(f"Enter {labels[idx].lower()}...")
-            input_field.setFixedHeight(30)  # Adjusted input field height
-            input_field.setMinimumWidth(150)  # Ensure input field has a minimum width
-            input_layout_in_frame.addWidget(input_field)
+        # Create input field
+        block_id_input = QLineEdit()
+        block_id_input.setPlaceholderText(f"Enter block id...")
+        block_id_input.setFixedHeight(30)  # Adjusted input field height
+        block_id_input.setMinimumWidth(150)  # Ensure input field has a minimum width
+        input_layout_in_frame.addWidget(block_id_input)
 
-            # Create save button
-            save_button = QPushButton(f"Save {labels[idx]}", clicked=lambda idx=idx: self.save_value(input_field.text(), idx))
-            save_button.setFixedHeight(30)  # Ensure save button doesn't overlap
-            input_layout_in_frame.addWidget(save_button)
+        # Add a spacer item below the input field to create space
+        spacer_widget = QWidget()
+        spacer_widget.setFixedHeight(40)  # Set the height of the spacer
+        input_layout_in_frame.addWidget(spacer_widget)
+        
+        # Create input field
+        authority_input_field = QLineEdit()
+        authority_input_field.setPlaceholderText("Enter Authority (meters) ...")
+        authority_input_field.setFixedHeight(30)  # Adjusted input field height
+        authority_input_field.setMinimumWidth(150)  # Ensure input field has a minimum width
+        input_layout_in_frame.addWidget(authority_input_field)
+        authority_save_button = QPushButton("Save Authority")
+        authority_save_button.setFixedHeight(30)  # Ensure save button doesn't overlap
+        authority_save_button.clicked.connect(lambda: self.save_value(block_id_input.text(), authority_input_field.text(), 0))
+        input_layout_in_frame.addWidget(authority_save_button)
+
+        # Create input field
+        suggest_speed_input_field = QLineEdit()
+        suggest_speed_input_field.setPlaceholderText("Enter Suggested Speed (km/hr) ...")
+        suggest_speed_input_field.setFixedHeight(30)  # Adjusted input field height
+        suggest_speed_input_field.setMinimumWidth(150)  # Ensure input field has a minimum width
+        input_layout_in_frame.addWidget(suggest_speed_input_field)
+        suggest_speed_save_button = QPushButton("Save Suggested Speed")
+        suggest_speed_save_button.setFixedHeight(30)  # Ensure save button doesn't overlap
+        suggest_speed_save_button.clicked.connect(lambda: self.save_value(block_id_input.text(), suggest_speed_input_field.text(), 1))
+        input_layout_in_frame.addWidget(suggest_speed_save_button)
+
+        # Create input field
+        switch_suggest_input_field = QLineEdit()
+        switch_suggest_input_field.setPlaceholderText("Enter Switch Suggestion (0 or 1) ...")
+        switch_suggest_input_field.setFixedHeight(30)  # Adjusted input field height
+        switch_suggest_input_field.setMinimumWidth(150)  # Ensure input field has a minimum width
+        input_layout_in_frame.addWidget(switch_suggest_input_field)
+        switch_suggest_save_button = QPushButton("Save Switch Suggestion")
+        switch_suggest_save_button.setFixedHeight(30)  # Ensure save button doesn't overlap
+        switch_suggest_save_button.clicked.connect(lambda: self.save_value(block_id_input.text(), switch_suggest_input_field.text(), 2))
+        input_layout_in_frame.addWidget(switch_suggest_save_button)
+
+         # Create input field
+        command_speed_input_field = QLineEdit()
+        command_speed_input_field.setPlaceholderText("Enter Commanded Speed (km/hr) ...")
+        command_speed_input_field.setFixedHeight(30)  # Adjusted input field height
+        command_speed_input_field.setMinimumWidth(150)  # Ensure input field has a minimum width
+        input_layout_in_frame.addWidget(command_speed_input_field)
+        command_speed_save_button = QPushButton("Save Commanded Speed")
+        command_speed_save_button.setFixedHeight(30)  # Ensure save button doesn't overlap
+        command_speed_save_button.clicked.connect(lambda: self.save_value(block_id_input.text(),command_speed_input_field.text(), 3))
+        input_layout_in_frame.addWidget(command_speed_save_button)
 
         # Add the input layout to the test layout
         test_layout.addLayout(input_layout_in_frame)
@@ -212,7 +273,9 @@ class MyApp(QWidget):
         self.tabs.addTab(upload_tab, "Upload Tab")
 
     def upload_file(self, file_label):
-        """Handles the file upload process and saves the file to a folder."""
+        """Handles the file upload process, saves the file to a folder, and restarts the PLC program."""
+        global plc_thread, plc_stop_event
+
         # Open a file dialog to select a Python script
         file_path, _ = QFileDialog.getOpenFileName(None, "Select Python Script", "", "Python Files (*.py)")
 
@@ -233,6 +296,14 @@ class MyApp(QWidget):
 
             # Update the label to show the uploaded file path
             file_label.setText(f"Uploaded: {file_name}")
+
+            # Start the new PLC program
+            if self.line == "Blue":
+                self.blue_line_plc_manager.start_new_plc(destination)
+            elif self.line == "Green":
+                pass
+            elif self.line == "Red":
+                pass
     
     # Function to update content when switching lines, mode, or Auto/Manual
     def update_content(self):
@@ -317,14 +388,28 @@ class MyApp(QWidget):
             self.auto = False
         else:
             self.auto = True
+        self.blue_line_plc_manager.update_auto(self.auto)
         self.update_content()
 
-    def save_value(self, text, index):
-        # Ensure the saved_values list has at least the needed number of elements
-        while len(self.saved_values) <= index:
-            self.saved_values.append(None)
-        self.saved_values[index] = text
-        print(f"Saved value at index {index}: {text}")
+    def save_value(self, block_id, text, index):
+        if block_id == "" or text == "":
+            return
+        try:
+            block_id = int(block_id)
+        except Exception as e:
+            print("Error converting block_id to int: " + e)
+            return
+
+        if index == 0:
+            print("Sending Authority to Track Model: {Block_id: " + str(block_id) + ", Meters: " + text + "}" )
+        elif index == 1 or index == 3:
+            print("Sending Suggested/Commanded Speed to Track Model: {Block_id: " + str(block_id) + ", Speed(kh/hr): " + text + "}")
+        elif index == 2:
+            print("Updating Switch Suggestion Internally: {Block_id: " + str(block_id) + ", Switch_Suggest_State: " + text + "}")
+            for switch in self.data_test[self.line][self.mode]['switches']:
+                if switch["from"] == block_id:
+                    switch["suggested_toggle"] = bool(int(text))
+                    break
 
 
 if __name__ == '__main__':

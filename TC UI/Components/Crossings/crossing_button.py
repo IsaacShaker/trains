@@ -19,7 +19,7 @@ class CrossingButton(QPushButton):
             self.data["toggled"] = False
         else:
             self.data["toggled"] = True
-        
+        print("Sending Crossing to CTC and Track Model ...")
         self.set_crossing()
 
     def set_crossing(self):

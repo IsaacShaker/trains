@@ -50,7 +50,7 @@ class BlockOccupancy(QWidget):
         """Saves the new state of the checkbox when the user interacts with the checkboxes"""
         # Get the sender (the checkbox that triggered the state change)
         checkbox = self.sender()
-
+        print("Sending Block Occupancies to CTC ...")
         # Access the corresponding block directly using the index stored in the checkbox
         block_index = checkbox.block_index
         self.track_data[self.line][self.mode]["blocks"][block_index]["occupied"] = checkbox.isChecked()

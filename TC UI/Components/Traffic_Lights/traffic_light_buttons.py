@@ -28,21 +28,9 @@ class TrafficLightButton(QPushButton):
             self.data["toggled"] = False
         else:
             self.data["toggled"] = True
-        
+        print("Sending Traffic Light States to CTC and Track Model ...")
         self.set_light()
 
     def set_editable(self, editable):
         self.setEnabled(editable)  # Enable or disable the button based on mode
-
-    # def get_state(self):
-    #     """Return the current state of the button as a dictionary."""
-    #     return {
-    #         'text': self.text(),
-    #         'color': self.styleSheet()  # You can also store color if needed
-    #     }
-
-    # def set_state(self, state):
-    #     """Set the state of the button based on the provided state dictionary."""
-    #     self.setText(state['text'])
-    #     self.setStyleSheet(state['color'])  # Restore the color
 
