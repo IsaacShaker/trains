@@ -586,7 +586,7 @@ class MainWindow(QMainWindow):
         brake_layout.addWidget(self.e_brake_button)
 
         #############################################
-        #Addding the frames to the Controls UI
+        #Addding the frames to the Controls UI 
         #############################################
         
         #divider between first two columns
@@ -886,9 +886,7 @@ class MainWindow(QMainWindow):
 
         #update outputs in test bench
         self.update_outputs()
-        
-
-
+    
 
     
     #this function will setup the custom font that we will use for all widgets
