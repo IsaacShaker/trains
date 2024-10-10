@@ -15,12 +15,6 @@ class RailroadCrossing:
 
     def get_UorD(self):
         return self.UorD
-    
-    def change_UorD(self):
-        if(self.UorD):
-            self.UorD = False
-        else:
-            self.UorD = True
 
     def set_U(self):
         self.UorD = False

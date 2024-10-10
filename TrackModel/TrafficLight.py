@@ -16,12 +16,6 @@ class TrafficLight:
     def get_RorG(self):
         return self.RorG
     
-    def change_RorG(self):
-        if(self.RorG):
-            self.RorG = False
-        else:
-            self.RorG = True
-    
     def set_R(self):
         self.RorG = False
 

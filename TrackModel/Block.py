@@ -12,12 +12,15 @@ class Block:
         self.cumElevation = cumElevation
         self.occupied = False
         self.beacon = None
+        self.brokenTrack = False
+        self.circuitFailure = False
+        self.powerFailure = False
 
     def display_info(self, index):
         if self.nextBlock == 0:
-            return f"Block {index}:\n\tLine: {self.line} \n\tSection: {self.section} \n\tBlock Number: {self.number} \n\tBlock Length: {self.length} \n\tBlock Grade: {self.grade} \n\tSpeed Limit: {self.speedLimit} \n\tElevation: {self.elevation} \n\tCumulative Elevation: {self.cumElevation} \n\tOccupied: {self.occupied}"
+            return f"Block {index}:\n\tLine: {self.line} \n\tSection: {self.section} \n\tBlock Number: {self.number} \n\tBlock Length: {self.length} \n\tBlock Grade: {self.grade} \n\tSpeed Limit: {self.speedLimit} \n\tElevation: {self.elevation} \n\tCumulative Elevation: {self.cumElevation} \n\tOccupied: {self.occupied}\n\tBroken Track: {self.brokenTrack}\n\tTrack Circuit Failure: {self.circuitFailure}\n\tPower Failure: {self.powerFailure}"
         else:
-            return f"Block {index}:\n\tLine: {self.line} \n\tSection: {self.section} \n\tBlock Number: {self.number} \n\tNext Block: {self.nextBlock.display_num()} \n\tBlock Length: {self.length} \n\tBlock Grade: {self.grade} \n\tSpeed Limit: {self.speedLimit} \n\tElevation: {self.elevation} \n\tCumulative Elevation: {self.cumElevation} \n\tOccupied: {self.occupied}"
+            return f"Block {index}:\n\tLine: {self.line} \n\tSection: {self.section} \n\tBlock Number: {self.number} \n\tNext Block: {self.nextBlock.display_num()} \n\tBlock Length: {self.length} \n\tBlock Grade: {self.grade} \n\tSpeed Limit: {self.speedLimit} \n\tElevation: {self.elevation} \n\tCumulative Elevation: {self.cumElevation} \n\tOccupied: {self.occupied}\n\tBroken Track: {self.brokenTrack}\n\tTrack Circuit Failure: {self.circuitFailure}\n\tPower Failure: {self.powerFailure}"
 
     def display_num(self):
         return f"{self.number}"
@@ -69,3 +72,21 @@ class Block:
     
     def set_beacon(self, beacon):
         self.beacon = beacon
+
+    def change_broken(self):
+        if (self.brokenTrack):
+            self.brokenTrack = False
+        else:
+            self.brokenTrack = True
+
+    def change_circuit(self):
+        if (self.circuitFailure):
+            self.circuitFailure = False
+        else:
+            self.circuitFailure = True
+
+    def change_power(self):
+        if (self.powerFailure):
+            self.powerFailure = False
+        else:
+            self.powerFailure = True

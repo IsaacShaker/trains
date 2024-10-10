@@ -1,7 +1,7 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QTabWidget, QWidget, QLineEdit, QComboBox, QLabel
 from PyQt6.QtCore import QTimer, Qt
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QPixmap, QFont
 from TrackModel import buildTrack
 
 class MainWindow(QMainWindow):
@@ -18,8 +18,11 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tab_widget)
         self.create_tabs()
 
+        #All updating functions, updated every .1 second
         self.train_timer = QTimer()
+        #Does the train movement 
         self.train_timer.timeout.connect(blueTrain.moveTrain)
+        #For authority, speed updates for train, and block occupancy for track
         for i in range(16):
             if i == 0:
                 self.train_timer.timeout.connect(lambda: Yard.if_occupied(blueTrain))
@@ -28,12 +31,10 @@ class MainWindow(QMainWindow):
         self.train_timer.start(100)
 
     def create_tabs(self):
-        #Create Tab1
+        #Create Tab 1 main UI tab with visualization for all elements of track
         tab1 = QWidget()
         self.tab_widget.addTab(tab1, "Main Tab")
         self.tab_widget.setStyleSheet("background-color: #444444; color: white;")
-
-        #self.temp_buttons(tab1)
 
         self.make_blocks(tab1, 110)
 
@@ -49,31 +50,21 @@ class MainWindow(QMainWindow):
 
         self.make_beacons(tab1)
 
-        # Tab 2 Example Tab for Now
+        self.make_failure_buttons(tab1)
+
+        #Tab 2 for test bench
+        #input track changes here
         tab2 = QWidget()
         self.tab_widget.addTab(tab2, "Test Bench")
         self.tab_widget.setStyleSheet("background-color: #444444; color: white;")
-
-        self.make_test_bench_buttons(tab2, -30)
-    
-    def on_button_click(self):
-        print("Button clicked!")
-
-    def button1_click(self):
-        blueBlocks[0].change_occupied()
-
-    def button3_click(self):
-        blueSwitch.change_LorR()
-
-    def button4_click(self):
-        blueTrafficLights[0].change_RorG()
-
-    def button5_click(self):
-        blueRailroadCrossing.change_UorD()
+        
+        self.make_test_bench(tab2, -30)
 
     def update_ui(self):
+        #All "setToolTip" functions are updating the hover information for all objects
         #Constantly update block color based on occupied variable
         for i in range(15):
+            #if occupied hide blue arrow, white is underneath
             if blueBlocks[i].get_occupied():
                 self.blockArrows[i].hide()
             else:
@@ -92,6 +83,7 @@ class MainWindow(QMainWindow):
         self.switchRight.setToolTip(blueSwitch.display_info(0))
         #Constantly update traffic light color based on red or green variable
         for i in range(2):
+            #red is underneath green
             if blueTrafficLights[i].get_RorG():
                 self.greenLight[i].show()
             else:
@@ -115,53 +107,40 @@ class MainWindow(QMainWindow):
         self.beacons[0].setToolTip(blueBeacons[0].display_info())
         self.beacons[1].setToolTip(blueBeacons[1].display_info())
 
-    def temp_buttons(self, tab1):
-        button1 = QPushButton("Change Block 1 Occupancy", tab1)
-        button1.setStyleSheet("background-color: white; color: black;")
-        button1.clicked.connect(self.button1_click)
-        button1.setGeometry(50, 50, 150, 20)
-
-        button3 = QPushButton("Change Switch State", tab1)
-        button3.setStyleSheet("background-color: white; color: black;")
-        button3.clicked.connect(self.button3_click)
-        button3.setGeometry(50, 75, 150, 20)
-
-        button4 = QPushButton("Change Traffic Light 1", tab1)
-        button4.setStyleSheet("background-color: white; color: black;")
-        button4.clicked.connect(self.button4_click)
-        button4.setGeometry(50, 100, 150, 20)
-
-        button5 = QPushButton("Change Railroad Crossing", tab1)
-        button5.setStyleSheet("background-color: white; color: black;")
-        button5.clicked.connect(self.button5_click)
-        button5.setGeometry(50, 125, 150, 20)
-
-    def make_test_bench_buttons(self, tab2, x):
+    def make_test_bench(self, tab2, x):
+        #Column 1 input text
         idStrings = ['Switch ID', 'Crossing Light ID', 'Traffic Light ID', 'Block ID', 'Block ID', 'Block ID']
         self.idLabels = []
         self.idInputs = []
-        varStrings = ['Left or Right', 'Crossing Light ID', 'Traffic Light ID', 'Block ID', 'Block ID', 'Block ID']
+        #Column 2 input text
+        varStrings = ['Left or Right', 'Up or Down', 'Red or Green', 'Authority (m)', 'Cmnd Speed (kmph)', 'Occupation']
         self.varLabels = []
         self.varInputs = []
         self.sendButtons = [] 
+        #For all 6 test bench inputs
         for i in range(6):
+            #Col 1 labels
             self.idLabels.append(QLabel(idStrings[i], tab2))
             self.idLabels[i].setStyleSheet("color: white;")
             self.idLabels[i].setGeometry(10-x, 40 + 40 * i, 100, 20)
 
+            #Col 1 inputs
             self.idInputs.append(QLineEdit(tab2))
             self.idInputs[i].setStyleSheet("background-color: white; color: black;")
             self.idInputs[i].setGeometry(10-x, 60 + 40 * i, 90, 20)
 
+            #Col 2 labels
             self.varLabels.append(QLabel(varStrings[i], tab2))
             self.varLabels[i].setStyleSheet("color: white;")
-            self.varLabels[i].setGeometry(110-x, 40 + 40 * i, 90, 20)
+            self.varLabels[i].setGeometry(110-x, 40 + 40 * i, 140, 20)
 
+            #Send buttons for each test bench input
             self.sendButtons.append(QPushButton("Send", tab2))
             self.sendButtons[i].setStyleSheet("background-color: white; color: black;")
             self.sendButtons[i].clicked.connect(lambda _, index=i: self.sendButton_click(index))
             self.sendButtons[i].setGeometry(220-x, 60 + 40 * i, 50, 20)           
-
+        
+        #Col 2 inputs must be indiividually done because they have different formats for bools
         self.varInputs.append(QComboBox(tab2))
         self.varInputs[0].addItems(['Left', 'Right'])
         self.varInputs[0].setStyleSheet("background-color: white; color: black;")
@@ -191,11 +170,17 @@ class MainWindow(QMainWindow):
         self.varInputs[5].setGeometry(110-x, 60 + 40 * 5, 100, 20)
 
     def sendButton_click(self, i):
+        #test bench button clicked, a specific input must be processed
+        #Column 1 (which is always some form of int ID)
         id = int(self.idInputs[i].text())
+        #Column 2 which can be... 
         if (i == 3 or i == 4):
+            #... String text ...
             var = self.varInputs[i].text()
         else:
+            #... or bool option selections
             var = self.varInputs[i].currentText()
+        #if row 1 input for switch changes
         if i == 0:
             if id == 0:
                 if var == "Left":
@@ -204,6 +189,7 @@ class MainWindow(QMainWindow):
                     blueSwitch.set_R()
             else:
                 print("Index Error sendButton_click function.")
+        #if row 2 input for railroad crossings
         elif i == 1:
             if id == 0:
                 if var == "Up":
@@ -212,6 +198,7 @@ class MainWindow(QMainWindow):
                     blueRailroadCrossing.set_D()
             else:
                 print("Index Error sendButton_click function.")
+        #if row 3 input for traffic lights
         elif i == 2:
             if id <= 1 and id >= 0:
                 if var == "Red":
@@ -220,17 +207,19 @@ class MainWindow(QMainWindow):
                     blueTrafficLights[id].set_G()
             else:
                 print("Index Error sendButton_click function.")
-
+        #if row 4 input authority for specific block changes
         elif i == 3:
             if id <= 15 and id >= 1:
                 print(f"Authority on block {id} set to {var} m")
             else:
                 print("error")
+        #if row 5 input commanded speed for specific block changes
         elif i == 4:
             if id <= 15 and id >= 1:
                 print(f"Commanded Speed on block {id} set to {var} km/h")
             else:
                 print("Index Error sendButton_click function.")
+        #if row 6 input change a blocks occupancy
         elif i == 5:
             if id <= 15 and id >= 1:
                 if var == "Occupied":
@@ -239,6 +228,33 @@ class MainWindow(QMainWindow):
                     blueBlocks[id-1].set_N()
             else:
                 print("Index Error sendButton_click function.")
+
+    def make_failure_buttons(self, tab1):
+        self.failureButtons = []
+        failureText = ['Broken Track', 'Track Circuit Failure', 'Power Failure']
+        for i in range(3):
+            self.failureButtons.append(QPushButton(failureText[i], tab1))
+            self.failureButtons[i].setStyleSheet("background-color: white; color: black;")
+            self.failureButtons[i].clicked.connect(lambda _, index=i: self.send_failure_button_click(index))
+            self.failureButtons[i].setGeometry(220, 230 + 30 * i, 120, 25)  
+
+        self.blockNum = QLineEdit(tab1)
+        self.blockNum.setStyleSheet("background-color: white; color: black;")
+        self.blockNum.setGeometry(220, 200, 70, 25)
+
+        self.blockLabel = QLabel('Block Number:', tab1)
+        self.blockLabel.setStyleSheet("color: white;")
+        self.blockLabel.setGeometry(220, 180, 100, 20)
+
+    def send_failure_button_click(self, i): 
+        num = int(self.blockNum.text()) - 1 
+        if num >= 0 and num <= 15:    
+            if i == 0:
+                blueBlocks[num].change_broken()
+            elif i == 1:
+                blueBlocks[num].change_circuit()
+            elif i == 2:
+                blueBlocks[num].change_power()
 
     def make_blocks(self, tab1, x):
         #White arrows are behind blue arrows so you can show or hide the blue arrows
@@ -340,7 +356,7 @@ class MainWindow(QMainWindow):
     def make_train(self, tab1):
         self.trainLabel = QPushButton("Train Info", tab1)
         self.trainLabel.setStyleSheet("background-color: white; color: black;")
-        self.trainLabel.setGeometry(50, 200, 80, 20)
+        self.trainLabel.setGeometry(50, 200, 80, 25)
 
     def make_stations(self,tab1):
         original_pixmap_station = QPixmap("images/Station.png")
@@ -367,8 +383,7 @@ class MainWindow(QMainWindow):
         self.beacons[1].setGeometry(617, 221, 40, 60)
 
 if __name__ == "__main__":
-
-    Yard, blueBlocks, blueSwitch, blueRailroadCrossing, blueTrafficLights, blueBeacons, blueTrain, blueStations =buildTrack()
+    Yard, blueBlocks, blueSwitch, blueRailroadCrossing, blueTrafficLights, blueBeacons, blueTrain, blueStations = buildTrack()
     app = QApplication(sys.argv)  
     window = MainWindow()          
     window.show()                  

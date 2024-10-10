@@ -18,14 +18,6 @@ class Switch:
     def get_LorR(self):
         return self.LorR
     
-    def change_LorR(self):
-        if(self.LorR):
-            self.LorR = False
-            self.startBlock.set_next_block(self.leftBlock)
-        else:
-            self.LorR = True
-            self.startBlock.set_next_block(self.rightBlock)
-    
     def set_L(self):
         self.LorR = False
         self.startBlock.set_next_block(self.leftBlock)
