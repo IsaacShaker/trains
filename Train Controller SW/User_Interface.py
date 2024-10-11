@@ -39,8 +39,8 @@ add_train()
 add_train()
 add_train()
 train_list[0].authority = 200
-train_list[1].authority = 400
-train_list[2].authority = 50
+train_list[1].authority = 250
+train_list[2].authority = 100
 
 train_list[0].actual_velocity = 10
 train_list[0].commanded_velocity = 18
@@ -1202,7 +1202,7 @@ class MainWindow(QMainWindow):
     def update_outputs(self):
         #update test bench outputs
 
-        self.commanded_power_output.setText(f"Commanded Power: {train_list[self.current_train].commanded_power} Watts")
+        self.commanded_power_output.setText(f"Commanded Power: {train_list[self.current_train].commanded_power:.2f} Watts")
         self.pa_announcement_output.setText(f"PA Announcement: {train_list[self.current_train].Decode_Signal()}")
 
 
@@ -1254,7 +1254,7 @@ class MainWindow(QMainWindow):
         train_list[self.current_train].Set_Commanded_Power()
 
         #update power in test bench
-        self.commanded_power_output.setText(f"Commanded Power: {train_list[self.current_train].commanded_power} Watts")
+        self.commanded_power_output.setText(f"Commanded Power: {train_list[self.current_train].commanded_power:.2f} Watts")
 
         #check if doors have to open if train has stopped, auhority is 0, and doors haven't opened
         if train_list[self.current_train].authority == 0 and train_list[self.current_train].actual_velocity == 0 and train_list[self.current_train].station_reached:

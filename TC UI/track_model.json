@@ -176,6 +176,11 @@
           "name_1": "Block 11 - Red",
           "name_2": "Block 11 - Green",
           "toggled": false
+        },
+        {
+          "name_1": "New Light",
+          "name_2": "something",
+          "toggled": false
         }
       ],
       "crossings": [
@@ -203,7 +208,10 @@
   },
   "Green": {
     "HW": {
-      "blocks": [],
+      "blocks": [{
+        "block": "For Demo",
+        "occupied": false
+      }],
       "switches": [],
       "traffic_lights": [],
       "crossings": []

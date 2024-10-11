@@ -32,6 +32,7 @@ class MyApp(QWidget):
         self.data_test = copy.deepcopy(data)
         self.saved_values = []  # List to store saved input values
         self.blue_line_plc_manager = PLCManager(self.data_test["Blue"]["SW"], self.auto)
+        self.blue_line_plc_manager_HW = PLCManager(self.data_test["Blue"]["HW"], self.auto)
 
         with open("styles.qss", "r") as f:
             style = f.read()
