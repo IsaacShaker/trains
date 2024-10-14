@@ -1,3 +1,5 @@
+import pandas as pd
+
 class Train:
 
     def __init__(self, name, line, destination, arrival_time):
@@ -30,3 +32,11 @@ class Train:
 
     def setStatus(self, status):
         self.status = status
+
+    def calcAuthority(self, station):
+        # Open the track layout
+        file_path = 'C:/Trains C/trains/Track Layout & Vehicle Data vF5.xlsx'
+        df = pd.read_excel(file_path, sheet_name = 'Blue Line')
+
+        # Calculate the authority for the train
+        
