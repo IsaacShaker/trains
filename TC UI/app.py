@@ -1,13 +1,18 @@
 import sys
+import os
+import shutil
 import json
-from PyQt6.QtWidgets import QApplication, QWidget, QTabWidget, QComboBox, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QSpacerItem, QSizePolicy, QCheckBox
-from PyQt6.QtCore import QMargins
-from ModeToggle import ModeToggle
+import copy
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtWidgets import QApplication, QWidget, QTabWidget, QComboBox, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog
 from AutoToggle import AutoToggle
-from switch_button import SwitchButton
-from traffic_light_buttons import TrafficLightButton
-from crossing_button import CrossingButton
+from ModeToggle import ModeToggle
+from Switches import Switches
+from TrafficLights import TrafficLights
+from Crossings import Crossings
 from block_occupancy import BlockOccupancy
+from PLC_Manager import PLCManager
+
 
 # Load the JSON file with block and switch data
 with open('track_model.json', 'r') as json_file:
@@ -23,8 +28,11 @@ class MyApp(QWidget):
         self.line = "Blue"
         self.mode = "HW"
         self.auto = True
-
+        self.data_main = copy.deepcopy(data)
+        self.data_test = copy.deepcopy(data)
         self.saved_values = []  # List to store saved input values
+        self.blue_line_plc_manager = PLCManager(self.data_test["Blue"]["HW"], self.auto)
+        self.blue_line_plc_manager_HW = PLCManager(self.data_test["Blue"]["HW"], self.auto)
 
         with open("styles.qss", "r") as f:
             style = f.read()
@@ -41,8 +49,24 @@ class MyApp(QWidget):
 
         self.create_main_tab()
         self.create_test_tab()
+        self.tabs.currentChanged.connect(self.update_content)
 
-    def create_shared_content(self, editable):
+        # Create a QTimer instance
+        self.update_ui_timer = QTimer(self)
+
+        # Connect the timer's timeout signal to the update_content method
+        self.update_ui_timer.timeout.connect(self.update_content)
+
+        # Start the timer to call update_content every 500 milliseconds
+        self.update_ui_timer.start(500)
+
+    def closeEvent(self, event):
+        """Override the close event to stop the timer before closing."""
+        self.blue_line_plc_manager.stop_current_plc()  # Stop the PLC if running
+        self.update_ui_timer.stop()  # Stop the timer when the app closes
+        event.accept()  # Accept the event to close the window
+        
+    def create_shared_content(self, test=False):
         tab_widget = QWidget()
 
         # Main layout for the entire tab
@@ -55,29 +79,43 @@ class MyApp(QWidget):
         lines_dropdown_menu = QComboBox()
         lines_dropdown_menu.addItems(["Blue", "Green", "Red"])
         lines_dropdown_menu.setFixedHeight(40)  # Adjust height for a consistent look
+        lines_dropdown_menu.setCurrentText(self.line)
         left_layout.addWidget(lines_dropdown_menu)
+
+        # Create a label to show the uploaded file path
+        file_label = QLabel("No file uploaded")
+        left_layout.addWidget(file_label)
+
+        # Create an upload button
+        upload_button = QPushButton("+")  # Set the button text to a plus sign
+        upload_button.setFixedSize(100, 40)  # Adjust the size to make the plus sign more prominent
+
+        # Style the button to center the plus symbol and make it look larger
+        upload_button.setStyleSheet("font-size: 20px;")
+
+        # Connect the button to the upload_file function
+        upload_button.clicked.connect(lambda: self.upload_file(file_label))
+        left_layout.addWidget(upload_button, stretch=1)
 
         # Add label for Block Occupancy
         left_layout.addWidget(QLabel("Block Occupancy"))
 
         # Create scroll area for block occupancy (left side)
         block_scroll = QScrollArea()
-        block_scroll_widget = QWidget()
-        block_layout = QVBoxLayout(block_scroll_widget)
-        block_layout.setSpacing(10)  # Ensure consistent spacing for checkboxes
+        block_scroll_widget = BlockOccupancy((self.data_test if test else self.data_main), self.line, self.mode, test)
         block_scroll.setWidget(block_scroll_widget)
         block_scroll.setWidgetResizable(True)
-        left_layout.addWidget(block_scroll)
+        left_layout.addWidget(block_scroll, stretch=4)
 
         # Right side layout for buttons (traffic lights, switches, crossings)
         right_layout = QVBoxLayout()
 
         # Add HW/SW toggle button
-        hw_sw_toggle_button = QPushButton("Hardware")
+        hw_sw_toggle_button = ModeToggle(self.mode)
         right_layout.addWidget(hw_sw_toggle_button)
 
         # Add Manual/Auto toggle button
-        manual_auto_toggle_button = QPushButton("Auto")
+        manual_auto_toggle_button = AutoToggle(self.auto)
         right_layout.addWidget(manual_auto_toggle_button)
 
         # Add label for Traffic Lights
@@ -85,9 +123,7 @@ class MyApp(QWidget):
 
         # Scroll area for traffic lights (right side)
         traffic_lights_scroll = QScrollArea()
-        traffic_lights_widget = QWidget()
-        traffic_lights_layout = QVBoxLayout(traffic_lights_widget)
-        traffic_lights_layout.setSpacing(10)  # Ensure consistent spacing for traffic light buttons
+        traffic_lights_widget = TrafficLights((self.data_test if test else self.data_main), self.line, self.mode, editable=(False if self.auto else True))
         traffic_lights_scroll.setWidget(traffic_lights_widget)
         traffic_lights_scroll.setWidgetResizable(True)
         right_layout.addWidget(traffic_lights_scroll)
@@ -97,9 +133,7 @@ class MyApp(QWidget):
 
         # Scroll area for switches (right side)
         switches_scroll = QScrollArea()
-        switches_widget = QWidget()
-        switches_layout = QVBoxLayout(switches_widget)
-        switches_layout.setSpacing(10)  # Ensure consistent spacing for switches
+        switches_widget = Switches((self.data_test if test else self.data_main), self.line, self.mode, editable=(False if self.auto else True))
         switches_scroll.setWidget(switches_widget)
         switches_scroll.setWidgetResizable(True)
         right_layout.addWidget(switches_scroll)
@@ -109,117 +143,25 @@ class MyApp(QWidget):
 
         # Scroll area for crossings (right side)
         crossings_scroll = QScrollArea()
-        crossings_widget = QWidget()
-        crossings_layout = QVBoxLayout(crossings_widget)
-        crossings_layout.setSpacing(10)  # Ensure consistent spacing for crossings
+        crossings_widget = Crossings((self.data_test if test else self.data_main), self.line, self.mode)
         crossings_scroll.setWidget(crossings_widget)
         crossings_scroll.setWidgetResizable(True)
         right_layout.addWidget(crossings_scroll)
 
-        # Function to update content when switching lines
-        def update_content():
-            self.line = lines_dropdown_menu.currentText()
-
-            # Clear the current content in all scroll areas
-            clear_layout(block_layout)
-            clear_layout(traffic_lights_layout)
-            clear_layout(switches_layout)
-            clear_layout(crossings_layout)
-
-            # Check if the selected line exists in the data
-            if self.line in data:
-                # Check the mode (HW/SW) and make sure the mode exists in the JSON
-                if self.mode in data[self.line]:
-                    mode_data = data[self.line][self.mode]
-
-                    # Add blocks (if any)
-                    if 'blocks' in mode_data and mode_data['blocks']:
-                        for block in mode_data['blocks']:
-                            block_checkbox = QCheckBox(f"Block {block['block']}")
-                            block_checkbox.setChecked(block['occupied'])
-                            block_checkbox.setFixedHeight(40)  # Ensure consistent height for block checkboxes
-                            block_layout.addWidget(block_checkbox)
-
-                    # Add traffic lights (if any)
-                    if 'traffic_lights' in mode_data and mode_data['traffic_lights']:
-                        for light in mode_data['traffic_lights']:
-                            traffic_light_button = TrafficLightButton(
-                                name_1=light['name_1'],
-                                name_2=light['name_2']
-                            )
-                            traffic_light_button.setFixedHeight(40)  # Ensure consistent height for traffic light buttons
-                            traffic_lights_layout.addWidget(traffic_light_button)
-
-                    # Add switches (if any)
-                    if 'switches' in mode_data and mode_data['switches']:
-                        for switch in mode_data['switches']:
-                            switch_button = SwitchButton(
-                                name_1=switch['name_1'],
-                                name_2=switch['name_2']
-                            )
-                            switch_button.setFixedHeight(40)  # Ensure consistent height for switch buttons
-                            switches_layout.addWidget(switch_button)
-
-                    # Add crossings (if any)
-                    if 'crossings' in mode_data and mode_data['crossings']:
-                        for crossing in mode_data['crossings']:
-                            crossing_button = CrossingButton(
-                                name_1=crossing['name_1'],
-                                name_2=crossing['name_2']
-                            )
-                            crossing_button.setFixedHeight(40)  # Ensure consistent height for crossing buttons
-                            crossings_layout.addWidget(crossing_button)
-
-                # Set updated widgets and layouts
-                block_scroll.setWidget(block_scroll_widget)
-                traffic_lights_scroll.setWidget(traffic_lights_widget)
-                switches_scroll.setWidget(switches_widget)
-                crossings_scroll.setWidget(crossings_widget)
-
-        # Function to clear layouts
-        def clear_layout(layout):
-            while layout.count():
-                child = layout.takeAt(0)
-                if child.widget():
-                    child.widget().deleteLater()
-
         # Connect dropdown menu to update content function
-        lines_dropdown_menu.currentIndexChanged.connect(update_content)
+        lines_dropdown_menu.currentIndexChanged.connect(lambda: self.update_line(lines_dropdown_menu))
 
-        # Toggle between Hardware and Software modes
-        def toggle_hw_sw_mode():
-            if self.mode == "HW":
-                self.mode = "SW"
-                hw_sw_toggle_button.setText("Software")  # Change text to "Software"
-            else:
-                self.mode = "HW"
-                hw_sw_toggle_button.setText("Hardware")  # Change text to "Hardware"
-            update_content()
-
-        hw_sw_toggle_button.clicked.connect(toggle_hw_sw_mode)
-
-        # Toggle between Manual and Auto modes
-        def toggle_manual_auto_mode():
-            if manual_auto_toggle_button.text() == "Auto":
-                manual_auto_toggle_button.setText("Manual")
-                # Add additional logic for switching to Manual mode here
-            else:
-                manual_auto_toggle_button.setText("Auto")
-                # Add additional logic for switching to Auto mode here
-
-        manual_auto_toggle_button.clicked.connect(toggle_manual_auto_mode)
-
-        # Initial content load
-        update_content()
+        # hw_sw_toggle_button.clicked.connect(self.toggle_hw_sw_mode)
+        manual_auto_toggle_button.clicked.connect(self.toggle_manual_auto_mode)
 
         # Add left and right layouts to the main layout
         main_layout.addLayout(left_layout)
         main_layout.addLayout(right_layout)
 
         return tab_widget
-
+    
     def create_main_tab(self):
-        self.main_tab = self.create_shared_content(editable=False)
+        self.main_tab = self.create_shared_content(test=False)
         self.tabs.addTab(self.main_tab, "Main")
 
     def create_test_tab(self):
@@ -237,44 +179,255 @@ class MyApp(QWidget):
         input_layout_in_frame.setSpacing(10)  # Reduced spacing between input fields and buttons
 
         # Create input fields and save buttons
-        labels = ["Authority", "Suggested Speed", "Switch Bool", "Commanded Speed"]
+        labels = ["Authority", "Suggested Speed", "Switch Suggested", "Commanded Speed"]
 
-        for idx in range(len(labels)):
-            # Create input field
-            input_field = QLineEdit()
-            input_field.setPlaceholderText(f"Enter {labels[idx].lower()}...")
-            input_field.setFixedHeight(30)  # Adjusted input field height
-            input_field.setMinimumWidth(150)  # Ensure input field has a minimum width
-            input_layout_in_frame.addWidget(input_field)
+        # Create input field
+        block_id_input = QLineEdit()
+        block_id_input.setPlaceholderText(f"Enter block id...")
+        block_id_input.setFixedHeight(30)  # Adjusted input field height
+        block_id_input.setMinimumWidth(150)  # Ensure input field has a minimum width
+        input_layout_in_frame.addWidget(block_id_input)
 
-            # Create save button
-            save_button = QPushButton(f"Save {labels[idx]}", clicked=lambda idx=idx: self.save_value(input_field.text(), idx))
-            save_button.setFixedHeight(30)  # Ensure save button doesn't overlap
-            input_layout_in_frame.addWidget(save_button)
+        # Add a spacer item below the input field to create space
+        spacer_widget = QWidget()
+        spacer_widget.setFixedHeight(40)  # Set the height of the spacer
+        input_layout_in_frame.addWidget(spacer_widget)
+        
+        # Create input field
+        authority_input_field = QLineEdit()
+        authority_input_field.setPlaceholderText("Enter Authority (meters) ...")
+        authority_input_field.setFixedHeight(30)  # Adjusted input field height
+        authority_input_field.setMinimumWidth(150)  # Ensure input field has a minimum width
+        input_layout_in_frame.addWidget(authority_input_field)
+        authority_save_button = QPushButton("Save Authority")
+        authority_save_button.setFixedHeight(30)  # Ensure save button doesn't overlap
+        authority_save_button.clicked.connect(lambda: self.save_value(block_id_input.text(), authority_input_field.text(), 0))
+        input_layout_in_frame.addWidget(authority_save_button)
+
+        # Create input field
+        suggest_speed_input_field = QLineEdit()
+        suggest_speed_input_field.setPlaceholderText("Enter Suggested Speed (km/hr) ...")
+        suggest_speed_input_field.setFixedHeight(30)  # Adjusted input field height
+        suggest_speed_input_field.setMinimumWidth(150)  # Ensure input field has a minimum width
+        input_layout_in_frame.addWidget(suggest_speed_input_field)
+        suggest_speed_save_button = QPushButton("Save Suggested Speed")
+        suggest_speed_save_button.setFixedHeight(30)  # Ensure save button doesn't overlap
+        suggest_speed_save_button.clicked.connect(lambda: self.save_value(block_id_input.text(), suggest_speed_input_field.text(), 1))
+        input_layout_in_frame.addWidget(suggest_speed_save_button)
+
+        # Create input field
+        switch_suggest_input_field = QLineEdit()
+        switch_suggest_input_field.setPlaceholderText("Enter Switch Suggestion (0 or 1) ...")
+        switch_suggest_input_field.setFixedHeight(30)  # Adjusted input field height
+        switch_suggest_input_field.setMinimumWidth(150)  # Ensure input field has a minimum width
+        input_layout_in_frame.addWidget(switch_suggest_input_field)
+        switch_suggest_save_button = QPushButton("Save Switch Suggestion")
+        switch_suggest_save_button.setFixedHeight(30)  # Ensure save button doesn't overlap
+        switch_suggest_save_button.clicked.connect(lambda: self.save_value(block_id_input.text(), switch_suggest_input_field.text(), 2))
+        input_layout_in_frame.addWidget(switch_suggest_save_button)
+
+         # Create input field
+        command_speed_input_field = QLineEdit()
+        command_speed_input_field.setPlaceholderText("Enter Commanded Speed (km/hr) ...")
+        command_speed_input_field.setFixedHeight(30)  # Adjusted input field height
+        command_speed_input_field.setMinimumWidth(150)  # Ensure input field has a minimum width
+        input_layout_in_frame.addWidget(command_speed_input_field)
+        command_speed_save_button = QPushButton("Save Commanded Speed")
+        command_speed_save_button.setFixedHeight(30)  # Ensure save button doesn't overlap
+        command_speed_save_button.clicked.connect(lambda: self.save_value(block_id_input.text(),command_speed_input_field.text(), 3))
+        input_layout_in_frame.addWidget(command_speed_save_button)
 
         # Add the input layout to the test layout
         test_layout.addLayout(input_layout_in_frame)
 
         # Create and add the shared content (similar to main tab but editable)
-        test_content = self.create_shared_content(editable=True)
+        test_content = self.create_shared_content(test=True)
         test_layout.addWidget(test_content)
 
         self.tabs.addTab(self.test_tab, "Test")
 
+    #def create_upload_tab(self):
+    #    """Creates an upload tab and adds it to the provided QTabWidget."""
+        # Create the upload tab widget
+        #upload_tab = QWidget()
+        #upload_layout = QVBoxLayout()
+        
+        # Create dropdown menu for line selection
+        #lines_dropdown_menu = QComboBox()
+        #lines_dropdown_menu.addItems(["Blue", "Green", "Red"])
+        #lines_dropdown_menu.setFixedHeight(40)  # Adjust height for a consistent look
+        #lines_dropdown_menu.setFixedWidth(120)  # Adjust height for a consistent look
+        #lines_dropdown_menu.setCurrentText(self.line)
+        #lines_dropdown_menu.currentIndexChanged.connect(lambda: self.update_line(lines_dropdown_menu))
 
+        # Create a label to show the uploaded file path
+        #file_label = QLabel("No file uploaded")
+        
+        # Create an upload button
+        #upload_button = QPushButton("+")  # Set the button text to a plus sign
+        #upload_button.setFixedSize(40, 100)  # Adjust the size to make the plus sign more prominent
 
-    def save_value(self, text, index):
-        # Ensure the saved_values list has at least the needed number of elements
-        while len(self.saved_values) <= index:
-            self.saved_values.append(None)
-        self.saved_values[index] = text
-        print(f"Saved value at index {index}: {text}")
+        # Style the button to center the plus symbol and make it look larger
+        #upload_button.setStyleSheet("font-size: 20px;")
+
+        # Connect the button to the upload_file function
+        #upload_button.clicked.connect(lambda: self.upload_file(file_label))
+
+        # Add the label and button to the layout
+        #upload_layout.addWidget(upload_button, alignment=Qt.AlignmentFlag.AlignCenter)
+        #upload_layout.addWidget(file_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Set alignment for the entire layout to center
+        #upload_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Set the layout for the upload tab
+        #upload_tab.setLayout(upload_layout)
+
+        # Add the upload tab to the provided tab widget
+        #self.tabs.addTab(upload_tab, "Upload Tab")
+
+    def upload_file(self, file_label):
+        """Handles the file upload process, saves the file to a folder, and restarts the PLC program."""
+        global plc_thread, plc_stop_event
+
+        # Open a file dialog to select a Python script
+        file_path, _ = QFileDialog.getOpenFileName(None, "Select Python Script", "", "Python Files (*.py)")
+
+        # Check if a file was selected
+        if file_path:
+            # Specify the folder where the uploaded file will be saved
+            save_folder = "./uploaded_scripts"
+            os.makedirs(save_folder, exist_ok=True)  # Create the folder if it doesn't exist
+
+            # Extract the file name from the file path
+            file_name = os.path.basename(file_path)
+            new_file_name = self.line + "_line_PLC.py"
+            # Set the destination path (in the 'uploaded_scripts' folder)
+            destination = os.path.join(save_folder, new_file_name)
+
+            # Copy the selected file to the destination folder
+            shutil.copy(file_path, destination)
+
+            # Update the label to show the uploaded file path
+            file_label.setText(f"Uploaded: {file_name}")
+
+            # Start the new PLC program
+            if self.line == "Blue":
+                self.blue_line_plc_manager.start_new_plc(destination)
+            elif self.line == "Green":
+                pass
+            elif self.line == "Red":
+                pass
+    
+    # Function to update content when switching lines, mode, or Auto/Manual
+    def update_content(self):
+        current_tab_index = self.tabs.currentIndex()
+        
+        if self.tabs.tabText(current_tab_index) == "Test":
+            dropdown = self.test_tab.findChild(QComboBox)
+            if dropdown:
+                dropdown.setCurrentText(self.line)
+            
+            hw_sw_btn = self.test_tab.findChild(ModeToggle)
+            if hw_sw_btn:
+                hw_sw_btn.refresh(self.mode)
+            
+            man_auto_btn = self.test_tab.findChild(AutoToggle)
+            if man_auto_btn:
+                man_auto_btn.refresh(self.auto)
+
+            block_occupancy = self.test_tab.findChild(BlockOccupancy)
+            if block_occupancy:
+                block_occupancy.refresh(self.line, self.mode, editable=True)
+
+            traffic_lights = self.test_tab.findChild(TrafficLights)
+            if traffic_lights:
+                traffic_lights.refresh(self.line, self.mode, editable=(False if self.auto else True))
+            
+            crossings = self.test_tab.findChild(Crossings)
+            if crossings:
+                crossings.refresh(self.line, self.mode, editable=(False if self.auto else True))
+            
+            switches = self.test_tab.findChild(Switches)
+            if switches:
+                switches.refresh(self.line, self.mode, editable=(False if self.auto else True))
+
+        if self.tabs.tabText(current_tab_index) == "Main":
+            dropdown = self.main_tab.findChild(QComboBox)
+            if dropdown:
+                dropdown.setCurrentText(self.line)
+            
+            hw_sw_btn = self.main_tab.findChild(ModeToggle)
+            if hw_sw_btn:
+                hw_sw_btn.refresh(self.mode)
+            
+            man_auto_btn = self.main_tab.findChild(AutoToggle)
+            if man_auto_btn:
+                man_auto_btn.refresh(self.auto)
+            
+            dropdown = self.main_tab.findChild(QComboBox)
+            if dropdown:
+                dropdown.setCurrentText(self.line)
+
+            block_occupancy = self.main_tab.findChild(BlockOccupancy)
+            if block_occupancy:
+                block_occupancy.refresh(self.line, self.mode, editable=False)
+
+            traffic_lights = self.main_tab.findChild(TrafficLights)
+            if traffic_lights:
+                traffic_lights.refresh(self.line, self.mode, editable=(False if self.auto else True))
+            crossings = self.main_tab.findChild(Crossings)
+            if crossings:
+                crossings.refresh(self.line, self.mode, editable=(False if self.auto else True))
+            switches = self.main_tab.findChild(Switches)
+            if switches:
+                switches.refresh(self.line, self.mode, editable=(False if self.auto else True))
+
+    # Swtich between lines
+    def update_line(self, dropdown):
+        self.line = dropdown.currentText()
+        self.update_content()
+
+    # Toggle between Hardware and Software modes
+    # def toggle_hw_sw_mode(self):
+    #    if self.mode == "HW":
+    #        self.mode = "SW"
+    #    else:
+    #        self.mode = "HW"
+    #   self.update_content()
+
+    # Toggle between Manual and Auto modes
+    def toggle_manual_auto_mode(self):
+        if self.auto == True:
+            self.auto = False
+        else:
+            self.auto = True
+        self.blue_line_plc_manager.update_auto(self.auto)
+        self.update_content()
+
+    def save_value(self, block_id, text, index):
+        if block_id == "" or text == "":
+            return
+        try:
+            block_id = int(block_id)
+        except Exception as e:
+            print("Error converting block_id to int: " + e)
+            return
+
+        if index == 0:
+            print("Sending Authority to Track Model: {Block_id: " + str(block_id) + ", Meters: " + text + "}" )
+        elif index == 1 or index == 3:
+            print("Sending Suggested/Commanded Speed to Track Model: {Block_id: " + str(block_id) + ", Speed(kh/hr): " + text + "}")
+        elif index == 2:
+            print("Updating Switch Suggestion Internally: {Block_id: " + str(block_id) + ", Switch_Suggest_State: " + text + "}")
+            for switch in self.data_test[self.line][self.mode]['switches']:
+                if switch["from"] == block_id:
+                    switch["suggested_toggle"] = bool(int(text))
+                    break
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MyApp()
     ex.show()
     sys.exit(app.exec())
-
-
-
