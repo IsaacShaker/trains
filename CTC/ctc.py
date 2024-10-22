@@ -2,14 +2,13 @@ import sys
 import time
 import pandas as pd
 from train import Train
+from clock import Clock
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem
 from PyQt6.QtCore import Qt, QTimer
 
-class MyWindow(QMainWindow):
+class MyWindow(QMainWindow, Clock, Train):
     def __init__(self):
         super().__init__()
-
-        self.simulationRunning = False #this is necessary for clock to work properly
 
         self.oldTime = 21600 # the system will began at 6AM
         self.speed = 1 # the system will be running at 1x speed by default
@@ -71,12 +70,10 @@ class MyWindow(QMainWindow):
 
         # Timer for clock update
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_clock)
+        self.timer.timeout.connect(self.second_passed)
 
-        # Initialize the start time, speed, and total elapsed time
+        # Initialize the start timeand total elapsed time
         self.start_time = time.time()
-        self.speed = 1
-        self.total_elapsed_time = 0  # New variable to keep track of total elapsed time
         self.timer.start(1000)  # Update every second
 
         # Helps with toggling crossing button text
@@ -333,7 +330,7 @@ class MyWindow(QMainWindow):
         sim_layout = QVBoxLayout()
 
         # Add the clock label
-        self.clock_label = QLabel(self.format_time(0))
+        self.clock_label = QLabel(myClock.format_time(0))
         self.clock_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.clock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.clock_label.setStyleSheet("color: white; font-size: 18px;")
@@ -815,48 +812,37 @@ class MyWindow(QMainWindow):
     # The functionality of the user selecting the Simulation Speed of the system
     def simSpeedSelected(self, s):
         print("The simulation is now running at", s, "speed!")
-        self.speed = int(s[:-1])  # Extracting the numeric value from the selected string
+        myClock.sim_speed = int(s[:-1])  # Extracting the numeric value from the selected string
 
     # The functionality of the user starting the simulation
     def operationalClicked(self):
         # Toggle the simulation state
-        if not self.simulationRunning:
-            self.simulationRunning = True
-            self.start_time = time.time()  # Reset start time when simulation starts
+        if not myClock.simulation_running:
+            myClock.simulation_running = True
+            myClock.elapsed_time = time.time()  # Reset start time when simulation starts
             print("The simulation has started!")
         else:
-            self.simulationRunning = False
+            myClock.simulation_running = False
             print("The simulation has been stopped!")
 
         # Update the button text to reflect the current state
         sender = self.sender()  # Get the button that triggered the event
-        if self.simulationRunning:
+        if myClock.simulation_running:
             sender.setText("Stop")  # Change the button text to "Stop" when running
             sender.setStyleSheet("background-color: red; color: white;")
         else:
             sender.setText("Start")  # Change the button text back to "Start" when stopped
             sender.setStyleSheet("background-color: green; color: white;")
 
-    # Format the time to the form of a clock
-    def format_time(self, seconds: int) -> str:
-        hours = (seconds // 3600) % 24
-        minutes = (seconds % 3600) // 60
-        seconds = seconds % 60
-        return f"{hours:02}:{minutes:02}:{seconds:02}"
-
     # Update the clock every realtime second that passes
-    def update_clock(self):
+    def second_passed(self):
         # Only update the clock if the simulation is running
-        if self.simulationRunning:
-            # Update the time according to the previous time and the simulation speed
-            self.newTime = self.oldTime + (1 * self.speed)
+        if myClock.simulation_running:
+            # Update the clock for everybody 
+            myClock.update_clock()
 
-            # Update the clock label with the formatted time
-            formatted_time = self.format_time(self.newTime)
-            self.clock_label.setText(formatted_time)
-
-            # Update oldTime to the newTime for the next call
-            self.oldTime = self.newTime
+            # Update the label in UI
+            self.clock_label.setText(myClock.current_time)
 
             for block in self.open_blocks:
                 block_label = self.block_labels[block]
@@ -1240,7 +1226,10 @@ class MyWindow(QMainWindow):
             
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    
+
+    # Create an object from Clock class
+    myClock = Clock()
+
     window = MyWindow()
     window.show()
 
