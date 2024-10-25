@@ -40,9 +40,53 @@ class Train_Controller:
         self.temperature = 70
         self.beacon_info = 0
 
+        #Strings
+        self.pa_announcement = ""
+
     ############################
     #  Function Declaration 
     ############################
+
+
+
+    ############################
+    #  Set Functions 
+    ############################
+
+    #set doors
+    def set_doors(self, left, right):
+        self.l_door = left
+        self.r_door = right
+
+    #set lights
+    def set_lights(self, inside, outside):
+        self.i_light = inside
+        self.o_light = outside
+
+    #set lights
+    def set_beacon_info(self, info):
+        self.beacon_info = info
+        self.decode_signal()
+
+    #set station_reached
+    def set_station_reached(self, reached):
+        self.station_reached = reached
+
+
+
+
+    ############################
+    #  Get Functions 
+    ############################
+    
+    #pa announcement string
+    def get_pa_announcement(self):
+        return self.pa_announcement
+    
+    def get_station_reached(self):
+        return self.station_reached
+
+    
 
 
     #this function will return the setpoint velocity based on the commaned velocity and user inputed set point velocity
@@ -51,26 +95,20 @@ class Train_Controller:
         if float(self.setpoint_velocity) > float(self.commanded_velocity):
             self.setpoint_velocity = self.commanded_velocity
 
-
-    #this function will be for automode to set the lights on or off (WILL HAVE TO ADJUST FOR TUNNELS)
-    def SetLights(time):
-        if time >= 20.00 or time < 8.00:       #Between 8 pm and 8 am, lights will be on
-            return True
-        else:
-            return False                        #lights will be off at other times
-
-        
     #this function will decode the beacon signal
-    def Decode_Signal(self):
+    def decode_signal(self):
 
-        if self.beacon_info == 0:
-            return ""
-        elif self.beacon_info == 1:
-            return "Now Arriving at Station B"
-        elif self.beacon_info == 2:
-            return "Now Arriving at Station C"
+        #Check if beacon is an enter station beacon
+        self.station_reached = True
+
+        if self.beacon_info == "1":
+            self.pa_announcement = "Lebron"
+        elif self.beacon_info == "2":
+            self.pa_announcement = "Now Arriving at Station B"
+        elif self.beacon_info == "3":
+            self.pa_announcement = "Now Arriving at Station C"
         else:
-            return ""
+            self.pa_announcement = ""
 
     #this function will return the commanded Power and will be called every 50 ms
     def Set_Commanded_Power(self):

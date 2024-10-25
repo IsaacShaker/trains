@@ -646,7 +646,7 @@ class MainWindow(QMainWindow):
         self.input_authority.setPlaceholderText("ft")
         self.input_commanded_velocity.setPlaceholderText("MPH")
         self.input_actual_velocity.setPlaceholderText("MPH")
-        self.input_beacon_info.setPlaceholderText("integer")
+        self.input_beacon_info.setPlaceholderText("String")
 
 
         #Code for failure mode inputs
@@ -663,7 +663,7 @@ class MainWindow(QMainWindow):
         #outputs to be displayed 
         
         self.commanded_power_output = QLabel(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{train_list[self.current_train].commanded_power:.2f} Watts</span>')
-        self.pa_announcement_output = QLabel(f"PA Announcement: {train_list[self.current_train].Decode_Signal()}")
+        self.pa_announcement_output = QLabel(f"PA Announcement: {train_list[self.current_train].get_pa_announcement()}")
 
         self.commanded_power_output.setFont(important_font)
 
@@ -800,23 +800,25 @@ class MainWindow(QMainWindow):
 
         print(f"commanded velocity: {train_list[self.current_train].commanded_velocity} m/s")
 
-    ##called when beacon info input is confirmed
+    #called when beacon info input is confirmed
     def confirm_beacon_info(self):
         # Get the text from the input field and update the label
-        input_value = int(self.input_beacon_info.text())
+        input_value = str(self.input_beacon_info.text())
 
-        #update label  
-        self.input_beacon_info.setPlaceholderText(str(input_value))
+        #update label
+        self.input_beacon_info.setPlaceholderText(input_value)
         self.input_beacon_info.setText("")
 
         #set beacon info in train list
-        train_list[self.current_train].beacon_info = input_value
+        train_list[self.current_train].set_beacon_info(input_value)
 
-        #set this variable to true so doors open when velocity is 0
-        train_list[self.current_train].station_reached = True
+        #test
+        print(train_list[self.current_train].get_pa_announcement())
+        print("fries")
 
         #update display on test bench
         self.update_outputs()
+
 
 
 
@@ -837,7 +839,7 @@ class MainWindow(QMainWindow):
         self.input_authority.setPlaceholderText("ft")
         self.input_commanded_velocity.setPlaceholderText("MPH")
         self.input_actual_velocity.setPlaceholderText("MPH")
-        self.input_beacon_info.setPlaceholderText("integer")
+        self.input_beacon_info.setPlaceholderText("String")
 
 
 
@@ -984,7 +986,7 @@ class MainWindow(QMainWindow):
     def open_l_door(self):
         #updates signal to tell train model to open door
         train_list[self.current_train].l_door = True
-        train_list[self.current_train].station_reached = False
+        train_list[self.current_train].set_station_reached(False)
 
         #disables button
         self.l_door_button.setEnabled(False)
@@ -1017,7 +1019,7 @@ class MainWindow(QMainWindow):
     def open_r_door(self):
         #updates signal to tell train model to open door
         train_list[self.current_train].r_door = True
-        train_list[self.current_train].station_reached = False
+        train_list[self.current_train].set_station_reached(False)
 
         #disables button
         self.r_door_button.setEnabled(False)
@@ -1239,13 +1241,11 @@ class MainWindow(QMainWindow):
         self.commanded_power_output.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{train_list[self.current_train].commanded_power:.2f} Watts</span>')
 
         #self.commanded_power_output.setText(f"Commanded Power: {train_list[self.current_train].commanded_power:.2f} Watts")
-        self.pa_announcement_output.setText(f"PA Announcement: {train_list[self.current_train].Decode_Signal()}")
+        self.pa_announcement_output.setText(f"PA Announcement: {train_list[self.current_train].get_pa_announcement()}")
 
 
-        print(train_list[self.current_train].beacon_info)
-        train_list[self.current_train].beacon_info = 1
-        print(train_list[self.current_train].Decode_Signal())
-        print(train_list[self.current_train].beacon_info)
+        #train_list[self.current_train].beacon_info = "Lebron"
+
 
     #convert meters per second to miles per hour
     def mps_to_mph(self, metric_speed):
@@ -1293,7 +1293,7 @@ class MainWindow(QMainWindow):
         self.commanded_power_output.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{train_list[self.current_train].commanded_power:.2f} Watts</span>')
 
         #check if doors have to open if train has stopped, auhority is 0, and doors haven't opened
-        if train_list[self.current_train].authority == 0 and train_list[self.current_train].actual_velocity == 0 and train_list[self.current_train].station_reached:
+        if train_list[self.current_train].authority == 0 and train_list[self.current_train].actual_velocity == 0 and train_list[self.current_train].get_station_reached == False:
             self.open_l_door()
             self.open_r_door()
 
