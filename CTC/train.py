@@ -1,42 +1,67 @@
-import pandas as pd
+from mapReader import mapReader
+from collections import deque
 
 class Train:
 
-    def __init__(self, name, line, destination, arrival_time):
+    def __init__(self, name, line):
         self.name = name
         self.line = line
-        self.destination = destination
-        self.authority = 0
+        self.current_authority = 0
         self.suggested_speed = 0
-        self.arrival_time = arrival_time
-        self.on_track = False
-        self.current_block = ()
+        self.current_block = 0
+        self.route_authorities = deque()
 
-    def setName(self, new_name):
+    def set_name(self, new_name):
         self.name = new_name
 
-    def setLine(self, new_line):
+    def set_line(self, new_line):
         self.line = new_line
 
-    def setDestination(self, new_destination):
-        self.destination = new_destination
+    def set_current_authority(self, new_auth):
+        self.current_authority = new_auth
 
-    def setAuthority(self, new_auth):
-        self.authority = new_auth
-
-    def setSuggestedSpeed(self, new_speed):
+    def set_suggested_speed(self, new_speed):
         self.suggested_speed = new_speed
 
-    def setArrivalTime(self, new_time):
-        self.arrival_time = new_time
+    def set_current_block(self, new_block):
+        self.current_block = new_block
 
-    def setStatus(self, status):
-        self.status = status
+    def get_authority(self):
+        return self.current_authority
+    
+    def get_suggested_speed(self):
+        return self.suggested_speed
+    
+    def get_suggested_speed_for_wayside(self, hazard):
+        if hazard == True:
+            return 0
+        else:
+            return self.suggested_speed
 
-    def calcAuthority(self, station):
-        # Open the track layout
-        file_path = 'C:/Trains C/trains/Track Layout & Vehicle Data vF5.xlsx'
-        df = pd.read_excel(file_path, sheet_name = 'Blue Line')
+    def get_route_from_schedule(self):
+        if (self.line == 'Green'):
+            authorities_list = self.calculate_green_authorities(self.name)
+            for authority in authorities_list:
+                self.route_authorities.append(authority)
+        #elif (self.line == 'Red'):
+            #authorities_list = self.myReader.calculate_red_authorities(self.name)
+            #for authority in authorities_list:
+                #self.route_authorities.append(authority)
+    
+    def get_authority_from_map(self):
+        pass
 
-        # Calculate the authority for the train
+    def updateAuthority(self):
+        # Remove the previous authority
+        old_authority = self.route_authorities.popleft()
+
+        # Set authority to next station
+        if self.route_authorities:
+            self.set_current_authority(self.route_authorities[0])
+
+    def add_authority(self, new_authority):
+        self.route_authorities.append(new_authority)
+
+    def find_current_block(self, occupied_blocks):
+        pass
         

@@ -1,14 +1,14 @@
 class Clock:
 
     def __init__(self):
-        self.sim_speed = 1  # speed of the simulation
+        self.sim_speed = 1.00  # speed of the simulation
         self.elapsed_time = 0  # time elapsed in seconds
         self.current_time = ''  # current time formatted
         self.simulation_running = False  # status of the simulation
-        self.oldTime = 0  # initialize oldTime to track time
+        self.old_time = 0  # initialize oldTime to track time
 
     # Format the time to the form of a clock
-    def format_time(self, seconds: int) -> str:
+    def format_time(self, seconds: int):
         self.current_time = ''
         hours = (seconds // 3600) % 24
         minutes = (seconds % 3600) // 60
@@ -21,8 +21,8 @@ class Clock:
         # Only update the clock if the simulation is running
         if self.simulation_running:
             # Update the time according to the previous time and the simulation speed
-            self.newTime = self.oldTime + (1 * self.sim_speed)
-            self.current_time = self.format_time(self.newTime)
+            self.new_time = self.old_time + (1 * self.sim_speed)
+            self.current_time = self.format_time(self.new_time)
 
             # Update oldTime to the newTime for the next call
-            self.oldTime = self.newTime
+            self.old_time = self.new_time

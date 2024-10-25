@@ -3,6 +3,7 @@ import time
 import pandas as pd
 from train import Train
 from clock import Clock
+from scheduleReader import ScheduleReader
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem
 from PyQt6.QtCore import Qt, QTimer
 
@@ -26,9 +27,6 @@ class MyWindow(QMainWindow, Clock, Train):
 
         # Create the occupied block list
         self.occupied_blocks = []
-
-        # Create the occupied blocks list that includes maintenance
-        self.nates_occupied_blocks = []
 
         # Create the trains list
         self.trains = []
@@ -299,7 +297,7 @@ class MyWindow(QMainWindow, Clock, Train):
         closure_button = QPushButton("Closure")
         closure_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         closure_button.setStyleSheet("background-color: yellow; color: black;")
-        closure_button.clicked.connect(self.closureClicked)
+        closure_button.clicked.connect(self.closure_clicked)
         button_layout.addWidget(closure_button)  # Add the Closure button to the horizontal layout
 
         # Define Maintenance Opening button as an instance attribute
@@ -344,14 +342,14 @@ class MyWindow(QMainWindow, Clock, Train):
         self.speed_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.speed_combo_box.setStyleSheet("color: white; background-color: #772CE8;")
         self.speed_combo_box.addItems(["1x", "10x", "50x"])  # Example speed options
-        self.speed_combo_box.currentTextChanged.connect(self.simSpeedSelected)
+        self.speed_combo_box.currentTextChanged.connect(self.sim_speed_selected)
         simOptions_layout.addWidget(self.speed_combo_box)
 
         # Create on/off button for the simulation
         operational_button = QPushButton("Start")
         operational_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         operational_button.setStyleSheet("background-color: green; color: white;")
-        operational_button.clicked.connect(self.operationalClicked)
+        operational_button.clicked.connect(self.operational_clicked)
         simOptions_layout.addWidget(operational_button)
 
         # Add the horizontal layout containing the combo box and on/off button to sim_layout
@@ -367,7 +365,7 @@ class MyWindow(QMainWindow, Clock, Train):
 
 
         # 3. Schedule Builder Section (Middle)
-        schedule_frame = self.create_section_frame(650, 300)  # Reduced height
+        schedule_frame = self.create_section_frame(650, 325)  # Reduced height
         schedule_layout = QVBoxLayout()
         schedule_label = QLabel("Schedule Builder")
         schedule_label.setStyleSheet("color: white; font-size: 20px;")
@@ -452,7 +450,7 @@ class MyWindow(QMainWindow, Clock, Train):
 
 
         # 4. Dispatch Rate Section (Lower left)
-        dispatch_frame = self.create_section_frame(200, 100)
+        dispatch_frame = self.create_section_frame(200, 125)
         dispatch_layout = QVBoxLayout()
         dispatch_label = QLabel("Dispatch Rate")
         dispatch_label.setStyleSheet("color: white; font-size: 20px;")
@@ -471,12 +469,12 @@ class MyWindow(QMainWindow, Clock, Train):
 
 
         # 5. Train Data Section (Lower right)
-        train_frame = self.create_section_frame(375, 100)
+        train_frame = self.create_section_frame(375, 125)
         train_layout = QVBoxLayout()
-        self.train_date_label = QLabel("Train Data")
-        self.train_date_label.setStyleSheet("color: white; font-size: 20px;")
-        self.train_date_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-        train_layout.addWidget(self.train_date_label)
+        self.train_data_label = QLabel("Train Data")
+        self.train_data_label.setStyleSheet("color: white; font-size: 20px;")
+        self.train_data_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
+        train_layout.addWidget(self.train_data_label)
 
         # Create Hbox for Train Data widgets
         self.train_data_big_layout = QHBoxLayout()
@@ -513,7 +511,7 @@ class MyWindow(QMainWindow, Clock, Train):
 
 
         # 6. Block Occupancies (Bottom)
-        blocks_frame = self.create_section_frame(650, 275)
+        blocks_frame = self.create_section_frame(650, 225)
         blocks_layout = QVBoxLayout()
 
         # Upper portion of Block Occupancies
@@ -608,7 +606,7 @@ class MyWindow(QMainWindow, Clock, Train):
         return frame
 
     # Custom dialog for user to select maintenance closure line
-    def closureClicked(self):
+    def closure_clicked(self):
         dialog = QDialog(self)
         dialog.setWindowTitle("Maintenance Report")
 
@@ -703,7 +701,7 @@ class MyWindow(QMainWindow, Clock, Train):
             dialog.accept()
 
     # The functionality for user opening a block from maintenance
-    def openingClicked(self):
+    def opening_clicked(self):
         dialog = QDialog(self)
         dialog.setWindowTitle("Maintenance Report")
 
@@ -804,18 +802,18 @@ class MyWindow(QMainWindow, Clock, Train):
         if len(self.maintenance_blocks) > 0:
             self.opening_button.setEnabled(True)
             self.opening_button.setStyleSheet("background-color: green; color: black;")
-            self.opening_button.clicked.connect(self.openingClicked)  # Enable click functionality
+            self.opening_button.clicked.connect(self.opening_clicked)  # Enable click functionality
         else:
             self.opening_button.setEnabled(False)  # Disable the button
             self.opening_button.setStyleSheet("background-color: gray; color: white;")
 
     # The functionality of the user selecting the Simulation Speed of the system
-    def simSpeedSelected(self, s):
-        print("The simulation is now running at", s, "speed!")
-        myClock.sim_speed = int(s[:-1])  # Extracting the numeric value from the selected string
+    def sim_speed_selected(self, speed):
+        print("The simulation is now running at", speed, "speed!")
+        myClock.sim_speed = int(speed[:-1])  # Extracting the numeric value from the selected string
 
     # The functionality of the user starting the simulation
-    def operationalClicked(self):
+    def operational_clicked(self):
         # Toggle the simulation state
         if not myClock.simulation_running:
             myClock.simulation_running = True
@@ -1039,60 +1037,30 @@ class MyWindow(QMainWindow, Clock, Train):
             self.confirm_dispatch_button = QPushButton("Confirm")
             self.confirm_dispatch_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             self.confirm_dispatch_button.setStyleSheet("background-color: green; color: white; font-size: 18px;")
+            self.confirm_dispatch_button.clicked.connect(self.submit_dispatch)
             self.dispatch_options_layout.addWidget(self.confirm_dispatch_button)
 
             self.upload_dispatch_layout.addLayout(self.dispatch_options_layout)
 
     # Open file explorer on the user's device
-    def upload_clicked(self):
-        print('Uploading a schedule...')
-        
+    def upload_clicked(self):        
         # Open file explorer on the user's device
         file_path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Microsoft Excel Worksheet (*.xlsx);")
         if file_path:
             pass            
             try:
                 # Read the Excel file
-                df = pd.read_excel(file_path, na_filter=False)
+                new_trains = myReader.get_green_routes(file_path)
+                for i in new_trains:
+                    self.trains.append(i)
             
             except Exception as e:
                 print(f"Error reading the Excel file: {e}")
         else:
             print("No file selected.")
 
-        # Access row 0, column 1 using .iloc
-        new_line = df.iloc[0,0]
-        new_destination = df.iloc[0, 1]
-        new_time = df.iloc[0, 2]
-        train_count = len(self.trains)
-        if train_count == 0:
-            new_train = 'Train0'
-        else:
-            new_train = 'Train'+str(train_count)
-
-        print(new_train, 'on the', new_line, 'line will arrive at', new_destination, 'in', new_time, 'minutes!')
-        rate_string = str(len(self.trains) + 1)+' Trains/hr'
-        self.rate_label.setText(rate_string)
-        new_train = Train(new_train, new_line, new_destination, new_time)
-        if new_train.destination == 'STATION: B':
-            new_train.setAuthority(550)
-            new_train.setSuggestedSpeed(50)
-        elif new_train.destination == 'STATION: C':
-            new_train.setAuthority(500)
-            new_train.setSuggestedSpeed(50)
-        else:
-            print('Station does not exist')
-
-        if len(self.trains) == 0: # If we are adding the first train, delete the label
-            # Remove the current QLabel
-            self.train_data_big_layout.removeWidget(self.train_label)
-            self.train_label.deleteLater()  # Delete QLabel
-        else:
-            # Remove the QComboBox
-            self.train_data_big_layout.removeWidget(self.train_data_combo_box)
-            self.train_data_combo_box.deleteLater() # Delete QComboBox
-
-        self.trains.append(new_train)
+        self.train_data_big_layout.removeWidget(self.train_label)
+        self.train_label.deleteLater()
 
         # Create the QComboBox
         self.train_data_combo_box = QComboBox()
@@ -1105,99 +1073,20 @@ class MyWindow(QMainWindow, Clock, Train):
 
         # Add the QComboBox to the layout
         self.train_data_big_layout.addWidget(self.train_data_combo_box)
-
-    # Allow the user to select the destination and time of a train
-    def dispatch_clicked(self):
-        print('Dispatching a train...')
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Train Dispatcher")
-
-        # Apply styles to the dialog
-        dialog.setStyleSheet("""
-            QDialog {
-                background-color: #171717;
-            }
-            QLabel {
-                color: white;
-            }
-            QComboBox {
-                background-color: #772ce8;
-                color: #ffffff;
-                border: 1px solid #ffffff;
-                padding: 5px;
-            }
-            QComboBox QAbstractItemView {
-                background-color: #772ce8;
-                color: #ffffff;
-                selection-background-color: #CCCCFF;
-                selection-color: #000000;
-            }
-            QLineEdit {
-                background-color: #772ce8;
-                color: #ffffff;
-                padding: 5px;
-                border: 1px solid #ffffff;
-            }
-            QPushButton {
-                background-color: green;
-                color: white;
-                border-radius: 5px;
-                padding: 5px;
-            }
-            QPushButton:hover {
-                background-color: #ffffff;
-            }
-        """)
-
-        layout = QVBoxLayout(dialog)
-
-        # Create label
-        label = QLabel("Where and when would you like to dispatch a train?")
-        layout.addWidget(label)
-
-        # Create horizontal layout for combo box and text entry box
-        h_layout = QHBoxLayout()
-
-        # Create combo box with options
-        combo_box = QComboBox()
-        combo_box.addItems(["STATION: B", "STATION: C"])
-        h_layout.addWidget(combo_box)
-
-        # Create text entry box
-        text_entry = QLineEdit()
-        text_entry.setPlaceholderText("total time to station w/ dwell (min)")
-        h_layout.addWidget(text_entry)
-
-        # Add horizontal layout to the main layout
-        layout.addLayout(h_layout)
-
-        # Create 'Submit' button
-        button = QPushButton("Submit")
-        button.clicked.connect(lambda: self.submit_dispatch(dialog, combo_box.currentText(), text_entry.text()))
-        layout.addWidget(button)
-
-        dialog.setLayout(layout)
-        dialog.exec()
 
     # Create the train object
-    def submit_dispatch(self, dialog, station, time):
+    def submit_dispatch(self):
         if len(self.trains) == 0:
-            new_train = 'Train0'
+            new_train = 'Train 1'
         else:
-            new_train = 'Train'+str(len(self.trains))
+            new_train = 'Train '+str(len(self.trains) + 1)
 
-        print(new_train, 'on the Blue line will arrive at', station, 'in', time, 'minutes!')
+        new_train = Train(new_train, 'Green')
+        print(new_train.name, 'on the Green line will arrive at', self.station_select_combo_box.currentText() ,'at', self.time_select_edit.text())
         rate_string = str(len(self.trains) + 1)+' Trains/hr'
         self.rate_label.setText(rate_string)
-        new_train = Train(new_train, 'Blue', station, time)
-        if new_train.destination == 'STATION: B':
-            new_train.setAuthority(550)
-            new_train.setSuggestedSpeed(50)
-        elif new_train.destination == 'STATION: C':
-            new_train.setAuthority(500)
-            new_train.setSuggestedSpeed(50)
-        else:
-            print('Station does not exist')
+        self.schedule_train_combo_box.addItem(new_train.name)
+        
 
         if len(self.trains) == 0: # If we are adding the first train, delete the label
             # Remove the current QLabel
@@ -1221,7 +1110,6 @@ class MyWindow(QMainWindow, Clock, Train):
 
         # Add the QComboBox to the layout
         self.train_data_big_layout.addWidget(self.train_data_combo_box)
-        dialog.accept()
 
     # Display the correct data based on the train selected
     def train_selected(self, selected_train):
@@ -1232,13 +1120,13 @@ class MyWindow(QMainWindow, Clock, Train):
                 pass
 
         print('Displaying info on', selected_train,':')
-        print('Authority =', my_train.authority, 'm')
-        print('Suggested Speed =', my_train.suggested_speed, 'kph')
-        imperial_authority = my_train.authority * 3.28084 # Convert from metric
+        print('Authority =', my_train.get_authority(), 'm')
+        print('Suggested Speed =', my_train.get_suggested_speed(), 'kph')
+        imperial_authority = my_train.get_authority() * 3.28084 # Convert from metric
         imperial_authority = round(imperial_authority)
         auth_str = 'Authority = '+str(imperial_authority)+' ft'
         self.train_authority_label.setText(auth_str)
-        imperial_suggested_speed = my_train.suggested_speed * 0.621371 # Convert from metric
+        imperial_suggested_speed = my_train.get_suggested_speed() * 0.621371 # Convert from metric
         imperial_suggested_speed = round(imperial_suggested_speed)
         speed_str = 'Suggested Speed = '+str(imperial_suggested_speed)+' mph'
         self.train_suggested_speed_label.setText(speed_str)
@@ -1263,6 +1151,9 @@ if __name__ == "__main__":
 
     # Create an object from Clock class
     myClock = Clock()
+
+    # Create an object from the Schedule class
+    myReader = ScheduleReader()
 
     window = MyWindow()
     window.show()
