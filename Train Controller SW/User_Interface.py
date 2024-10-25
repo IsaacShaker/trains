@@ -439,7 +439,7 @@ class MainWindow(QMainWindow):
 
         self.temperature_control.setValue(train_list[self.train_selection.currentIndex()].temperature)
 
-        self.temperature_control.valueChanged.connect(self.value_changed)  #calls function whenever temperature is changed
+        self.temperature_control.valueChanged.connect(self.temperature_changed)  #calls function whenever temperature is changed
 
 
         #add temperaute label and arrow key
@@ -510,7 +510,7 @@ class MainWindow(QMainWindow):
         self.manual_widget.setFont(custom_font)
         
         #function is called when checkbox changes
-        self.manual_widget.stateChanged.connect(self.manual_widget_changes)
+        self.manual_widget.stateChanged.connect(self.manual_widget_changed)
 
         #############################################
         #Service Brake and Emergency Brake
@@ -945,7 +945,7 @@ class MainWindow(QMainWindow):
 
 
     #this function will be called whenever the temperature is changed
-    def value_changed(self, temperature):
+    def temperature_changed(self, temperature):
 
         #update train temperature
         train_list[self.train_selection.currentIndex()].temperature = temperature
@@ -1041,7 +1041,7 @@ class MainWindow(QMainWindow):
             self.r_door_button.setEnabled(True)
 
     #handles when manual mode is turned on or off
-    def manual_widget_changes(self, state):
+    def manual_widget_changed(self, state):
         #checks if box is checked
         if state == 2:
             train_list[self.current_train].manual_mode = True

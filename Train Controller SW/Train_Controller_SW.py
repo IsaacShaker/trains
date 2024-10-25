@@ -24,12 +24,11 @@ class Train_Controller:
         #Floats
         self.k_p = 0.0
         self.k_i = 0.0
-        self.power = 0.0
         self.time_world = 0.0
         self.commanded_power = 0.0
         self.ek = 0.0
         self.ek_1 = 0.0
-        self.T = 0.05 #time samples of 50 ms
+        self.T = 0.09 #time samples of 50 ms
         self.uk = 0.0
         self.uk_1 = 0.0
 
@@ -40,7 +39,6 @@ class Train_Controller:
         self.setpoint_velocity = 0
         self.temperature = 70
         self.beacon_info = 0
-        self.train_count = 0 #won't use this number much into we implement other modules
 
     ############################
     #  Function Declaration 
