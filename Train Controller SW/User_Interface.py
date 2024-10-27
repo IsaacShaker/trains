@@ -853,10 +853,10 @@ class MainWindow(QMainWindow):
         
         self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[i].setpoint_velocity)} MPH</span>')
 
-        self.temperature_control.setValue(train_list[i].temperature)
+        self.temperature_control.setValue(train_list[i].get_temperature())
         
         #check inside light
-        if train_list[i].i_light == True:
+        if train_list[i].get_i_light() == True:
             #light must turn on
             self.i_light_button.setText("💡 ON")
             self.i_light_button.setStyleSheet("background-color: yellow; color:black")
@@ -866,7 +866,7 @@ class MainWindow(QMainWindow):
             self.i_light_button.setStyleSheet("background-color: gray;")
 
         #check headlight
-        if train_list[i].o_light == True:
+        if train_list[i].get_o_light() == True:
             #light must turn on
             self.o_light_button.setText("💡 ON")
             self.o_light_button.setStyleSheet("background-color: yellow; color:black")
@@ -877,14 +877,14 @@ class MainWindow(QMainWindow):
 
 
         # Update door status for the train
-        if train_list[i].l_door == True:
+        if train_list[i].get_l_door() == True:
             self.l_door_button.setText("Opened")
             self.l_door_button.setEnabled(False)
         else:
             self.l_door_button.setText("Closed")
             self.l_door_button.setEnabled(True)
 
-        if train_list[i].r_door == True:
+        if train_list[i].get_r_door() == True:
             self.r_door_button.setText("Opened")
             self.r_door_button.setEnabled(False)
         else:
@@ -950,42 +950,42 @@ class MainWindow(QMainWindow):
     def temperature_changed(self, temperature):
 
         #update train temperature
-        train_list[self.train_selection.currentIndex()].temperature = temperature
+        train_list[self.train_selection.currentIndex()].set_temperature(temperature)
 
         print(temperature)
 
     #this function will be called anytime inside lights button is pressed 
     def i_light_pressed(self):
         #checks if light is currently on or off
-        if train_list[self.current_train].i_light == False:
+        if train_list[self.current_train].get_i_light() == False:
             #light must turn on
-            train_list[self.current_train].i_light = True
+            train_list[self.current_train].set_i_light(True)
             self.i_light_button.setText("💡 ON")
             self.i_light_button.setStyleSheet("background-color: yellow; color:black")
         else:
             #light must turn off
-            train_list[self.current_train].i_light = False
+            train_list[self.current_train].set_i_light(False)
             self.i_light_button.setText("💡 OFF")
             self.i_light_button.setStyleSheet("background-color: gray;")
 
     #this function will be called anytime inside headlights button is pressed 
     def o_light_pressed(self):
         #checks if light is currently on or off
-        if train_list[self.current_train].o_light == False:
+        if train_list[self.current_train].get_o_light() == False:
             #light must turn on
-            train_list[self.current_train].o_light = True
+            train_list[self.current_train].set_o_light(True)
             self.o_light_button.setText("💡 ON")
             self.o_light_button.setStyleSheet("background-color: yellow; color:black")
         else:
             #light must turn off
-            train_list[self.current_train].o_light = False
+            train_list[self.current_train].set_o_light(False)
             self.o_light_button.setText("💡 OFF")
             self.o_light_button.setStyleSheet("background-color: gray;")
 
     #this function handles when the l_door_button is pressed
     def open_l_door(self):
         #updates signal to tell train model to open door
-        train_list[self.current_train].l_door = True
+        train_list[self.current_train].set_l_door(True)
         train_list[self.current_train].set_station_reached(False)
 
         #disables button
@@ -1002,7 +1002,7 @@ class MainWindow(QMainWindow):
     #activates door button again
     def close_l_door(self):
         #door is now closed
-        train_list[self.current_train].l_door = False
+        train_list[self.current_train].set_l_door(False)
 
         #change text back
         self.l_door_button.setText("Closed")
@@ -1018,7 +1018,7 @@ class MainWindow(QMainWindow):
     #this function handles when the l_door_button is pressed
     def open_r_door(self):
         #updates signal to tell train model to open door
-        train_list[self.current_train].r_door = True
+        train_list[self.current_train].set_r_door(True)
         train_list[self.current_train].set_station_reached(False)
 
         #disables button
@@ -1033,7 +1033,7 @@ class MainWindow(QMainWindow):
     #activates door button again
     def close_r_door(self):
         #door is now closed
-        train_list[self.current_train].r_door = False
+        train_list[self.current_train].set_r_door(False)
 
         #change text back
         self.r_door_button.setText("Closed")
@@ -1056,7 +1056,7 @@ class MainWindow(QMainWindow):
     def manual_mode(self):
 
         #check to see if e_brake has been pressed
-        if train_list[self.current_train].e_brake == False:
+        if train_list[self.current_train].get_e_brake() == False:
             self.e_brake_button.setEnabled(True)
         else:
             self.e_brake_button.setEnabled(False)
@@ -1074,7 +1074,7 @@ class MainWindow(QMainWindow):
             self.s_brake_button.setEnabled(True)
 
             #auto brake turns off
-            self.s_brake_released
+            self.s_brake_released()
             self.s_brake_button.setCheckable(False)
             self.s_brake_button.setChecked(False)
         else:
@@ -1152,18 +1152,18 @@ class MainWindow(QMainWindow):
             
     #handles when service brake is pressed
     def s_brake_pressed(self):
-        train_list[self.current_train].s_brake = True  #sets bool to true when pressed
+        train_list[self.current_train].set_s_brake(True)  #sets bool to true when pressed
         print("Service Brake Pressed")
 
      #handles when service brake is released
     def s_brake_released(self):
-        train_list[self.current_train].s_brake = False  #sets bool back to false when released
+        train_list[self.current_train].set_s_brake(False)  #sets bool back to false when released
         print("Service Brake Released")
 
 
     #hands when emergency brake is clicked
     def e_brake_clicked(self):
-        train_list[self.current_train].e_brake = True
+        train_list[self.current_train].set_e_brake(True)
         self.e_brake_button.setEnabled(False)
 
         #set set-speed to 0 which in turn turns off power
@@ -1271,12 +1271,12 @@ class MainWindow(QMainWindow):
         if train_list[self.current_train].manual_mode == False:
             train_list[self.current_train].setpoint_velocity = train_list[self.current_train].commanded_velocity             #set setpoint equal to commanded
 
-            if train_list[self.current_train].setpoint_velocity < train_list[self.current_train].actual_velocity and train_list[self.current_train].e_brake == False:
-                self.s_brake_pressed
+            if train_list[self.current_train].setpoint_velocity < train_list[self.current_train].actual_velocity and train_list[self.current_train].get_e_brake() == False:
+                self.s_brake_pressed()
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
             else:
-                self.s_brake_released
+                self.s_brake_released()
                 self.s_brake_button.setCheckable(False)
                 self.s_brake_button.setChecked(False)
 
@@ -1287,13 +1287,13 @@ class MainWindow(QMainWindow):
         self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[self.current_train].setpoint_velocity)} MPH</span>') #update setpoint 
            
         #calculate power
-        train_list[self.current_train].Set_Commanded_Power()
+        train_list[self.current_train].calculate_commanded_power()
 
         #update power in test bench
         self.commanded_power_output.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{train_list[self.current_train].commanded_power:.2f} Watts</span>')
 
         #check if doors have to open if train has stopped, auhority is 0, and doors haven't opened
-        if train_list[self.current_train].authority == 0 and train_list[self.current_train].actual_velocity == 0 and train_list[self.current_train].get_station_reached == False:
+        if train_list[self.current_train].authority == 0 and train_list[self.current_train].actual_velocity == 0 and train_list[self.current_train].get_station_reached():
             self.open_l_door()
             self.open_r_door()
 
