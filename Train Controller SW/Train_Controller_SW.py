@@ -118,13 +118,13 @@ class Train_Controller:
         self.commanded_power = power
 
     #set failure modes
-    def set_falure_engine(self, truth):
+    def set_failure_engine(self, truth):
         self.failure_engine = truth
 
-    def set_falure_brake(self, truth):
+    def set_failure_brake(self, truth):
         self.failure_brake = truth
 
-    def set_falure_signal(self, truth):
+    def set_failure_signal(self, truth):
         self.failure_signal = truth
 
 
@@ -161,16 +161,35 @@ class Train_Controller:
 
     def get_e_brake(self):
         return self.e_brake
+    
+    #get authority
+    def get_authority(self):
+        return self.authority
+
+    #set velocities
+    def get_actual_velocity(self):
+        return self.actual_velocity
+
+    def get_commanded_velocity(self):
+        return self.commanded_velocity
+
+    def get_setpoint_velocity(self):
+        return self.setpoint_velocity
 
     #get failure modes
-    def get_falure_engine(self):
+    def get_failure_engine(self):
         return self.failure_engine
 
-    def get_falure_brake(self):
+    def get_failure_brake(self):
         return self.failure_brake
 
-    def get_falure_signal(self):
+    def get_failure_signal(self):
         return self.failure_signal
+    
+    #set commanded power
+    def get_commanded_power(self):
+        return self.commanded_power
+    
     
     
 

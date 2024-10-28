@@ -242,7 +242,7 @@ class MainWindow(QMainWindow):
 
 
         #we create the authority text and put inside the frame
-        self.authority_widget = QLabel(f'<span style="color: #C598FF;"> &nbsp; Authority: </span> <span style="color: white;">{self.mps_to_mph(train_list[0].authority)} ft</span>')
+        self.authority_widget = QLabel(f'<span style="color: #C598FF;"> &nbsp; Authority: </span> <span style="color: white;">{self.mps_to_mph(train_list[0].get_authority())} ft</span>')
         self.authority_widget.setFont(important_font)
 
         #add widget to layout
@@ -263,14 +263,14 @@ class MainWindow(QMainWindow):
         #now we create all QLabels for the 3 velocity values and set their fonts
         #self.actual_velocity_widget = QLabel(f"  Actual Velocity: {self.mps_to_mph(train_list[0].actual_velocity)} MPH", velocities_frame)
         
-        self.actual_velocity_widget = QLabel(f'<span style="color: #C598FF;"> &nbsp; Actual Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[0].actual_velocity)} MPH</span>', velocities_frame)
+        self.actual_velocity_widget = QLabel(f'<span style="color: #C598FF;"> &nbsp; Actual Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[0].get_actual_velocity())} MPH</span>', velocities_frame)
        
         self.actual_velocity_widget.setFont(important_font)
 
-        self.commanded_velocity_widget = QLabel(f'<span style="color: #C598FF;"> &nbsp; Commanded Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[0].actual_velocity)} MPH</span>', velocities_frame)
+        self.commanded_velocity_widget = QLabel(f'<span style="color: #C598FF;"> &nbsp; Commanded Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[0].get_actual_velocity())} MPH</span>', velocities_frame)
         self.commanded_velocity_widget.setFont(important_font)
 
-        self.setpoint_velocity_widget = QLabel((f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[0].setpoint_velocity)} MPH</span>'), velocities_frame)
+        self.setpoint_velocity_widget = QLabel(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[0].get_setpoint_velocity())} MPH</span>', velocities_frame)
         self.setpoint_velocity_widget.setFont(important_font)
 
         #create layout and frame for inputting new setpoint velocity
@@ -662,7 +662,7 @@ class MainWindow(QMainWindow):
 
         #outputs to be displayed 
         
-        self.commanded_power_output = QLabel(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{train_list[self.current_train].commanded_power:.2f} Watts</span>')
+        self.commanded_power_output = QLabel(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{train_list[self.current_train].get_commanded_power():.2f} Watts</span>')
         self.pa_announcement_output = QLabel(f"PA Announcement: {train_list[self.current_train].get_pa_announcement()}")
 
         self.commanded_power_output.setFont(important_font)
@@ -708,23 +708,23 @@ class MainWindow(QMainWindow):
     def engine_failure_changes(self, state):
         #checks if box is checked
         if state == 2:
-            train_list[self.current_train].failure_engine = True
+            train_list[self.current_train].set_failure_engine(True)
         else:
-            train_list[self.current_train].failure_engine = False
+            train_list[self.current_train].set_failure_engine(False)
 
     def brake_failure_changes(self, state):
         #checks if box is checked
         if state == 2:
-            train_list[self.current_train].failure_brake = True
+            train_list[self.current_train].set_failure_brake(True)
         else:
-            train_list[self.current_train].failure_brake = False
+            train_list[self.current_train].set_failure_brake(False)
 
     def signal_failure_changes(self, state):
         #checks if box is checked
         if state == 2:
-            train_list[self.current_train].failure_signal = True
+            train_list[self.current_train].set_failure_signal(True)
         else:
-            train_list[self.current_train].failure_signal = False
+            train_list[self.current_train].set_failure_signal(False)
 
 
     #############################################
@@ -768,9 +768,9 @@ class MainWindow(QMainWindow):
         self.input_authority.setText("")
 
         #set authority in train list
-        train_list[self.current_train].authority = self.feet_to_meters(float(input_value))
+        train_list[self.current_train].set_authority(self.feet_to_meters(float(input_value)))
 
-        print(f"authority: {train_list[self.current_train].authority} meters")
+        print(f"authority: {train_list[self.current_train].get_authority()} meters")
 
     #called when actual velocity input is confirmed
     def confirm_actual_velocity(self):
@@ -782,9 +782,9 @@ class MainWindow(QMainWindow):
         self.input_actual_velocity.setText("")
 
         #set actual velocity in train list as metric
-        train_list[self.current_train].actual_velocity = self.mph_to_mps(float(input_value))
+        train_list[self.current_train].set_actual_velocity(self.mph_to_mps(float(input_value)))
 
-        print(f"actual velocity: {train_list[self.current_train].actual_velocity} m/s")
+        print(f"actual velocity: {train_list[self.current_train].get_actual_velocity()} m/s")
 
     #called when commanded velocity input is confirmed
     def confirm_commanded_velocity(self):
@@ -796,9 +796,9 @@ class MainWindow(QMainWindow):
         self.input_commanded_velocity.setText("")
 
         #set commanded in train list
-        train_list[self.current_train].commanded_velocity = self.mph_to_mps(float(input_value))
+        train_list[self.current_train].set_commanded_velocity(self.mph_to_mps(float(input_value)))
 
-        print(f"commanded velocity: {train_list[self.current_train].commanded_velocity} m/s")
+        print(f"commanded velocity: {train_list[self.current_train].get_commanded_velocity()} m/s")
 
     #called when beacon info input is confirmed
     def confirm_beacon_info(self):
@@ -845,13 +845,13 @@ class MainWindow(QMainWindow):
 
         #update every widget in the UI
 
-        self.authority_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Authority: </span> <span style="color: white;">{self.mps_to_mph(train_list[i].authority)} ft</span>')
+        self.authority_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Authority: </span> <span style="color: white;">{self.mps_to_mph(train_list[i].get_authority())} ft</span>')
 
-        self.actual_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Actual Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[i].actual_velocity)} MPH</span>')
+        self.actual_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Actual Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[i].get_actual_velocity())} MPH</span>')
         
-        self.commanded_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[i].commanded_velocity)} MPH</span>')
+        self.commanded_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[i].get_commanded_velocity())} MPH</span>')
         
-        self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[i].setpoint_velocity)} MPH</span>')
+        self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[i].get_setpoint_velocity())} MPH</span>')
 
         self.temperature_control.setValue(train_list[i].get_temperature())
         
@@ -936,14 +936,14 @@ class MainWindow(QMainWindow):
         input_value = self.mph_to_mps(float(self.input_setpoint_velocity.text()))
 
         #checks if input value is less allowed by commanded velocity
-        if input_value <= train_list[self.current_train].commanded_velocity and input_value >= 0 :
-            train_list[self.current_train].setpoint_velocity = input_value
+        if input_value <= train_list[self.current_train].get_commanded_velocity() and input_value >= 0 :
+            train_list[self.current_train].set_setpoint_velocity(input_value)
         #if value is greater than commanded, then we set it automatically to commanded velocity
-        elif input_value > train_list[self.current_train].commanded_velocity :
-            train_list[self.current_train].setpoint_velocity = train_list[self.current_train].commanded_velocity
+        elif input_value > train_list[self.current_train].get_commanded_velocity() :
+            train_list[self.current_train].set_setpoint_velocity(train_list[self.current_train].get_commanded_velocity())
 
         #update label
-        self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{int(self.mps_to_mph(train_list[self.current_train].setpoint_velocity))} MPH</span>')
+        self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{int(self.mps_to_mph(train_list[self.current_train].get_setpoint_velocity()))} MPH</span>')
 
 
     #this function will be called whenever the temperature is changed
@@ -1091,7 +1091,7 @@ class MainWindow(QMainWindow):
             
 
     def check_errors(self):
-        if train_list[self.current_train].failure_engine == True:
+        if train_list[self.current_train].get_failure_engine() == True:
             self.engine_light.setStyleSheet("""
             background-color: red;
             border-radius: 25px;
@@ -1110,7 +1110,7 @@ class MainWindow(QMainWindow):
             #update test bench
             self.input_engine_failure.setChecked(False)
             
-        if train_list[self.current_train].failure_brake == True:
+        if train_list[self.current_train].get_failure_brake() == True:
             self.brake_light.setStyleSheet("""
             background-color: red;
             border-radius: 25px;
@@ -1130,7 +1130,7 @@ class MainWindow(QMainWindow):
             #update test bench
             self.input_brake_failure.setChecked(False)
             
-        if train_list[self.current_train].failure_signal == True:
+        if train_list[self.current_train].get_failure_signal() == True:
             self.signal_light.setStyleSheet("""
             background-color: red;
             border-radius: 25px;
@@ -1238,9 +1238,9 @@ class MainWindow(QMainWindow):
     def update_outputs(self):
         #update test bench outputs
 
-        self.commanded_power_output.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{train_list[self.current_train].commanded_power:.2f} Watts</span>')
+        self.commanded_power_output.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{train_list[self.current_train].get_commanded_power():.2f} Watts</span>')
 
-        #self.commanded_power_output.setText(f"Commanded Power: {train_list[self.current_train].commanded_power:.2f} Watts")
+        #self.commanded_power_output.setText(f"Commanded Power: {train_list[self.current_train].get_commanded_power:.2f} Watts")
         self.pa_announcement_output.setText(f"PA Announcement: {train_list[self.current_train].get_pa_announcement()}")
 
 
@@ -1268,10 +1268,10 @@ class MainWindow(QMainWindow):
 
         #checks if train is in manual mode
         #If in auto, sets setpoint velocity to commanded and automatically brakes if setpoint velocity is below actual velocity
-        if train_list[self.current_train].manual_mode == False:
-            train_list[self.current_train].setpoint_velocity = train_list[self.current_train].commanded_velocity             #set setpoint equal to commanded
+        if train_list[self.current_train].get_manual_mode() == False:
+            train_list[self.current_train].set_setpoint_velocity(train_list[self.current_train].get_commanded_velocity())            #set setpoint equal to commanded
 
-            if train_list[self.current_train].setpoint_velocity < train_list[self.current_train].actual_velocity and train_list[self.current_train].get_e_brake() == False:
+            if train_list[self.current_train].get_setpoint_velocity() < train_list[self.current_train].get_actual_velocity() and train_list[self.current_train].get_e_brake() == False:
                 self.s_brake_pressed()
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
@@ -1284,16 +1284,16 @@ class MainWindow(QMainWindow):
         #make sure setpoint can not exceed commanded
         train_list[self.current_train].SetSetPointVelocity()
 
-        self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[self.current_train].setpoint_velocity)} MPH</span>') #update setpoint 
+        self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{self.mps_to_mph(train_list[self.current_train].get_setpoint_velocity())} MPH</span>') #update setpoint 
            
         #calculate power
         train_list[self.current_train].calculate_commanded_power()
 
         #update power in test bench
-        self.commanded_power_output.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{train_list[self.current_train].commanded_power:.2f} Watts</span>')
+        self.commanded_power_output.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{train_list[self.current_train].get_commanded_power():.2f} Watts</span>')
 
         #check if doors have to open if train has stopped, auhority is 0, and doors haven't opened
-        if train_list[self.current_train].authority == 0 and train_list[self.current_train].actual_velocity == 0 and train_list[self.current_train].get_station_reached():
+        if train_list[self.current_train].get_authority == 0 and train_list[self.current_train].get_actual_velocity() == 0 and train_list[self.current_train].get_station_reached():
             self.open_l_door()
             self.open_r_door()
 
