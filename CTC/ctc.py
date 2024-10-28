@@ -19,8 +19,8 @@ class MyWindow(QMainWindow, Clock, Train):
 
         # Create the open block list, everything should open upon creation
         self.open_blocks = []
-        for i in range(1,17): # fill the list with all necesary blocks
-            self.open_blocks.append(('Blue',i))
+        for i in range(1,151): # fill the list with all necesary blocks
+            self.open_blocks.append(('Green', i))
 
         # Create the maintenance blocks list
         self.maintenance_blocks = []
@@ -514,83 +514,29 @@ class MyWindow(QMainWindow, Clock, Train):
         blocks_frame = self.create_section_frame(650, 225)
         blocks_layout = QVBoxLayout()
 
-        # Upper portion of Block Occupancies
-        upper_blocks_label = QLabel("Block Occupancies")
-        upper_blocks_label.setStyleSheet("color: white; font-size: 20px;")
-        upper_blocks_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-        blocks_layout.addWidget(upper_blocks_label)
+        # Label for Block Occupancies
+        block_occupancies_label = QLabel("Block Occupancies")
+        block_occupancies_label.setStyleSheet("color: white; font-size: 20px;")
+        block_occupancies_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
+        blocks_layout.addWidget(block_occupancies_label)
 
-        # Lower portion of Block Occupancies
-        # Create a scroll area
-        scroll_area = QScrollArea()
-        scroll_area.setStyleSheet("""
-            QScrollBar:vertical {
-                background: #ffffff;        /* Background color of the scrollbar */
-                width: 15px;
-                margin: 15px 3px 15px 3px;
-            }
+        # Create grid for the blocks
+        self.blocks_grid_layout = QGridLayout()
 
-            QScrollBar::handle:vertical {
-                background: #772ec8;        /* Handle (thumb) color */
-                min-height: 20px;
-            }
+        number = 1
+        # Create 10x15 grid
+        for row in range(10):
+            for col in range(15):
+                block_label = QLabel(str(number))  # Convert number to string for QLabel text
+                block_label.setStyleSheet("background-color: green; color: white; font-size: 10px;")
+                block_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
+                self.blocks_grid_layout.addWidget(block_label, row, col)
+                self.block_labels['Green', number] = block_label
+                number += 1
 
-            QScrollBar::add-line:vertical {
-                background: #333;
-                height: 15px;
-                subcontrol-position: bottom;
-                subcontrol-origin: margin;
-            }
-
-            QScrollBar::sub-line:vertical {
-                background: #333;
-                height: 15px;
-                subcontrol-position: top;
-                subcontrol-origin: margin;
-            }
-
-            QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
-                border: 2px solid grey;
-                width: 3px;
-                height: 3px;
-                background: white;
-            }
-
-            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-                background: none;
-            }
-        """)
-
-        # Create a widget to hold all the lines of data
-        data_widget = QWidget()
-        data_layout = QVBoxLayout()
-
-        # Create a widget to hold all the lines of data
-        data_widget = QWidget()
-        data_layout = QVBoxLayout()
-
-        # Blocks for making our labels
-        blocks = [('Blue', i+1) for i in range(16)]
-
-        # Add 15 lines of data as QLabel widgets and update their background color
-        for block in blocks:
-            block_label = QLabel(f"Block #{block[1]}")
-            self.block_labels[block] = block_label #store the label in the dictionary
-            block_label.setMinimumHeight(30)
-            block_label.setMinimumWidth(600)
-            # Pass the label and the block to the function to update the background color
-            self.update_label_background(block_label, block)
-            data_layout.addWidget(block_label)
-
-
-        data_widget.setLayout(data_layout)
-        scroll_area.setWidget(data_widget)
-
-        # Add the scroll area to the main layout
-        blocks_layout.addWidget(scroll_area)
+        blocks_layout.addLayout(self.blocks_grid_layout)
         blocks_frame.setLayout(blocks_layout)
         grid_layout.addWidget(blocks_frame, 3, 0, 1, 2)
-
         layout.addLayout(grid_layout)
 
     # Function for making all frames for widgets consistent
@@ -656,22 +602,25 @@ class MyWindow(QMainWindow, Clock, Train):
         # Create horizontal layout for combo box and text entry box
         h_layout = QHBoxLayout()
 
-        # Create combo box with options
-        combo_box = QComboBox()
-        combo_box.addItems(["Blue"])
-        h_layout.addWidget(combo_box)
+        # Create Cbox for Line
+        line_combo_box = QComboBox()
+        line_combo_box.addItems(["Green", "Red"])
+        h_layout.addWidget(line_combo_box)
 
-        # Create text entry box
-        text_entry = QLineEdit()
-        text_entry.setPlaceholderText("1 - 16")
-        h_layout.addWidget(text_entry)
+        # Create Cbox for Block
+        block_combo_box = QComboBox()
+        maintenance_numbers = {block[1] for block in self.maintenance_blocks}
+        for i in range(1, 151):
+            if i not in maintenance_numbers:
+                block_combo_box.addItems([str(i)])
+        h_layout.addWidget(block_combo_box)
 
         # Add horizontal layout to the main layout
         layout.addLayout(h_layout)
 
         # Create 'Submit' button
         button = QPushButton("Submit")
-        button.clicked.connect(lambda: self.submit_closure(dialog, combo_box.currentText(), text_entry.text()))
+        button.clicked.connect(lambda: self.submit_closure(dialog, line_combo_box.currentText(), block_combo_box.currentText()))
         layout.addWidget(button)
 
         dialog.setLayout(layout)
@@ -685,19 +634,15 @@ class MyWindow(QMainWindow, Clock, Train):
             print('Cannot place block under maintenance since train is occupying block')
         else:
             self.maintenance_blocks.append((line, block))
-            self.maintenance_blocks = sorted(self.maintenance_blocks, key=lambda x: x[1])
             self.update_opening_button_state()
-            self.nates_occupied_blocks.append((line, block))
-            self.nates_occupied_blocks = sorted(self.nates_occupied_blocks, key=lambda x: x[1])
             self.open_blocks.remove((line, block))
 
             # Change background color accordingly
-            if new_block in self.block_labels:
-                block_label = self.block_labels[new_block]
-                self.update_label_background(block_label, new_block)
+            #if new_block in self.block_labels:
+            block_label = self.block_labels[new_block]
+            self.update_label_background(block_label, new_block)
 
             print("Block", block, "on the", line, "line has been closed for maintenance!")
-            print("Sending proper signals to prevent trains from entering block Blue #"+str(block)+"...")
             dialog.accept()
 
     # The functionality for user opening a block from maintenance
@@ -754,7 +699,7 @@ class MyWindow(QMainWindow, Clock, Train):
         # Create combo box with options
         line_combo_box = QComboBox()
         for block in self.maintenance_blocks:
-            line_combo_box.addItem(f"{block[0]} - Block #{block[1]}")
+            line_combo_box.addItem(f"{block[0]} #{block[1]}")
         h_layout.addWidget(line_combo_box)
 
         # Create 'Submit' button
@@ -770,14 +715,12 @@ class MyWindow(QMainWindow, Clock, Train):
 
     # Handle the selection when 'Submit' is pressed
     def submit_opening(self, dialog, open_block):
-        block_line, block_number_str = open_block.split(" - ")
-        block_number_str = block_number_str[7:]
+        block_line, block_number_str = open_block.split(" #")
         block_number = int(block_number_str)
         block = (block_line, block_number)
         self.open_blocks.append(block)
         self.open_blocks = sorted(self.open_blocks, key=lambda x: x[1])
         self.maintenance_blocks.remove(block)
-        self.nates_occupied_blocks.remove(block)
         self.update_opening_button_state()
 
         # Change background color accordingly
@@ -786,7 +729,6 @@ class MyWindow(QMainWindow, Clock, Train):
             self.update_label_background(block_label, block)
 
         print("Block", block_line, "on the", block_number, "line has been reopened from maintenance!")
-        print("Sending proper signals to allow trains to enter block Blue #"+str(block_number)+"...")
         dialog.accept()  
 
     # Method to update the Opening button's state dynamically
@@ -1022,7 +964,7 @@ class MyWindow(QMainWindow, Clock, Train):
             self.station_select_combo_box.setPlaceholderText('Select Station')
             self.station_select_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             self.station_select_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
-            self.station_select_combo_box.addItems(["GLENBURY", "DORMONT", "MT LEBANON", "POPLAR", "CASTLE SHANNON","OVERBROOK", "INGLEWOOD", "CENTRAL", "WHITED", "EDGEBROOK", "PIONEER", "SOUTH BANK"])
+            self.station_select_combo_box.addItems(["GLENBURY", "DORMONT", "MT LEBANON", "POPLAR", "CASTLE SHANNON","OVERBROOK", "INGLEWOOD", "CENTRAL", "WHITED", "EDGEBROOK", "PIONEER", "LEBRON", "SOUTH BANK"])
             self.station_and_time_layout.addWidget(self.station_select_combo_box)
 
             # Add time entrance
@@ -1050,7 +992,7 @@ class MyWindow(QMainWindow, Clock, Train):
             pass            
             try:
                 # Read the Excel file
-                new_trains = myReader.get_green_routes(file_path)
+                new_trains = myScheduleReader.get_green_routes(file_path)
                 for i in new_trains:
                     self.trains.append(i)
             
@@ -1076,40 +1018,55 @@ class MyWindow(QMainWindow, Clock, Train):
 
     # Create the train object
     def submit_dispatch(self):
-        if len(self.trains) == 0:
-            new_train = 'Train 1'
-        else:
-            new_train = 'Train '+str(len(self.trains) + 1)
+        selected_name = self.schedule_train_combo_box.currentText()
+        if selected_name == 'New Train': # Create a new train
+            print('new trains')
+            if len(self.trains) == 0:
+                new_train = 'Train 1'
+            else:
+                new_train = 'Train '+str(len(self.trains) + 1)
 
-        new_train = Train(new_train, 'Green')
-        print(new_train.name, 'on the Green line will arrive at', self.station_select_combo_box.currentText() ,'at', self.time_select_edit.text())
-        rate_string = str(len(self.trains) + 1)+' Trains/hr'
-        self.rate_label.setText(rate_string)
-        self.schedule_train_combo_box.addItem(new_train.name)
-        
+            new_train = Train(new_train, 'Green')
+            print(new_train.name, 'on the Green line will arrive at', self.station_select_combo_box.currentText() ,'at', self.time_select_edit.text())
+            rate_string = str(len(self.trains) + 1)+' Trains/hr'
+            self.rate_label.setText(rate_string)
+            self.schedule_train_combo_box.addItem(new_train.name)
+            
+            new_train.add_stop(self.station_select_combo_box.currentText())
+            new_train.get_authority_from_map()
+            print('current =', new_train.get_authority())
 
-        if len(self.trains) == 0: # If we are adding the first train, delete the label
-            # Remove the current QLabel
-            self.train_data_big_layout.removeWidget(self.train_label)
-            self.train_label.deleteLater()  # Delete QLabel
-        else:
-            # Remove the QComboBox
-            self.train_data_big_layout.removeWidget(self.train_data_combo_box)
-            self.train_data_combo_box.deleteLater() # Delete QComboBox
+            if len(self.trains) == 0: # If we are adding the first train, delete the label
+                # Remove the current QLabel
+                self.train_data_big_layout.removeWidget(self.train_label)
+                self.train_label.deleteLater()  # Delete QLabel
+            else:
+                # Remove the QComboBox
+                self.train_data_big_layout.removeWidget(self.train_data_combo_box)
+                self.train_data_combo_box.deleteLater() # Delete QComboBox
 
-        self.trains.append(new_train)
+            self.trains.append(new_train)
 
-        # Create the QComboBox
-        self.train_data_combo_box = QComboBox()
-        self.train_data_combo_box.setPlaceholderText('Train')
-        self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
-        for train in self.trains:
-            self.train_data_combo_box.addItem(train.name)
-        self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
+            # Create the QComboBox
+            self.train_data_combo_box = QComboBox()
+            self.train_data_combo_box.setPlaceholderText('Train')
+            self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+            self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+            for train in self.trains:
+                self.train_data_combo_box.addItem(train.name)
+            self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
 
-        # Add the QComboBox to the layout
-        self.train_data_big_layout.addWidget(self.train_data_combo_box)
+            # Add the QComboBox to the layout
+            self.train_data_big_layout.addWidget(self.train_data_combo_box)            
+
+        else: # Add a stop to the train
+            selected_train = next((train for train in self.trains if train.name == selected_name), None)
+            print('clearing')
+            selected_train.route_authorities.clear()
+            print(selected_train.route_authorities)
+            selected_train.add_stop(self.station_select_combo_box.currentText())
+            selected_train.get_authority_from_map()
+            
 
     # Display the correct data based on the train selected
     def train_selected(self, selected_train):
@@ -1152,8 +1109,8 @@ if __name__ == "__main__":
     # Create an object from Clock class
     myClock = Clock()
 
-    # Create an object from the Schedule class
-    myReader = ScheduleReader()
+    # Create an object from the ScheduleReader class
+    myScheduleReader = ScheduleReader()
 
     window = MyWindow()
     window.show()

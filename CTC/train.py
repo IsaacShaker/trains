@@ -1,5 +1,5 @@
-from mapReader import mapReader
 from collections import deque
+from mapReader import MapReader
 
 class Train:
 
@@ -10,6 +10,8 @@ class Train:
         self.suggested_speed = 0
         self.current_block = 0
         self.route_authorities = deque()
+        self.station_stops = []
+        self.myReader = MapReader()
 
     def set_name(self, new_name):
         self.name = new_name
@@ -40,16 +42,26 @@ class Train:
 
     def get_route_from_schedule(self):
         if (self.line == 'Green'):
-            authorities_list = self.calculate_green_authorities(self.name)
-            for authority in authorities_list:
+            authority_list = self.calculate_green_authorities(self.name)
+            for authority in authority_list:
                 self.route_authorities.append(authority)
-        #elif (self.line == 'Red'):
+        #else (self.line == 'Red'):
             #authorities_list = self.myReader.calculate_red_authorities(self.name)
             #for authority in authorities_list:
                 #self.route_authorities.append(authority)
     
     def get_authority_from_map(self):
-        pass
+        if self.line == 'Green':
+            authority_list = self.myReader.calculate_green_authorities(self.station_stops)
+            for authority in authority_list:
+                self.route_authorities.append(authority)
+        #else:
+            #authority_list = self.calculate_red_authorites(self.station_stops)
+            #for authority in authority_list:
+                #self.route_authorities.append(authority)
+
+        self.set_current_authority(self.route_authorities[0])
+        print('route_authorities', self.route_authorities)
 
     def updateAuthority(self):
         # Remove the previous authority
@@ -61,6 +73,11 @@ class Train:
 
     def add_authority(self, new_authority):
         self.route_authorities.append(new_authority)
+    
+    def add_stop(self, station):
+        station = "STATION; "+station
+        self.station_stops.append(station)
+        print(self.station_stops)
 
     def find_current_block(self, occupied_blocks):
         pass
