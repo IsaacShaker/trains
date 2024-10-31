@@ -190,17 +190,24 @@ class Train_Controller:
     def get_commanded_power(self):
         return self.commanded_power
     
-    
-    
-
-
-    
     #pa announcement string
     def get_pa_announcement(self):
         return self.pa_announcement
     
     def get_station_reached(self):
         return self.station_reached
+    
+
+    #checks if authority is at distance where braking should occur in auto mode
+    def stop_at_station(self):
+
+        #checks if authorirt is less than Vi^2 / 2*max-braking
+        if self.authority <= self.actual_velocity**2 / 2.4:
+            self.s_brake = True
+            return True
+        else:
+            self.s_brake = False
+            return False
 
     
 

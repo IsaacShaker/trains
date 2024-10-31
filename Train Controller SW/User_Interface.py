@@ -1271,7 +1271,12 @@ class MainWindow(QMainWindow):
         if train_list[self.current_train].get_manual_mode() == False:
             train_list[self.current_train].set_setpoint_velocity(train_list[self.current_train].get_commanded_velocity())            #set setpoint equal to commanded
 
-            if train_list[self.current_train].get_setpoint_velocity() < train_list[self.current_train].get_actual_velocity() and train_list[self.current_train].get_e_brake() == False:
+            #first we ehck if train has to brake to stop at a station
+            if train_list[self.current_train].stop_at_station() == True:
+                self.s_brake_pressed()
+                self.s_brake_button.setCheckable(True)
+                self.s_brake_button.setChecked(True)
+            elif train_list[self.current_train].get_setpoint_velocity() < train_list[self.current_train].get_actual_velocity() and train_list[self.current_train].get_e_brake() == False:
                 self.s_brake_pressed()
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
