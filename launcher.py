@@ -21,11 +21,11 @@ def getBlocksFromTrackController(self):
 class MainApp(QApplication):
     def __init__(self, argv):
         super().__init__(argv)
-        self.ctc = MyWindow()
+        # self.ctc = MyWindow()
         self.track_controller = MyApp()
 
         self.track_controller.show()
-        self.ctc.show()
+        # self.ctc.show()
 
     def closeEvent(self, event):
         """Override close event to shutdown Flask server."""
