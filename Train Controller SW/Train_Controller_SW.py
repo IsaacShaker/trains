@@ -208,6 +208,12 @@ class Train_Controller:
         else:
             self.s_brake = False
             return False
+        
+    #this function updates authority in real time in order to have an accurate reading for the driver
+    def update_authority(self):
+        self.authority -= self.actual_velocity*self.T   #multiple time interval by actual velocity
+
+
 
     
 
