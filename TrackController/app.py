@@ -3,19 +3,23 @@ import os
 import shutil
 import json
 import copy
+from threading import Thread
+import requests  # For triggering shutdown
+from TrackController.api import start_api  # Import the API starter function
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QApplication, QWidget, QTabWidget, QComboBox, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog
-from AutoToggle import AutoToggle
-from ModeToggle import ModeToggle
-from Switches import Switches
-from TrafficLights import TrafficLights
-from Crossings import Crossings
-from block_occupancy import BlockOccupancy
-from PLC_Manager import PLCManager
+from TrackController.Components.Toggle_Buttons.AutoToggle import AutoToggle
+from TrackController.Components.Toggle_Buttons.ModeToggle import ModeToggle
+from TrackController.Components.Switches.Switches import Switches
+from TrackController.Components.Traffic_Lights.TrafficLights import TrafficLights
+from TrackController.Components.Crossings.Crossings import Crossings
+from TrackController.Components.Block_Occupancy.block_occupancy import BlockOccupancy
+from TrackController.Components.PLC_Manager import PLCManager
 
 
 # Load the JSON file with block and switch data
-with open('track_model.json', 'r') as json_file:
+json_path="TrackController/track_model.json"
+with open(json_path, 'r') as json_file:
     data = json.load(json_file)
 
 lines = ["Blue", "Green", "Red"]
@@ -26,17 +30,16 @@ class MyApp(QWidget):
 
         # Initial properties of the UI
         self.line = "Blue"
-        self.mode = "HW"
+        self.mode = "SW"
         self.auto = True
         self.data_main = copy.deepcopy(data)
         self.data_test = copy.deepcopy(data)
         self.saved_values = []  # List to store saved input values
-        self.blue_line_plc_manager = PLCManager(self.data_test["Blue"]["HW"], self.auto)
-        self.blue_line_plc_manager_HW = PLCManager(self.data_test["Blue"]["HW"], self.auto)
+        self.blue_line_plc_manager = PLCManager(self.data_test["Blue"]["SW"], self.auto)
 
-        with open("styles.qss", "r") as f:
+        with open("TrackController/styles.qss", "r") as f:
             style = f.read()
-        app.setStyleSheet(style)
+        self.setStyleSheet(style)
 
         # Set window geometry
         screen = QApplication.primaryScreen().availableGeometry()
@@ -49,6 +52,7 @@ class MyApp(QWidget):
 
         self.create_main_tab()
         self.create_test_tab()
+        self.create_upload_tab()
         self.tabs.currentChanged.connect(self.update_content)
 
         # Create a QTimer instance
@@ -60,6 +64,9 @@ class MyApp(QWidget):
         # Start the timer to call update_content every 500 milliseconds
         self.update_ui_timer.start(500)
 
+    def get_test_data(self):
+        return self.data_test
+    
     def closeEvent(self, event):
         """Override the close event to stop the timer before closing."""
         self.blue_line_plc_manager.stop_current_plc()  # Stop the PLC if running
@@ -82,21 +89,6 @@ class MyApp(QWidget):
         lines_dropdown_menu.setCurrentText(self.line)
         left_layout.addWidget(lines_dropdown_menu)
 
-        # Create a label to show the uploaded file path
-        file_label = QLabel("No file uploaded")
-        left_layout.addWidget(file_label)
-
-        # Create an upload button
-        upload_button = QPushButton("+")  # Set the button text to a plus sign
-        upload_button.setFixedSize(100, 40)  # Adjust the size to make the plus sign more prominent
-
-        # Style the button to center the plus symbol and make it look larger
-        upload_button.setStyleSheet("font-size: 20px;")
-
-        # Connect the button to the upload_file function
-        upload_button.clicked.connect(lambda: self.upload_file(file_label))
-        left_layout.addWidget(upload_button, stretch=1)
-
         # Add label for Block Occupancy
         left_layout.addWidget(QLabel("Block Occupancy"))
 
@@ -105,7 +97,7 @@ class MyApp(QWidget):
         block_scroll_widget = BlockOccupancy((self.data_test if test else self.data_main), self.line, self.mode, test)
         block_scroll.setWidget(block_scroll_widget)
         block_scroll.setWidgetResizable(True)
-        left_layout.addWidget(block_scroll, stretch=4)
+        left_layout.addWidget(block_scroll)
 
         # Right side layout for buttons (traffic lights, switches, crossings)
         right_layout = QVBoxLayout()
@@ -151,7 +143,7 @@ class MyApp(QWidget):
         # Connect dropdown menu to update content function
         lines_dropdown_menu.currentIndexChanged.connect(lambda: self.update_line(lines_dropdown_menu))
 
-        # hw_sw_toggle_button.clicked.connect(self.toggle_hw_sw_mode)
+        hw_sw_toggle_button.clicked.connect(self.toggle_hw_sw_mode)
         manual_auto_toggle_button.clicked.connect(self.toggle_manual_auto_mode)
 
         # Add left and right layouts to the main layout
@@ -246,45 +238,46 @@ class MyApp(QWidget):
 
         self.tabs.addTab(self.test_tab, "Test")
 
-    #def create_upload_tab(self):
-    #    """Creates an upload tab and adds it to the provided QTabWidget."""
+    def create_upload_tab(self):
+        """Creates an upload tab and adds it to the provided QTabWidget."""
         # Create the upload tab widget
-        #upload_tab = QWidget()
-        #upload_layout = QVBoxLayout()
+        upload_tab = QWidget()
+        upload_layout = QVBoxLayout()
         
         # Create dropdown menu for line selection
-        #lines_dropdown_menu = QComboBox()
-        #lines_dropdown_menu.addItems(["Blue", "Green", "Red"])
-        #lines_dropdown_menu.setFixedHeight(40)  # Adjust height for a consistent look
-        #lines_dropdown_menu.setFixedWidth(120)  # Adjust height for a consistent look
-        #lines_dropdown_menu.setCurrentText(self.line)
-        #lines_dropdown_menu.currentIndexChanged.connect(lambda: self.update_line(lines_dropdown_menu))
+        lines_dropdown_menu = QComboBox()
+        lines_dropdown_menu.addItems(["Blue", "Green", "Red"])
+        lines_dropdown_menu.setFixedHeight(40)  # Adjust height for a consistent look
+        lines_dropdown_menu.setFixedWidth(120)  # Adjust height for a consistent look
+        lines_dropdown_menu.setCurrentText(self.line)
+        lines_dropdown_menu.currentIndexChanged.connect(lambda: self.update_line(lines_dropdown_menu))
 
         # Create a label to show the uploaded file path
-        #file_label = QLabel("No file uploaded")
+        file_label = QLabel("No file uploaded")
         
         # Create an upload button
-        #upload_button = QPushButton("+")  # Set the button text to a plus sign
-        #upload_button.setFixedSize(40, 100)  # Adjust the size to make the plus sign more prominent
+        upload_button = QPushButton("+")  # Set the button text to a plus sign
+        upload_button.setFixedSize(100, 100)  # Adjust the size to make the plus sign more prominent
 
         # Style the button to center the plus symbol and make it look larger
-        #upload_button.setStyleSheet("font-size: 20px;")
+        upload_button.setStyleSheet("font-size: 40px;")
 
         # Connect the button to the upload_file function
-        #upload_button.clicked.connect(lambda: self.upload_file(file_label))
+        upload_button.clicked.connect(lambda: self.upload_file(file_label))
 
         # Add the label and button to the layout
-        #upload_layout.addWidget(upload_button, alignment=Qt.AlignmentFlag.AlignCenter)
-        #upload_layout.addWidget(file_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        upload_layout.addWidget(lines_dropdown_menu, alignment=Qt.AlignmentFlag.AlignCenter)
+        upload_layout.addWidget(upload_button, alignment=Qt.AlignmentFlag.AlignCenter)
+        upload_layout.addWidget(file_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Set alignment for the entire layout to center
-        #upload_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        upload_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Set the layout for the upload tab
-        #upload_tab.setLayout(upload_layout)
+        upload_tab.setLayout(upload_layout)
 
         # Add the upload tab to the provided tab widget
-        #self.tabs.addTab(upload_tab, "Upload Tab")
+        self.tabs.addTab(upload_tab, "Upload Tab")
 
     def upload_file(self, file_label):
         """Handles the file upload process, saves the file to a folder, and restarts the PLC program."""
@@ -389,12 +382,12 @@ class MyApp(QWidget):
         self.update_content()
 
     # Toggle between Hardware and Software modes
-    # def toggle_hw_sw_mode(self):
-    #    if self.mode == "HW":
-    #        self.mode = "SW"
-    #    else:
-    #        self.mode = "HW"
-    #   self.update_content()
+    def toggle_hw_sw_mode(self):
+        if self.mode == "HW":
+            self.mode = "SW"
+        else:
+            self.mode = "HW"
+        self.update_content()
 
     # Toggle between Manual and Auto modes
     def toggle_manual_auto_mode(self):
@@ -426,8 +419,14 @@ class MyApp(QWidget):
                     break
 
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = MyApp()
-    ex.show()
-    sys.exit(app.exec())
+# if __name__ == '__main__':
+#     app = QApplication(sys.argv)
+#     ex = MyApp()
+
+#     # Start the API server and pass the MyApp instance
+#     flask_thread = Thread(target=start_api, args=(ex,), daemon=True)
+#     flask_thread.start()
+
+#     # Run the PyQt application
+#     ex.show()
+#     sys.exit(app.exec())

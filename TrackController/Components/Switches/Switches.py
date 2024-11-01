@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QVBoxLayout, QWidget
-from Components.Traffic_Lights.traffic_light_buttons import TrafficLightButton
+from TrackController.Components.Switches.switch_button import SwitchButton
 
-class TrafficLights(QWidget):
+class Switches(QWidget):
     def __init__(self, data, line, mode, editable=False):
         super().__init__()
         self.line = line
@@ -19,10 +19,10 @@ class TrafficLights(QWidget):
         self.mode = mode
 
         # Create checkboxes dynamically based on JSON data
-        for light in self.track_data[self.line][self.mode]['traffic_lights']:
-            traffic_light_button = TrafficLightButton(light, editable)
-            traffic_light_button.setFixedHeight(40)  # Ensure consistent height for traffic light buttons
-            self.layout.addWidget(traffic_light_button)
+        for switch in self.track_data[self.line][self.mode]['switches']:
+            switch_button = SwitchButton(switch, editable)
+            switch_button.setFixedHeight(40)  # Ensure consistent height for traffic light buttons
+            self.layout.addWidget(switch_button)
 
     def clear_layout(self):
         # Remove and delete all items from the layout
