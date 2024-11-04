@@ -3,19 +3,23 @@ import os
 import shutil
 import json
 import copy
+from threading import Thread
+import requests  # For triggering shutdown
+from TrackController.api import start_api  # Import the API starter function
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QApplication, QWidget, QTabWidget, QComboBox, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog
-from Components.Toggle_Buttons.AutoToggle import AutoToggle
-from Components.Toggle_Buttons.ModeToggle import ModeToggle
-from Components.Switches.Switches import Switches
-from Components.Traffic_Lights.TrafficLights import TrafficLights
-from Components.Crossings.Crossings import Crossings
-from Components.Block_Occupancy.block_occupancy import BlockOccupancy
-from Components.PLC_Manager import PLCManager
+from TrackController.Components.Toggle_Buttons.AutoToggle import AutoToggle
+from TrackController.Components.Toggle_Buttons.ModeToggle import ModeToggle
+from TrackController.Components.Switches.Switches import Switches
+from TrackController.Components.Traffic_Lights.TrafficLights import TrafficLights
+from TrackController.Components.Crossings.Crossings import Crossings
+from TrackController.Components.Block_Occupancy.block_occupancy import BlockOccupancy
+from TrackController.Components.PLC_Manager import PLCManager
 
 
 # Load the JSON file with block and switch data
-with open('track_model.json', 'r') as json_file:
+json_path="TrackController/track_model.json"
+with open(json_path, 'r') as json_file:
     data = json.load(json_file)
 
 lines = ["Blue", "Green", "Red"]
@@ -32,11 +36,10 @@ class MyApp(QWidget):
         self.data_test = copy.deepcopy(data)
         self.saved_values = []  # List to store saved input values
         self.blue_line_plc_manager = PLCManager(self.data_test["Blue"]["SW"], self.auto)
-        self.blue_line_plc_manager_HW = PLCManager(self.data_test["Blue"]["HW"], self.auto)
 
-        with open("styles.qss", "r") as f:
+        with open("TrackController/styles.qss", "r") as f:
             style = f.read()
-        app.setStyleSheet(style)
+        self.setStyleSheet(style)
 
         # Set window geometry
         screen = QApplication.primaryScreen().availableGeometry()
@@ -61,6 +64,9 @@ class MyApp(QWidget):
         # Start the timer to call update_content every 500 milliseconds
         self.update_ui_timer.start(500)
 
+    def get_test_data(self):
+        return self.data_test
+    
     def closeEvent(self, event):
         """Override the close event to stop the timer before closing."""
         self.blue_line_plc_manager.stop_current_plc()  # Stop the PLC if running
@@ -413,8 +419,14 @@ class MyApp(QWidget):
                     break
 
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = MyApp()
-    ex.show()
-    sys.exit(app.exec())
+# if __name__ == '__main__':
+#     app = QApplication(sys.argv)
+#     ex = MyApp()
+
+#     # Start the API server and pass the MyApp instance
+#     flask_thread = Thread(target=start_api, args=(ex,), daemon=True)
+#     flask_thread.start()
+
+#     # Run the PyQt application
+#     ex.show()
+#     sys.exit(app.exec())
