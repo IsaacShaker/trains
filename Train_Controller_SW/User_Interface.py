@@ -1,8 +1,9 @@
 import time
 import sys
 
-from Train_Controller_SW import Train_Controller
+from Train_Controller_SW.Train_Controller_SW_Class import Train_Controller
 
+from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import (
     QApplication,
@@ -24,48 +25,67 @@ from PyQt6.QtWidgets import (
     QStackedLayout,
     QFrame,
     QTabWidget,
-    QStackedWidget
+    QStackedWidget,
 )
 
 #list of trains
-train_list =[] 
-
-def add_train():
-    new_train = Train_Controller()
-    train_list.append(new_train)
+# train_list =[] 
 
 
-add_train()
-add_train()
-add_train()
-train_list[0].authority = 200
-train_list[1].authority = 400
-train_list[2].authority = 50
-
-train_list[0].actual_velocity = 10
-train_list[0].commanded_velocity = 18
-train_list[0].setpoint_velocity = 14
-
-train_list[1].actual_velocity = 11
-train_list[1].commanded_velocity = 7
-train_list[1].setpoint_velocity = 7
-
-train_list[2].actual_velocity = 8
-train_list[2].commanded_velocity = 12
-train_list[2].setpoint_velocity = 12
 
 
-class MainWindow(QMainWindow):
+# self.add_train()
+# self.add_train()
+# self.add_train()
+# self.train_list[0].authority = 200
+# self.train_list[1].authority = 250
+# self.train_list[2].authority = 100
+
+# self.train_list[0].actual_velocity = 10
+# self.train_list[0].commanded_velocity = 18
+# self.train_list[0].setpoint_velocity = 14
+
+# self.train_list[1].actual_velocity = 11
+# self.train_list[1].commanded_velocity = 7
+# self.train_list[1].setpoint_velocity = 7
+
+# self.train_list[2].actual_velocity = 8
+# self.train_list[2].commanded_velocity = 12
+# self.train_list[2].setpoint_velocity = 12
+
+
+class Train_Controler_SW_UI(QMainWindow):
 
     def __init__(self):
-        super(MainWindow, self).__init__()
+        super(Train_Controler_SW_UI, self).__init__()
+
+        self.train_list =[]
+
+        self.add_train()
+        self.add_train()
+        self.add_train()
+        self.train_list[0].authority = 200
+        self.train_list[1].authority = 250
+        self.train_list[2].authority = 100
+
+        self.train_list[0].actual_velocity = 10
+        self.train_list[0].commanded_velocity = 18
+        self.train_list[0].setpoint_velocity = 14
+
+        self.train_list[1].actual_velocity = 11
+        self.train_list[1].commanded_velocity = 7
+        self.train_list[1].setpoint_velocity = 7
+
+        self.train_list[2].actual_velocity = 8
+        self.train_list[2].commanded_velocity = 12
+        self.train_list[2].setpoint_velocity = 12
 
         #set a fixed window size
-        self.setFixedSize(725, 525)
+        self.setFixedSize(800, 550)
 
         self.setWindowTitle("Train Controller Software - Micah Smith")
         
-
+        
 
         #############################################
         #OVerall design setup
@@ -98,6 +118,7 @@ class MainWindow(QMainWindow):
 
         #this is a font which we will use for most of the UI
         custom_font = self.create_custom_font()
+        important_font = self.important_custom_font()
         
 
         #this font will be used for inputs
@@ -143,7 +164,9 @@ class MainWindow(QMainWindow):
         engineer_label.setFont(custom_font)
         engineer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        #create kp frame
+        #
+        # 
+        #  kp frame
         kp_ki_layout = QGridLayout()
         kp_ki_frame = QFrame()
         kp_ki_frame.setLayout(kp_ki_layout)
@@ -178,7 +201,7 @@ class MainWindow(QMainWindow):
         #this widget will represent where you can enter Kp
         self.input_kp = QLineEdit(kp_ki_frame)
         self.input_kp.setFont(input_font)
-        self.input_kp.setPlaceholderText(f"{train_list[self.current_train].k_p}")
+        self.input_kp.setPlaceholderText(f"{self.train_list[self.current_train].k_p}")
 
         ki_label = QLabel("Ki:")
         ki_label.setFont(custom_font)
@@ -209,7 +232,7 @@ class MainWindow(QMainWindow):
         #this widget will represent where you can enter in Ki
         self.input_ki = QLineEdit(kp_ki_frame)
         self.input_ki.setFont(input_font)
-        self.input_ki.setPlaceholderText(f"{train_list[self.current_train].k_i}")
+        self.input_ki.setPlaceholderText(f"{self.train_list[self.current_train].k_i}")
 
         #adding kp and kp widgets to frame
         kp_ki_layout.addWidget(kp_label, 0, 0)
@@ -233,16 +256,16 @@ class MainWindow(QMainWindow):
         authority_frame.setFrameShadow(QFrame.Shadow.Raised)
         authority_frame.setLineWidth(3)
 
-        authority_layout = QVBoxLayout()
-        authority_frame.setLayout(authority_layout)
+        self.authority_layout = QVBoxLayout()
+        authority_frame.setLayout(self.authority_layout)
 
 
         #we create the authority text and put inside the frame
-        self.authority_widget = QLabel(f"  Authority: {self.meters_to_feet(train_list[0].authority)} ft", authority_frame)
-        self.authority_widget.setFont(custom_font)
+        self.authority_widget = QLabel(f'<span style="color: #C598FF;"> &nbsp; Authority: </span> <span style="color: white;">{self.meters_to_feet(self.train_list[0].get_authority())} ft</span>')
+        self.authority_widget.setFont(important_font)
 
         #add widget to layout
-        authority_layout.addWidget(self.authority_widget)
+        self.authority_layout.addWidget(self.authority_widget)
 
 
         #############################################
@@ -257,14 +280,17 @@ class MainWindow(QMainWindow):
         velocities_frame.setLineWidth(3)
 
         #now we create all QLabels for the 3 velocity values and set their fonts
-        self.actual_velocity_widget = QLabel(f"  Actual Velocity: {self.mps_to_mph(train_list[0].actual_velocity)} MPH", velocities_frame)
-        self.actual_velocity_widget.setFont(custom_font)
+        #self.actual_velocity_widget = QLabel(f"  Actual Velocity: {self.mps_to_mph(self.train_list[0].actual_velocity)} MPH", velocities_frame)
+        
+        self.actual_velocity_widget = QLabel(f'<span style="color: #C598FF;"> &nbsp; Actual Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[0].get_actual_velocity())} MPH</span>', velocities_frame)
+       
+        self.actual_velocity_widget.setFont(important_font)
 
-        self.commanded_velocity_widget = QLabel(f"  Commanded Velocity: {self.mps_to_mph(train_list[0].commanded_velocity)} MPH", velocities_frame)
-        self.commanded_velocity_widget.setFont(custom_font)
+        self.commanded_velocity_widget = QLabel(f'<span style="color: #C598FF;"> &nbsp; Commanded Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[0].get_actual_velocity())} MPH</span>', velocities_frame)
+        self.commanded_velocity_widget.setFont(important_font)
 
-        self.setpoint_velocity_widget = QLabel(f"  Setpoint Velocity: {self.mps_to_mph(train_list[0].setpoint_velocity)} MPH", velocities_frame)
-        self.setpoint_velocity_widget.setFont(custom_font)
+        self.setpoint_velocity_widget = QLabel(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[0].get_setpoint_velocity())} MPH</span>', velocities_frame)
+        self.setpoint_velocity_widget.setFont(important_font)
 
         #create layout and frame for inputting new setpoint velocity
         setpoint_velocity_frame = QFrame()
@@ -333,7 +359,7 @@ class MainWindow(QMainWindow):
         l_door_label.setFont(custom_font)
 
         #left door button
-        self.l_door_button = QPushButton("Open", doors_frame)
+        self.l_door_button = QPushButton("Closed", doors_frame)
         self.l_door_button.setFont(custom_font)
         self.l_door_button.clicked.connect(self.open_l_door)
 
@@ -348,7 +374,7 @@ class MainWindow(QMainWindow):
         r_door_label.setFont(custom_font)
 
         #right door button
-        self.r_door_button = QPushButton("Open", doors_frame)
+        self.r_door_button = QPushButton("Closed", doors_frame)
         self.r_door_button.setFont(custom_font)
         self.r_door_button.clicked.connect(self.open_r_door)
 
@@ -430,9 +456,9 @@ class MainWindow(QMainWindow):
         self.temperature_control.setSuffix("°F")
         self.temperature_control.setFont(custom_font)
 
-        self.temperature_control.setValue(train_list[self.train_selection.currentIndex()].temperature)
+        self.temperature_control.setValue(self.train_list[self.train_selection.currentIndex()].temperature)
 
-        self.temperature_control.valueChanged.connect(self.value_changed)  #calls function whenever temperature is changed
+        self.temperature_control.valueChanged.connect(self.temperature_changed)  #calls function whenever temperature is changed
 
 
         #add temperaute label and arrow key
@@ -503,7 +529,7 @@ class MainWindow(QMainWindow):
         self.manual_widget.setFont(custom_font)
         
         #function is called when checkbox changes
-        self.manual_widget.stateChanged.connect(self.manual_widget_changes)
+        self.manual_widget.stateChanged.connect(self.manual_widget_changed)
 
         #############################################
         #Service Brake and Emergency Brake
@@ -639,7 +665,7 @@ class MainWindow(QMainWindow):
         self.input_authority.setPlaceholderText("ft")
         self.input_commanded_velocity.setPlaceholderText("MPH")
         self.input_actual_velocity.setPlaceholderText("MPH")
-        self.input_beacon_info.setPlaceholderText("integer")
+        self.input_beacon_info.setPlaceholderText("String")
 
 
         #Code for failure mode inputs
@@ -654,11 +680,16 @@ class MainWindow(QMainWindow):
         self.test_bench_layout.addWidget(output_label, 0, 3)
 
         #outputs to be displayed 
-        self.commanded_power_output = QLabel(f"Commanded Power: {train_list[self.current_train].commanded_power} Watts")
-        self.pa_announcement_output = QLabel(f"PA Announcement: {train_list[self.current_train].Decode_Signal()}")
+        
+        self.commanded_power_output = QLabel(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{self.train_list[self.current_train].get_commanded_power():.2f} Watts</span>')
+        self.pa_announcement_output = QLabel(f"PA Announcement: {self.train_list[self.current_train].get_pa_announcement()}")
+
+        self.commanded_power_output.setFont(important_font)
+
+        #add widget to authority layout
+        self.authority_layout.addWidget(self.commanded_power_output)
 
         #add widgets
-        self.test_bench_layout.addWidget(self.commanded_power_output, 1, 3)
         self.test_bench_layout.addWidget(self.pa_announcement_output, 2, 3)
 
 
@@ -696,23 +727,23 @@ class MainWindow(QMainWindow):
     def engine_failure_changes(self, state):
         #checks if box is checked
         if state == 2:
-            train_list[self.current_train].failure_engine = True
+            self.train_list[self.current_train].set_failure_engine(True)
         else:
-            train_list[self.current_train].failure_engine = False
+            self.train_list[self.current_train].set_failure_engine(False)
 
     def brake_failure_changes(self, state):
         #checks if box is checked
         if state == 2:
-            train_list[self.current_train].failure_brake = True
+            self.train_list[self.current_train].set_failure_brake(True)
         else:
-            train_list[self.current_train].failure_brake = False
+            self.train_list[self.current_train].set_failure_brake(False)
 
     def signal_failure_changes(self, state):
         #checks if box is checked
         if state == 2:
-            train_list[self.current_train].failure_signal = True
+            self.train_list[self.current_train].set_failure_signal(True)
         else:
-            train_list[self.current_train].failure_signal = False
+            self.train_list[self.current_train].set_failure_signal(False)
 
 
     #############################################
@@ -756,9 +787,9 @@ class MainWindow(QMainWindow):
         self.input_authority.setText("")
 
         #set authority in train list
-        train_list[self.current_train].authority = self.feet_to_meters(float(input_value))
+        self.train_list[self.current_train].set_authority(self.feet_to_meters(float(input_value)))
 
-        print(f"authority: {train_list[self.current_train].authority} meters")
+        print(f"authority: {self.train_list[self.current_train].get_authority()} meters")
 
     #called when actual velocity input is confirmed
     def confirm_actual_velocity(self):
@@ -770,11 +801,11 @@ class MainWindow(QMainWindow):
         self.input_actual_velocity.setText("")
 
         #set actual velocity in train list as metric
-        train_list[self.current_train].actual_velocity = self.mph_to_mps(float(input_value))
+        self.train_list[self.current_train].set_actual_velocity(self.mph_to_mps(float(input_value)))
 
-        print(f"actual velocity: {train_list[self.current_train].actual_velocity} m/s")
+        print(f"actual velocity: {self.train_list[self.current_train].get_actual_velocity()} m/s")
 
-    #called when commaned velocity input is confirmed
+    #called when commanded velocity input is confirmed
     def confirm_commanded_velocity(self):
         # Get the text from the input field and update the label
         input_value = self.input_commanded_velocity.text()
@@ -784,27 +815,29 @@ class MainWindow(QMainWindow):
         self.input_commanded_velocity.setText("")
 
         #set commanded in train list
-        train_list[self.current_train].commanded_velocity = self.mph_to_mps(float(input_value))
+        self.train_list[self.current_train].set_commanded_velocity(self.mph_to_mps(float(input_value)))
 
-        print(f"commanded velocity: {train_list[self.current_train].commanded_velocity} m/s")
+        print(f"commanded velocity: {self.train_list[self.current_train].get_commanded_velocity()} m/s")
 
-    ##called when beacon info input is confirmed
+    #called when beacon info input is confirmed
     def confirm_beacon_info(self):
         # Get the text from the input field and update the label
-        input_value = int(self.input_beacon_info.text())
+        input_value = str(self.input_beacon_info.text())
 
-        #update label  
-        self.input_beacon_info.setPlaceholderText(str(input_value))
+        #update label
+        self.input_beacon_info.setPlaceholderText(input_value)
         self.input_beacon_info.setText("")
 
         #set beacon info in train list
-        train_list[self.current_train].beacon_info = input_value
+        self.train_list[self.current_train].set_beacon_info(input_value)
 
-        #set this variable to true so doors open when velocity is 0
-        train_list[self.current_train].station_reached = True
+        #test
+        print(self.train_list[self.current_train].get_pa_announcement())
+        print("fries")
 
         #update display on test bench
         self.update_outputs()
+
 
 
 
@@ -825,19 +858,24 @@ class MainWindow(QMainWindow):
         self.input_authority.setPlaceholderText("ft")
         self.input_commanded_velocity.setPlaceholderText("MPH")
         self.input_actual_velocity.setPlaceholderText("MPH")
-        self.input_beacon_info.setPlaceholderText("integer")
+        self.input_beacon_info.setPlaceholderText("String")
 
 
 
         #update every widget in the UI
-        self.authority_widget.setText(f"  Authority: {self.meters_to_feet(train_list[i].authority)} ft")
-        self.actual_velocity_widget.setText(f"  Actual Velocity: {self.mps_to_mph(train_list[i].actual_velocity)} MPH")
-        self.commanded_velocity_widget.setText(f"  Commanded Velocity: {self.mps_to_mph(train_list[i].commanded_velocity)} MPH")
-        self.setpoint_velocity_widget.setText(f"  Setpoint Velocity: {self.mps_to_mph(train_list[i].setpoint_velocity)} MPH")
-        self.temperature_control.setValue(train_list[i].temperature)
+
+        self.authority_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Authority: </span> <span style="color: white;">{self.meters_to_feet(self.train_list[i].get_authority())} ft</span>')
+
+        self.actual_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Actual Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[i].get_actual_velocity())} MPH</span>')
+        
+        self.commanded_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[i].get_commanded_velocity())} MPH</span>')
+        
+        self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[i].get_setpoint_velocity())} MPH</span>')
+
+        self.temperature_control.setValue(self.train_list[i].get_temperature())
         
         #check inside light
-        if train_list[i].i_light == True:
+        if self.train_list[i].get_i_light() == True:
             #light must turn on
             self.i_light_button.setText("💡 ON")
             self.i_light_button.setStyleSheet("background-color: yellow; color:black")
@@ -847,7 +885,7 @@ class MainWindow(QMainWindow):
             self.i_light_button.setStyleSheet("background-color: gray;")
 
         #check headlight
-        if train_list[i].o_light == True:
+        if self.train_list[i].get_o_light() == True:
             #light must turn on
             self.o_light_button.setText("💡 ON")
             self.o_light_button.setStyleSheet("background-color: yellow; color:black")
@@ -858,23 +896,23 @@ class MainWindow(QMainWindow):
 
 
         # Update door status for the train
-        if train_list[i].l_door == True:
-            self.l_door_button.setText("Operating")
+        if self.train_list[i].get_l_door() == True:
+            self.l_door_button.setText("Opened")
             self.l_door_button.setEnabled(False)
         else:
-            self.l_door_button.setText("Open")
+            self.l_door_button.setText("Closed")
             self.l_door_button.setEnabled(True)
 
-        if train_list[i].r_door == True:
-            self.r_door_button.setText("Operating")
+        if self.train_list[i].get_r_door() == True:
+            self.r_door_button.setText("Opened")
             self.r_door_button.setEnabled(False)
         else:
-            self.r_door_button.setText("Open")
+            self.r_door_button.setText("Closed")
             self.r_door_button.setEnabled(True)
 
         #set kp and Ki values
-        self.input_kp.setPlaceholderText(f"{train_list[i].k_p}")
-        self.input_ki.setPlaceholderText(f"{train_list[i].k_i}")
+        self.input_kp.setPlaceholderText(f"{self.train_list[i].k_p}")
+        self.input_ki.setPlaceholderText(f"{self.train_list[i].k_i}")
         
 
         #check manual mode
@@ -900,6 +938,15 @@ class MainWindow(QMainWindow):
         custom_font.setFamily("Manrope")  #Manrope
         custom_font.setBold(True)  #Bold
         return custom_font
+
+    def important_custom_font(self):
+        
+        #we will set up the font here
+        custom_font = self.font()  # Get the default font
+        custom_font.setPointSize(15)
+        custom_font.setFamily("Manrope")  #Manrope
+        custom_font.setBold(True)  #Bold
+        return custom_font
     
 
     #function is called when setpoint velocity is put in
@@ -908,63 +955,63 @@ class MainWindow(QMainWindow):
         input_value = self.mph_to_mps(float(self.input_setpoint_velocity.text()))
 
         #checks if input value is less allowed by commanded velocity
-        if input_value <= train_list[self.current_train].commanded_velocity and input_value >= 0 :
-            train_list[self.current_train].setpoint_velocity = input_value
+        if input_value <= self.train_list[self.current_train].get_commanded_velocity() and input_value >= 0 :
+            self.train_list[self.current_train].set_setpoint_velocity(input_value)
         #if value is greater than commanded, then we set it automatically to commanded velocity
-        elif input_value > train_list[self.current_train].commanded_velocity :
-            train_list[self.current_train].setpoint_velocity = train_list[self.current_train].commanded_velocity
+        elif input_value > self.train_list[self.current_train].get_commanded_velocity() :
+            self.train_list[self.current_train].set_setpoint_velocity(self.train_list[self.current_train].get_commanded_velocity())
 
-        #update label  
-        self.setpoint_velocity_widget.setText(f"  Setpoint Velocity: {int(self.mps_to_mph(train_list[self.current_train].setpoint_velocity))} MPH")
+        #update label
+        self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{int(self.mps_to_mph(self.train_list[self.current_train].get_setpoint_velocity()))} MPH</span>')
 
 
     #this function will be called whenever the temperature is changed
-    def value_changed(self, temperature):
+    def temperature_changed(self, temperature):
 
         #update train temperature
-        train_list[self.train_selection.currentIndex()].temperature = temperature
+        self.train_list[self.train_selection.currentIndex()].set_temperature(temperature)
 
         print(temperature)
 
     #this function will be called anytime inside lights button is pressed 
     def i_light_pressed(self):
         #checks if light is currently on or off
-        if train_list[self.current_train].i_light == False:
+        if self.train_list[self.current_train].get_i_light() == False:
             #light must turn on
-            train_list[self.current_train].i_light = True
+            self.train_list[self.current_train].set_i_light(True)
             self.i_light_button.setText("💡 ON")
             self.i_light_button.setStyleSheet("background-color: yellow; color:black")
         else:
             #light must turn off
-            train_list[self.current_train].i_light = False
+            self.train_list[self.current_train].set_i_light(False)
             self.i_light_button.setText("💡 OFF")
             self.i_light_button.setStyleSheet("background-color: gray;")
 
     #this function will be called anytime inside headlights button is pressed 
     def o_light_pressed(self):
         #checks if light is currently on or off
-        if train_list[self.current_train].o_light == False:
+        if self.train_list[self.current_train].get_o_light() == False:
             #light must turn on
-            train_list[self.current_train].o_light = True
+            self.train_list[self.current_train].set_o_light(True)
             self.o_light_button.setText("💡 ON")
             self.o_light_button.setStyleSheet("background-color: yellow; color:black")
         else:
             #light must turn off
-            train_list[self.current_train].o_light = False
+            self.train_list[self.current_train].set_o_light(False)
             self.o_light_button.setText("💡 OFF")
             self.o_light_button.setStyleSheet("background-color: gray;")
 
     #this function handles when the l_door_button is pressed
     def open_l_door(self):
         #updates signal to tell train model to open door
-        train_list[self.current_train].l_door = True
-        train_list[self.current_train].station_reached = False
+        self.train_list[self.current_train].set_l_door(True)
+        self.train_list[self.current_train].set_station_reached(False)
 
         #disables button
         self.l_door_button.setEnabled(False)
 
         #change button text
-        self.l_door_button.setText("Operating")
+        self.l_door_button.setText("Opened")
 
         #start 60s timer
         self.l_door_timer.start(4000)
@@ -974,13 +1021,13 @@ class MainWindow(QMainWindow):
     #activates door button again
     def close_l_door(self):
         #door is now closed
-        train_list[self.current_train].l_door = False
+        self.train_list[self.current_train].set_l_door(False)
 
         #change text back
-        self.l_door_button.setText("Open")
+        self.l_door_button.setText("Closed")
 
         #activates door button again if in manual mode
-        if train_list[self.current_train].manual_mode:
+        if self.train_list[self.current_train].manual_mode:
             self.l_door_button.setEnabled(True)
 
 
@@ -990,14 +1037,14 @@ class MainWindow(QMainWindow):
     #this function handles when the l_door_button is pressed
     def open_r_door(self):
         #updates signal to tell train model to open door
-        train_list[self.current_train].r_door = True
-        train_list[self.current_train].station_reached = False
+        self.train_list[self.current_train].set_r_door(True)
+        self.train_list[self.current_train].set_station_reached(False)
 
         #disables button
         self.r_door_button.setEnabled(False)
 
         #change button text
-        self.r_door_button.setText("Operating")
+        self.r_door_button.setText("Opened")
 
         #start 60s timer
         self.r_door_timer.start(4000)
@@ -1005,22 +1052,22 @@ class MainWindow(QMainWindow):
     #activates door button again
     def close_r_door(self):
         #door is now closed
-        train_list[self.current_train].r_door = False
+        self.train_list[self.current_train].set_r_door(False)
 
         #change text back
-        self.r_door_button.setText("Open")
+        self.r_door_button.setText("Closed")
 
         #activates door button again if in manual mode
-        if train_list[self.current_train].manual_mode:
+        if self.train_list[self.current_train].manual_mode:
             self.r_door_button.setEnabled(True)
 
     #handles when manual mode is turned on or off
-    def manual_widget_changes(self, state):
+    def manual_widget_changed(self, state):
         #checks if box is checked
         if state == 2:
-            train_list[self.current_train].manual_mode = True
+            self.train_list[self.current_train].manual_mode = True
         else:
-            train_list[self.current_train].manual_mode = False
+            self.train_list[self.current_train].manual_mode = False
 
         #call manual_mode function to enable/disable widgets
         self.manual_mode()
@@ -1028,12 +1075,12 @@ class MainWindow(QMainWindow):
     def manual_mode(self):
 
         #check to see if e_brake has been pressed
-        if train_list[self.current_train].e_brake == False:
+        if self.train_list[self.current_train].get_e_brake() == False:
             self.e_brake_button.setEnabled(True)
         else:
             self.e_brake_button.setEnabled(False)
 
-        if train_list[self.current_train].manual_mode == True:
+        if self.train_list[self.current_train].manual_mode == True:
             #enable all widgets
             self.manual_widget.setChecked(True)
             self.input_setpoint_velocity.setEnabled(True)
@@ -1046,7 +1093,7 @@ class MainWindow(QMainWindow):
             self.s_brake_button.setEnabled(True)
 
             #auto brake turns off
-            self.s_brake_released
+            self.s_brake_released()
             self.s_brake_button.setCheckable(False)
             self.s_brake_button.setChecked(False)
         else:
@@ -1063,7 +1110,7 @@ class MainWindow(QMainWindow):
             
 
     def check_errors(self):
-        if train_list[self.current_train].failure_engine == True:
+        if self.train_list[self.current_train].get_failure_engine() == True:
             self.engine_light.setStyleSheet("""
             background-color: red;
             border-radius: 25px;
@@ -1082,7 +1129,7 @@ class MainWindow(QMainWindow):
             #update test bench
             self.input_engine_failure.setChecked(False)
             
-        if train_list[self.current_train].failure_brake == True:
+        if self.train_list[self.current_train].get_failure_brake() == True:
             self.brake_light.setStyleSheet("""
             background-color: red;
             border-radius: 25px;
@@ -1102,7 +1149,7 @@ class MainWindow(QMainWindow):
             #update test bench
             self.input_brake_failure.setChecked(False)
             
-        if train_list[self.current_train].failure_signal == True:
+        if self.train_list[self.current_train].get_failure_signal() == True:
             self.signal_light.setStyleSheet("""
             background-color: red;
             border-radius: 25px;
@@ -1124,23 +1171,23 @@ class MainWindow(QMainWindow):
             
     #handles when service brake is pressed
     def s_brake_pressed(self):
-        train_list[self.current_train].s_brake = True  #sets bool to true when pressed
+        self.train_list[self.current_train].set_s_brake(True)  #sets bool to true when pressed
         print("Service Brake Pressed")
 
      #handles when service brake is released
     def s_brake_released(self):
-        train_list[self.current_train].s_brake = False  #sets bool back to false when released
+        self.train_list[self.current_train].set_s_brake(False)  #sets bool back to false when released
         print("Service Brake Released")
 
 
     #hands when emergency brake is clicked
     def e_brake_clicked(self):
-        train_list[self.current_train].e_brake = True
+        self.train_list[self.current_train].set_e_brake(True)
         self.e_brake_button.setEnabled(False)
 
         #set set-speed to 0 which in turn turns off power
-        #train_list[self.current_train].setpoint_velocity = 0
-        #self.setpoint_velocity_widget.setText(f"  Setpoint Velocity: {self.mps_to_mph(train_list[self.current_train].setpoint_velocity)} MPH")
+        #self.train_list[self.current_train].setpoint_velocity = 0
+        #self.setpoint_velocity_widget.setText(f"  Setpoint Velocity: {self.mps_to_mph(self.train_list[self.current_train].setpoint_velocity)} MPH")
 
         #call the brake function to slow down train
 
@@ -1153,7 +1200,7 @@ class MainWindow(QMainWindow):
         self.input_kp.setText("")
 
         #set kp in train list
-        train_list[self.current_train].k_p = input_value
+        self.train_list[self.current_train].k_p = input_value
 
     def confirm_ki(self):
         # Get the text from the input field and update the label
@@ -1164,7 +1211,7 @@ class MainWindow(QMainWindow):
         self.input_ki.setText("")
 
         #set kp in train list
-        train_list[self.current_train].k_i = input_value
+        self.train_list[self.current_train].k_i = input_value
 
     #switches to test bench screen
     def to_test_bench(self):
@@ -1173,11 +1220,15 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentIndex(1)
 
         #add overlayed widgets
+        self.test_bench_layout.addWidget(self.commanded_power_output, 1, 3)
         self.test_bench_layout.addWidget(self.control_button, 2, 0)
         self.test_bench_layout.addWidget(self.test_bench_button, 3, 0)
         self.test_bench_layout.addWidget(self.train_selection, 1, 0)
         self.test_bench_layout.addWidget(self.manual_widget, 0, 0)
         self.test_bench_layout.addWidget(self.divider, 0, 1, 8, 1)
+
+        #adjust commanded power text
+        self.commanded_power_output.setFont(QFont())
 
         
 
@@ -1191,25 +1242,29 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentIndex(0)
 
         #add overlayed widgets
+        self.authority_layout.addWidget(self.commanded_power_output)
         self.control_layout.addWidget(self.control_button, 2, 0)
         self.control_layout.addWidget(self.test_bench_button, 3, 0)
         self.control_layout.addWidget(self.train_selection, 1, 0)
         self.control_layout.addWidget(self.manual_widget, 0, 0)
         self.control_layout.addWidget(self.divider, 0, 1, 4, 1)
 
+        #adjust commanded power text
+        self.commanded_power_output.setFont(self.important_custom_font())
+
 
     #updates all outputs
     def update_outputs(self):
         #update test bench outputs
 
-        self.commanded_power_output.setText(f"Commanded Power: {train_list[self.current_train].commanded_power} Watts")
-        self.pa_announcement_output.setText(f"PA Announcement: {train_list[self.current_train].Decode_Signal()}")
+        self.commanded_power_output.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{self.train_list[self.current_train].get_commanded_power():.2f} Watts</span>')
+
+        #self.commanded_power_output.setText(f"Commanded Power: {self.train_list[self.current_train].get_commanded_power:.2f} Watts")
+        self.pa_announcement_output.setText(f"PA Announcement: {self.train_list[self.current_train].get_pa_announcement()}")
 
 
-        print(train_list[self.current_train].beacon_info)
-        train_list[self.current_train].beacon_info = 1
-        print(train_list[self.current_train].Decode_Signal())
-        print(train_list[self.current_train].beacon_info)
+        #self.train_list[self.current_train].beacon_info = "Lebron"
+
 
     #convert meters per second to miles per hour
     def mps_to_mph(self, metric_speed):
@@ -1232,45 +1287,59 @@ class MainWindow(QMainWindow):
 
         #checks if train is in manual mode
         #If in auto, sets setpoint velocity to commanded and automatically brakes if setpoint velocity is below actual velocity
-        if train_list[self.current_train].manual_mode == False:
-            train_list[self.current_train].setpoint_velocity = train_list[self.current_train].commanded_velocity             #set setpoint equal to commanded
+        if self.train_list[self.current_train].get_manual_mode() == False:
+            self.train_list[self.current_train].set_setpoint_velocity(self.train_list[self.current_train].get_commanded_velocity())            #set setpoint equal to commanded
 
-            if train_list[self.current_train].setpoint_velocity < train_list[self.current_train].actual_velocity and train_list[self.current_train].e_brake == False:
-                self.s_brake_pressed
+            #first we ehck if train has to brake to stop at a station
+            if self.train_list[self.current_train].stop_at_station() == True:
+                self.s_brake_pressed()
+                self.s_brake_button.setCheckable(True)
+                self.s_brake_button.setChecked(True)
+            elif self.train_list[self.current_train].get_setpoint_velocity() < self.train_list[self.current_train].get_actual_velocity() and self.train_list[self.current_train].get_e_brake() == False:
+                self.s_brake_pressed()
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
             else:
-                self.s_brake_released
+                self.s_brake_released()
                 self.s_brake_button.setCheckable(False)
                 self.s_brake_button.setChecked(False)
 
 
         #make sure setpoint can not exceed commanded
-        train_list[self.current_train].SetSetPointVelocity()
+        self.train_list[self.current_train].SetSetPointVelocity()
 
-        self.setpoint_velocity_widget.setText(f"  Setpoint Velocity: {self.mps_to_mph(train_list[self.current_train].setpoint_velocity)} MPH") #update setpoint 
+        self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[self.current_train].get_setpoint_velocity())} MPH</span>') #update setpoint 
            
         #calculate power
-        train_list[self.current_train].Set_Commanded_Power()
+        self.train_list[self.current_train].calculate_commanded_power()
 
         #update power in test bench
-        self.commanded_power_output.setText(f"Commanded Power: {train_list[self.current_train].commanded_power} Watts")
+        self.commanded_power_output.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{self.train_list[self.current_train].get_commanded_power():.2f} Watts</span>')
 
         #check if doors have to open if train has stopped, auhority is 0, and doors haven't opened
-        if train_list[self.current_train].authority == 0 and train_list[self.current_train].actual_velocity == 0 and train_list[self.current_train].station_reached:
+        if self.train_list[self.current_train].get_authority == 0 and self.train_list[self.current_train].get_actual_velocity() == 0 and self.train_list[self.current_train].get_station_reached():
             self.open_l_door()
             self.open_r_door()
 
+    def add_train(self):
+        new_train = Train_Controller()
+        self.train_list.append(new_train)
 
 
 
 
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    
+    window = Train_Controler_SW_UI()
+    window.show()
+
+    sys.exit(app.exec())
 
 
 
-
-app = QApplication(sys.argv)
-w = MainWindow()
-w.show()
-app.exec()
+# app = QApplication(sys.argv)
+# w = Train_Controler_SW_UI()
+# w.show()
+# app.exec()
 

@@ -4,6 +4,7 @@ from TrackController.app import MyApp
 import requests
 from api import start_api
 from CTC.ctc import MyWindow
+from Train_Controller_SW.User_Interface import Train_Controler_SW_UI
 from PyQt6.QtWidgets import QApplication
 
 def getBlocksFromTrackController(self):
@@ -23,9 +24,11 @@ class MainApp(QApplication):
         super().__init__(argv)
         self.ctc = MyWindow()
         self.track_controller = MyApp()
+        self.train_controller_sw = Train_Controler_SW_UI()
 
         self.track_controller.show()
         self.ctc.show()
+        self.train_controller_sw.show()
 
     def closeEvent(self, event):
         """Override close event to shutdown Flask server."""
