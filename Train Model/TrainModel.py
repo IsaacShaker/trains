@@ -8,7 +8,7 @@ from PyQt6.QtCore import pyqtSignal, QObject, QTimer
 class TrainModel(QObject):
 
     temperature_changed = pyqtSignal(float)
-    power_changed = pyqtSignal(float)
+    power_changed = pyqtSignal()
     passengers_changed = pyqtSignal()
 
     def __init__(self):
@@ -22,11 +22,11 @@ class TrainModel(QObject):
         self.ID=0
 
         #Key outputs
-        self.commandedSpeed = 0.0
         self.currentVelocity = 0.0
         self.currAccel = 0.0
-        self.authority = False
-        self.power = 0.0
+
+        self.commandedSpeed = 0.0
+        self.authority = 0.0
 
         #Brakes
         self.emergencyBrake = False
@@ -35,7 +35,6 @@ class TrainModel(QObject):
         #User mode other outputs
         self.headLights = False
         self.insideLights = False
-        self.advertisements = False
         self.announcements = ""
         self.rightDoor = True
         self.leftDoor = True
@@ -57,14 +56,14 @@ class TrainModel(QObject):
         self.brakeFailure = False
 
         self.stationName = ""
-        self.atStation = False
 
         #Calculations
-        self.currForce = 0
-        self.currPower = 0
+        self.currForce = 0.0
+        self.currPower = 0.0
         self.samplePeriod = 0.5
-        self.lastVel=0
+        self.lastVel=0.0
 
+        #Constants
         self.MAX_PASSENGERS=222
         self.PERSON_WEIGHT_POUNDS=150 #pounds
         self.CAR_MASS = 40.9 #tons
@@ -131,19 +130,6 @@ class TrainModel(QObject):
     #     total_vel = (self.lastVel + self.currVel) / 2  # Average velocity
     #     dist = self.lastPos + (self.elapsedTime / 2) * total_vel  # Distance calculation
     #     return dist
-
-    # def calc_velocity(self):
-    #     """Calculate average velocity from the last loop."""
-    #     total_acc = (self.lastAccel + self.currAccel) / 2  # Average acceleration
-    #     vel = self.lastVel + (self.elapsedTime / 2) * total_acc  # Velocity calculation
-
-    #     # Limit so that if velocity calculation is less than 0, it is = 0
-    #     if vel < 0:
-    #         vel = 0
-    #     if self.lastVel <= 0 and (self.serviceBrake or self.emergencyBrake):
-    #         vel = 0
-
-    #     return vel
 
     def limit_force(self):
         max_force = self.tons_to_kg(self.totalMass) * 0.5
@@ -244,13 +230,13 @@ class TrainModel(QObject):
         print(f"Velocity: {self.currentVelocity}")
 
         
-        self.power_changed.emit(self.temperature)
+        self.power_changed.emit()
 
         self.lastVel=self.currentVelocity
         # currentPosition = 0
         # positionCalc = 0
 
         
-        # # POSITION
+        # POSITION
         # positionCalc = self.currentVelocity*self.samplePeriod
         # currentPosition = previousPosition + positionCalc
