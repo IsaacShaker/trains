@@ -1,0 +1,931 @@
+{
+  "Blue": {
+    "HW": {
+      "blocks": [
+        {
+          "block": 1,
+          "occupied": false
+        },
+        {
+          "block": 2,
+          "occupied": false
+        },
+        {
+          "block": 3,
+          "occupied": false
+        },
+        {
+          "block": 4,
+          "occupied": false
+        },
+        {
+          "block": 5,
+          "occupied": false
+        },
+        {
+          "block": 6,
+          "occupied": false
+        },
+        {
+          "block": 7,
+          "occupied": false
+        },
+        {
+          "block": 8,
+          "occupied": false
+        },
+        {
+          "block": 9,
+          "occupied": false
+        },
+        {
+          "block": 10,
+          "occupied": false
+        },
+        {
+          "block": 11,
+          "occupied": false
+        },
+        {
+          "block": 12,
+          "occupied": false
+        },
+        {
+          "block": 13,
+          "occupied": false
+        },
+        {
+          "block": 14,
+          "occupied": false
+        },
+        {
+          "block": 15,
+          "occupied": false
+        }
+      ],
+      "switches": [
+        {
+          "name_1": "5 to 6",
+          "name_2": "5 to 11",
+          "from": 5,
+          "to": [6, 11],
+          "suggested_toggle": false,
+          "toggled": false
+        }
+      ],
+      "traffic_lights": [
+        {
+          "name_1": "Block 6 - Red",
+          "name_2": "Block 6 - Green",
+          "toggled": false
+        },
+        {
+          "name_1": "Block 11 - Red",
+          "name_2": "Block 11 - Green",
+          "toggled": false
+        }
+      ],
+      "crossings": [
+        {
+          "name_1": "Block 3 - UP",
+          "name_2": "Block 3 - DOWN",
+          "toggled": false
+        }
+      ]
+    },
+    "SW": {
+      "blocks": [
+        {
+          "block": 1,
+          "occupied": false
+        },
+        {
+          "block": 2,
+          "occupied": false
+        },
+        {
+          "block": 3,
+          "occupied": false
+        },
+        {
+          "block": 4,
+          "occupied": false
+        },
+        {
+          "block": 5,
+          "occupied": false
+        },
+        {
+          "block": 6,
+          "occupied": false
+        },
+        {
+          "block": 7,
+          "occupied": false
+        },
+        {
+          "block": 8,
+          "occupied": false
+        },
+        {
+          "block": 9,
+          "occupied": false
+        },
+        {
+          "block": 10,
+          "occupied": false
+        },
+        {
+          "block": 11,
+          "occupied": false
+        },
+        {
+          "block": 12,
+          "occupied": false
+        },
+        {
+          "block": 13,
+          "occupied": false
+        },
+        {
+          "block": 14,
+          "occupied": false
+        },
+        {
+          "block": 15,
+          "occupied": false
+        }
+      ],
+      "switches": [
+        {
+          "name_1": "5 to 6",
+          "name_2": "5 to 11",
+          "from": 5,
+          "to": [6, 11],
+          "suggested_toggle": false,
+          "toggled": false
+        }
+      ],
+      "traffic_lights": [
+        {
+          "name_1": "Block 6 - Red",
+          "name_2": "Block 6 - Green",
+          "toggled": false
+        },
+        {
+          "name_1": "Block 11 - Red",
+          "name_2": "Block 11 - Green",
+          "toggled": false
+        },
+        {
+          "name_1": "New Light",
+          "name_2": "something",
+          "toggled": false
+        }
+      ],
+      "crossings": [
+        {
+          "name_1": "Block 3 - UP",
+          "name_2": "Block 3 - DOWN",
+          "toggled": false
+        }
+      ]
+    }
+  },
+  "Red": {
+    "HW": {
+      "blocks": [],
+      "switches": [],
+      "traffic_lights": [],
+      "crossings": []
+    },
+    "SW": {
+      "blocks": [],
+      "switches": [],
+      "traffic_lights": [],
+      "crossings": []
+    }
+  },
+  "Green": {
+    "HW": {
+      "blocks": [
+        {
+          "block": 1,
+          "occupied": false
+        },
+        {
+          "block": 2,
+          "occupied": false
+        },
+        {
+          "block": 3,
+          "occupied": false
+        },
+        {
+          "block": 4,
+          "occupied": false
+        },
+        {
+          "block": 5,
+          "occupied": false
+        },
+        {
+          "block": 6,
+          "occupied": false
+        },
+        {
+          "block": 7,
+          "occupied": false
+        },
+        {
+          "block": 8,
+          "occupied": false
+        },
+        {
+          "block": 9,
+          "occupied": false
+        },
+        {
+          "block": 10,
+          "occupied": false
+        },
+        {
+          "block": 11,
+          "occupied": false
+        },
+        {
+          "block": 12,
+          "occupied": false
+        },
+        {
+          "block": 13,
+          "occupied": false
+        },
+        {
+          "block": 14,
+          "occupied": false
+        },
+        {
+          "block": 15,
+          "occupied": false
+        },
+        {
+          "block": 16,
+          "occupied": false
+        },
+        {
+          "block": 17,
+          "occupied": false
+        },
+        {
+          "block": 18,
+          "occupied": false
+        },
+        {
+          "block": 19,
+          "occupied": false
+        },
+        {
+          "block": 20,
+          "occupied": false
+        },
+        {
+          "block": 21,
+          "occupied": false
+        },
+        {
+          "block": 22,
+          "occupied": false
+        },
+        {
+          "block": 23,
+          "occupied": false
+        },
+        {
+          "block": 24,
+          "occupied": false
+        },
+        {
+          "block": 25,
+          "occupied": false
+        },
+        {
+          "block": 26,
+          "occupied": false
+        },
+        {
+          "block": 27,
+          "occupied": false
+        },
+        {
+          "block": 28,
+          "occupied": false
+        },
+        {
+          "block": 29,
+          "occupied": false
+        },
+        {
+          "block": 30,
+          "occupied": false
+        },
+        {
+          "block": 31,
+          "occupied": false
+        },
+        {
+          "block": 32,
+          "occupied": false
+        },
+        {
+          "block": 33,
+          "occupied": false
+        },
+        {
+          "block": 34,
+          "occupied": false
+        },
+        {
+          "block": 35,
+          "occupied": false
+        },
+        {
+          "block": 117,
+          "occupied": false
+        },
+        {
+          "block": 118,
+          "occupied": false
+        },
+        {
+          "block": 119,
+          "occupied": false
+        },
+        {
+          "block": 120,
+          "occupied": false
+        },
+        {
+          "block": 121,
+          "occupied": false
+        },
+        {
+          "block": 122,
+          "occupied": false
+        },
+        {
+          "block": 123,
+          "occupied": false
+        },
+        {
+          "block": 124,
+          "occupied": false
+        },
+        {
+          "block": 125,
+          "occupied": false
+        },
+        {
+          "block": 126,
+          "occupied": false
+        },
+        {
+          "block": 127,
+          "occupied": false
+        },
+        {
+          "block": 128,
+          "occupied": false
+        },
+        {
+          "block": 129,
+          "occupied": false
+        },
+        {
+          "block": 130,
+          "occupied": false
+        },
+        {
+          "block": 131,
+          "occupied": false
+        },
+        {
+          "block": 132,
+          "occupied": false
+        },
+        {
+          "block": 133,
+          "occupied": false
+        },
+        {
+          "block": 134,
+          "occupied": false
+        },
+        {
+          "block": 135,
+          "occupied": false
+        },
+        {
+          "block": 136,
+          "occupied": false
+        },
+        {
+          "block": 137,
+          "occupied": false
+        },
+        {
+          "block": 138,
+          "occupied": false
+        },
+        {
+          "block": 139,
+          "occupied": false
+        },
+        {
+          "block": 140,
+          "occupied": false
+        },
+        {
+          "block": 141,
+          "occupied": false
+        },
+        {
+          "block": 142,
+          "occupied": false
+        },
+        {
+          "block": 143,
+          "occupied": false
+        },
+        {
+          "block": 144,
+          "occupied": false
+        },
+        {
+          "block": 145,
+          "occupied": false
+        },
+        {
+          "block": 146,
+          "occupied": false
+        },
+        {
+          "block": 147,
+          "occupied": false
+        },
+        {
+          "block": 148,
+          "occupied": false
+        },
+        {
+          "block": 149,
+          "occupied": false
+        },
+        {
+          "block": 150,
+          "occupied": false
+        }
+      ],
+      "switches": [
+        {
+          "name_1": "13 to 12",
+          "name_2": "13 to 1",
+          "from": 13,
+          "to": [12, 1],
+          "suggested_toggle": false,
+          "toggled": false
+        },
+        {
+          "name_1": "29 to 28",
+          "name_2": "29 to 150",
+          "from": 29,
+          "to": [28, 150],
+          "suggested_toggle": false,
+          "toggled": false
+        }
+      ],
+      "traffic_lights": [
+        {
+          "name_1": "Block 1 - Red",
+          "name_2": "Block 1 - Green",
+          "toggled": false
+        },
+        {
+          "name_1": "Block 12 - Red",
+          "name_2": "Block 12 - Green",
+          "toggled": false
+        },
+        {
+          "name_1": "Block 28 - Red",
+          "name_2": "Block 28 - Green",
+          "toggled": false
+        },
+        {
+          "name_1": "Block 150 - Red",
+          "name_2": "Block 150 - Green",
+          "toggled": false
+        }
+      ],
+      "crossings": [
+        {
+          "name_1": "Block 19 - UP",
+          "name_2": "Block 19 - DOWN",
+          "toggled": false
+        }
+      ]
+    },
+    "SW": {
+      "blocks": [
+        {
+          "block": 36,
+          "occupied": false
+      },
+      {
+          "block": 37,
+          "occupied": false
+      },
+      {
+          "block": 38,
+          "occupied": false
+      },
+      {
+          "block": 39,
+          "occupied": false
+      },
+      {
+          "block": 40,
+          "occupied": false
+      },
+      {
+          "block": 41,
+          "occupied": false
+      },
+      {
+          "block": 42,
+          "occupied": false
+      },
+      {
+          "block": 43,
+          "occupied": false
+      },
+      {
+          "block": 44,
+          "occupied": false
+      },
+      {
+          "block": 45,
+          "occupied": false
+      },
+      {
+          "block": 46,
+          "occupied": false
+      },
+      {
+          "block": 47,
+          "occupied": false
+      },
+      {
+          "block": 48,
+          "occupied": false
+      },
+      {
+          "block": 49,
+          "occupied": false
+      },
+      {
+          "block": 50,
+          "occupied": false
+      },
+      {
+          "block": 51,
+          "occupied": false
+      },
+      {
+          "block": 52,
+          "occupied": false
+      },
+      {
+          "block": 53,
+          "occupied": false
+      },
+      {
+          "block": 54,
+          "occupied": false
+      },
+      {
+          "block": 55,
+          "occupied": false
+      },
+      {
+          "block": 56,
+          "occupied": false
+      },
+      {
+          "block": 57,
+          "occupied": false
+      },
+      {
+          "block": 58,
+          "occupied": false
+      },
+      {
+          "block": 59,
+          "occupied": false
+      },
+      {
+          "block": 60,
+          "occupied": false
+      },
+      {
+          "block": 61,
+          "occupied": false
+      },
+      {
+          "block": 62,
+          "occupied": false
+      },
+      {
+          "block": 63,
+          "occupied": false
+      },
+      {
+          "block": 64,
+          "occupied": false
+      },
+      {
+          "block": 65,
+          "occupied": false
+      },
+      {
+          "block": 66,
+          "occupied": false
+      },
+      {
+          "block": 67,
+          "occupied": false
+      },
+      {
+          "block": 68,
+          "occupied": false
+      },
+      {
+          "block": 69,
+          "occupied": false
+      },
+      {
+          "block": 70,
+          "occupied": false
+      },
+      {
+          "block": 71,
+          "occupied": false
+      },
+      {
+          "block": 72,
+          "occupied": false
+      },
+      {
+          "block": 73,
+          "occupied": false
+      },
+      {
+          "block": 74,
+          "occupied": false
+      },
+      {
+          "block": 75,
+          "occupied": false
+      },
+      {
+          "block": 76,
+          "occupied": false
+      },
+      {
+          "block": 77,
+          "occupied": false
+      },
+      {
+          "block": 78,
+          "occupied": false
+      },
+      {
+          "block": 79,
+          "occupied": false
+      },
+      {
+          "block": 80,
+          "occupied": false
+      },
+      {
+          "block": 81,
+          "occupied": false
+      },
+      {
+          "block": 82,
+          "occupied": false
+      },
+      {
+          "block": 83,
+          "occupied": false
+      },
+      {
+          "block": 84,
+          "occupied": false
+      },
+      {
+          "block": 85,
+          "occupied": false
+      },
+      {
+          "block": 86,
+          "occupied": false
+      },
+      {
+          "block": 87,
+          "occupied": false
+      },
+      {
+          "block": 88,
+          "occupied": false
+      },
+      {
+          "block": 89,
+          "occupied": false
+      },
+      {
+          "block": 90,
+          "occupied": false
+      },
+      {
+          "block": 91,
+          "occupied": false
+      },
+      {
+          "block": 92,
+          "occupied": false
+      },
+      {
+          "block": 93,
+          "occupied": false
+      },
+      {
+          "block": 94,
+          "occupied": false
+      },
+      {
+          "block": 95,
+          "occupied": false
+      },
+      {
+          "block": 96,
+          "occupied": false
+      },
+      {
+          "block": 97,
+          "occupied": false
+      },
+      {
+          "block": 98,
+          "occupied": false
+      },
+      {
+          "block": 99,
+          "occupied": false
+      },
+      {
+          "block": 100,
+          "occupied": false
+      },
+      {
+          "block": 101,
+          "occupied": false
+      },
+      {
+          "block": 102,
+          "occupied": false
+      },
+      {
+          "block": 103,
+          "occupied": false
+      },
+      {
+          "block": 104,
+          "occupied": false
+      },
+      {
+          "block": 105,
+          "occupied": false
+      },
+      {
+          "block": 106,
+          "occupied": false
+      },
+      {
+          "block": 107,
+          "occupied": false
+      },
+      {
+          "block": 108,
+          "occupied": false
+      },
+      {
+          "block": 109,
+          "occupied": false
+      },
+      {
+          "block": 110,
+          "occupied": false
+      },
+      {
+          "block": 111,
+          "occupied": false
+      },
+      {
+          "block": 112,
+          "occupied": false
+      },
+      {
+          "block": 113,
+          "occupied": false
+      },
+      {
+          "block": 114,
+          "occupied": false
+      },
+      {
+          "block": 115,
+          "occupied": false
+      },
+      {
+          "block": 116,
+          "occupied": false
+      }
+    ],
+      "switches": [
+        {
+          "name_1": "Yard to 57",
+          "name_2": "Yard to 63",
+          "from": 0,
+          "to": [57, 63],
+          "suggested_toggle": false,
+          "toggled": false
+        },
+        {
+          "name_1": "77 to 76",
+          "name_2": "77 to 101",
+          "from": 77,
+          "to": [76, 101],
+          "suggested_toggle": false,
+          "toggled": false
+        },
+        {
+          "name_1": "85 to 86",
+          "name_2": "85 to 100",
+          "from": 85,
+          "to": [86, 100],
+          "suggested_toggle": false,
+          "toggled": false
+        }
+      ],
+      "traffic_lights": [
+        {
+          "name_1": "Block 57 - Red",
+          "name_2": "Block 57 - Green",
+          "toggled": false
+        },
+        {
+          "name_1": "Block 63 - Red",
+          "name_2": "Block 63 - Green",
+          "toggled": false
+        },
+        {
+          "name_1": "Block 76 - Red",
+          "name_2": "Block 76 - Green",
+          "toggled": false
+        },
+        {
+          "name_1": "Block 86 - Red",
+          "name_2": "Block 86 - Green",
+          "toggled": false
+        },
+        {
+          "name_1": "Block 100 - Red",
+          "name_2": "Block 100 - Green",
+          "toggled": false
+        },
+        {
+          "name_1": "Block 101 - Red",
+          "name_2": "Block 101 - Green",
+          "toggled": false
+        }
+      ],
+      "crossings": [
+        {
+          "name_1": "Block 108 - UP",
+          "name_2": "Block 108 - DOWN",
+          "toggled": false
+        }
+      ]
+    }
+  }
+}
