@@ -35,6 +35,7 @@ addTrain()
 addTrain()
 addTrain()
 
+train_list[0].set_power(2000)
 
 #train_list[1].atStation=False
 #train_list[1].passCount=100

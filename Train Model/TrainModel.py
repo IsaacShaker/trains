@@ -27,6 +27,7 @@ class TrainModel(QObject):
 
         self.commandedSpeed = 0.0
         self.authority = 0.0
+        self.beaconInfo=0
 
         #Brakes
         self.emergencyBrake = False
@@ -71,6 +72,73 @@ class TrainModel(QObject):
         self.S_BRAKE_ACC = -1.2 #m/s^2
         self.ACCELERATION_LIMIT=0.5 #m/s^2
         self.VELOCITY_LIMIT=19.4444444 #m/s
+
+    #Setters and getters for api
+
+    #Setters
+    def set_headLights(self, state: bool):
+        self.headLights = state
+        print(f"Headlights set to {'on' if state else 'off'}.")
+
+    def set_insideLights(self, state: bool):
+        self.insideLights = state
+        print(f"Inside lights set to {'on' if state else 'off'}.")
+
+    def set_announcements(self, message: str):
+        self.announcements = message
+        print(f"Announcement set to: {message}")
+
+    def set_rightDoor(self, state: bool):
+        self.rightDoor = state
+        print(f"Right door set to {'open' if state else 'closed'}.")
+
+    def set_leftDoor(self, state: bool):
+        self.leftDoor = state
+        print(f"Left door set to {'open' if state else 'closed'}.")
+
+    def set_commandedTemperature(self, temp: float):
+        self.commandedTemperature = temp
+        print(f"Commanded temperature set to {temp}°F.")
+
+    def set_commandedSpeed(self, speed: float):
+        self.commandedSpeed = speed
+        print(f"Commanded speed set to {speed} m/s.")
+
+    def set_authority(self, authority: float):
+        self.authority = authority
+        print(f"Authority set to {authority}.")
+
+    def set_beaconInfo(self, info: int):
+        self.beaconInfo = info
+        print(f"Beacon info set to {info}.")
+
+    def set_emergencyBrake(self, state: bool):
+        self.emergencyBrake = state
+        print(f"Emergency brake set to {'engaged' if state else 'disengaged'}.")
+
+    def set_serviceBrake(self, state: bool):
+        self.serviceBrake = state
+        print(f"Service brake set to {'engaged' if state else 'disengaged'}.")
+
+    def set_power(self, cmd: float):
+        self.currPower=cmd
+        print(f"Power set to {cmd}.")
+
+    #Getters
+    def get_commandedSpeed(self):
+        return self.commandedSpeed
+
+    # Getter for authority
+    def get_authority(self):
+        return self.authority
+
+    # Getter for beaconInfo
+    def get_beaconInfo(self):
+        return self.beaconInfo
+
+    # Getter for currentVelocity
+    def get_currentVelocity(self):
+        return self.currentVelocity
 
     def mps_to_mph(self, vel):
         vel=vel*2.2369
@@ -124,12 +192,6 @@ class TrainModel(QObject):
         if(self.numberOfCars<5):
             self.trainLength=32.2-((5-self.numberOfCars)*6.6)
         print(f"Length: {self.trainLength}")
-        
-
-    # def travelled_dist(self):
-    #     total_vel = (self.lastVel + self.currVel) / 2  # Average velocity
-    #     dist = self.lastPos + (self.elapsedTime / 2) * total_vel  # Distance calculation
-    #     return dist
 
     def limit_force(self):
         max_force = self.tons_to_kg(self.totalMass) * 0.5
