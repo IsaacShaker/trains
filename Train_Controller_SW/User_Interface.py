@@ -288,7 +288,7 @@ class Train_Controler_SW_UI(QMainWindow):
        
         self.actual_velocity_widget.setFont(important_font)
 
-        self.commanded_velocity_widget = QLabel(f'<span style="color: #C598FF;"> &nbsp; Commanded Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[0].get_actual_velocity())} MPH</span>', velocities_frame)
+        self.commanded_velocity_widget = QLabel(f'<span style="color: #C598FF;"> &nbsp; Commanded Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[0].get_commanded_velocity())} MPH</span>', velocities_frame)
         self.commanded_velocity_widget.setFont(important_font)
 
         self.setpoint_velocity_widget = QLabel(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[0].get_setpoint_velocity())} MPH</span>', velocities_frame)
@@ -458,7 +458,7 @@ class Train_Controler_SW_UI(QMainWindow):
         self.temperature_control.setSuffix("°F")
         self.temperature_control.setFont(custom_font)
 
-        self.temperature_control.setValue(self.train_list[self.train_selection.currentIndex()].temperature)
+        self.temperature_control.setValue(self.train_list[self.train_selection.currentIndex()].get_temperature())
 
         self.temperature_control.valueChanged.connect(self.temperature_changed)  #calls function whenever temperature is changed
 
@@ -1045,7 +1045,7 @@ class Train_Controler_SW_UI(QMainWindow):
         self.l_door_button.setText("Closed")
 
         #activates door button again if in manual mode
-        if self.train_list[self.current_train].manual_mode:
+        if self.train_list[self.current_train].get_manual_mode():
             self.l_door_button.setEnabled(True)
 
 
@@ -1076,23 +1076,23 @@ class Train_Controler_SW_UI(QMainWindow):
         self.r_door_button.setText("Closed")
 
         #activates door button again if in manual mode
-        if self.train_list[self.current_train].manual_mode:
+        if self.train_list[self.current_train].get_manual_mode():
             self.r_door_button.setEnabled(True)
 
     #handles when manual mode is turned on or off
     def manual_widget_changed(self, state):
         #checks if box is checked
         if state == 2:
-            self.train_list[self.current_train].manual_mode = True
+            self.train_list[self.current_train].set_manual_mode(True)
         else:
-            self.train_list[self.current_train].manual_mode = False
+            self.train_list[self.current_train].set_manual_mode(False)
 
         #call manual_mode function to enable/disable widgets
         self.manual_mode()
 
     def manual_mode(self):
 
-        if self.train_list[self.current_train].manual_mode == True:
+        if self.train_list[self.current_train].get_manual_mode() == True:
             #enable all widgets
             self.manual_widget.setChecked(True)
             self.input_setpoint_velocity.setEnabled(True)
@@ -1222,7 +1222,7 @@ class Train_Controler_SW_UI(QMainWindow):
         self.input_kp.setText("")
 
         #set kp in train list
-        self.train_list[self.current_train].k_p = input_value
+        self.train_list[self.current_train].set_k_p(input_value)
 
     def confirm_ki(self):
         # Get the text from the input field and update the label
@@ -1233,7 +1233,7 @@ class Train_Controler_SW_UI(QMainWindow):
         self.input_ki.setText("")
 
         #set kp in train list
-        self.train_list[self.current_train].k_i = input_value
+        self.train_list[self.current_train].set_k_i(input_value)
 
     #switches to test bench screen
     def to_test_bench(self):
@@ -1317,17 +1317,14 @@ class Train_Controler_SW_UI(QMainWindow):
                 self.s_brake_pressed()
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
-                print("haha")
             elif self.train_list[self.current_train].get_setpoint_velocity() < self.train_list[self.current_train].get_actual_velocity() and self.train_list[self.current_train].get_e_brake() == False:
                 self.s_brake_pressed()
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
-                print("dada")
             else:
                 self.s_brake_released()
                 self.s_brake_button.setChecked(False)
                 self.s_brake_button.setCheckable(False)
-                print("lala")
 
 
         #if e_brake is pressed, checks if it can be unpressed
