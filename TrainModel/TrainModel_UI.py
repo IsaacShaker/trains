@@ -26,16 +26,11 @@ train_list = []
 # Instantiate TrainList globally
 train_list = TrainList()
 
-def addTrain():
-    """Add a new train to the train_list."""
-    train_list.add_train()
+train_list.add_train()
+train_list.add_train()
+train_list.add_train()
 
-# Call addTrain to populate the list
-addTrain()
-addTrain()
-addTrain()
-
-train_list[0].set_power(2000)
+train_list[0].set_announcements("yuh")
 
 #train_list[1].atStation=False
 #train_list[1].passCount=100
@@ -134,6 +129,7 @@ class MainWindow(QMainWindow):
         self.selected_train.temperature_changed.connect(self.update_temperature_label)
         self.selected_train.power_changed.connect(self.update_speeds_label)
         self.selected_train.passengers_changed.connect(self.update_beacon_label)
+        self.selected_train.ui_refresh.connect(self.train_select_update)
 
     def create_user_mode_page(self):
         user_mode_widget = QWidget()
@@ -724,9 +720,7 @@ class MainWindow(QMainWindow):
     # Function to handle announcement input
     def send_announcement(self):
         announcement = self.announcement_input.text()
-        self.selected_train.announcements = announcement
-        print(f"Announcement set: {self.selected_train.announcements}")
-        self.announcement_text.setText(self.selected_train.announcements)
+        self.selected_train.set_announcements(announcement)
         self.announcement_input.clear()
 
     # Function to handle temperature input
@@ -734,7 +728,7 @@ class MainWindow(QMainWindow):
         temperature_value = self.temperature_input.text()
         try:
             temperature = float(temperature_value)
-            self.selected_train.commandedTemperature = temperature
+            self.selected_train.set_commandedTemperature(temperature)
             print(f"Temperature set to {self.selected_train.commandedTemperature} °F.")
             self.selected_train.start_adjusting_temperature()
             self.temperature_input.clear()
@@ -778,6 +772,8 @@ class MainWindow(QMainWindow):
 
         self.update_lights_state()
         self.update_door_states()
+
+        self.announcement_text.setText(f"{self.selected_train.announcements}")
 
         self.height_label.setText(f"{self.selected_train.m_to_ft(self.selected_train.trainHeight):.2f}")
         self.width_label.setText(f"{self.selected_train.m_to_ft(self.selected_train.trainWidth):.2f}")

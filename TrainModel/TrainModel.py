@@ -10,6 +10,7 @@ class TrainModel(QObject):
     temperature_changed = pyqtSignal(float)
     power_changed = pyqtSignal()
     passengers_changed = pyqtSignal()
+    ui_refresh = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -79,50 +80,62 @@ class TrainModel(QObject):
     def set_headLights(self, state: bool):
         self.headLights = state
         print(f"Headlights set to {'on' if state else 'off'}.")
+        self.ui_refresh.emit()
 
     def set_insideLights(self, state: bool):
         self.insideLights = state
         print(f"Inside lights set to {'on' if state else 'off'}.")
+        self.ui_refresh.emit()
 
     def set_announcements(self, message: str):
         self.announcements = message
         print(f"Announcement set to: {message}")
+        self.ui_refresh.emit()
 
     def set_rightDoor(self, state: bool):
         self.rightDoor = state
         print(f"Right door set to {'open' if state else 'closed'}.")
+        self.ui_refresh.emit()
 
     def set_leftDoor(self, state: bool):
         self.leftDoor = state
         print(f"Left door set to {'open' if state else 'closed'}.")
+        self.ui_refresh.emit()
 
     def set_commandedTemperature(self, temp: float):
         self.commandedTemperature = temp
         print(f"Commanded temperature set to {temp}°F.")
+        self.ui_refresh.emit()
 
     def set_commandedSpeed(self, speed: float):
         self.commandedSpeed = speed
         print(f"Commanded speed set to {speed} m/s.")
+        self.ui_refresh.emit()
 
     def set_authority(self, authority: float):
         self.authority = authority
         print(f"Authority set to {authority}.")
+        self.ui_refresh.emit()
 
     def set_beaconInfo(self, info: int):
         self.beaconInfo = info
         print(f"Beacon info set to {info}.")
+        self.ui_refresh.emit()
 
     def set_emergencyBrake(self, state: bool):
         self.emergencyBrake = state
         print(f"Emergency brake set to {'engaged' if state else 'disengaged'}.")
+        self.ui_refresh.emit()
 
     def set_serviceBrake(self, state: bool):
         self.serviceBrake = state
         print(f"Service brake set to {'engaged' if state else 'disengaged'}.")
+        self.ui_refresh.emit()
 
     def set_power(self, cmd: float):
         self.currPower=cmd
         print(f"Power set to {cmd}.")
+        self.ui_refresh.emit()
 
     #Getters
     def get_commandedSpeed(self):
