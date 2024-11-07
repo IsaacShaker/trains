@@ -1,7 +1,9 @@
 import time
 import sys
 
-from Train_Controller_SW.Train_Controller_SW_Class import Train_Controller
+#from Train_Controller_SW.Train_Controller_SW_Class import Train_Controller
+from Train_Controller_SW_Class import Train_Controller
+
 
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, QTimer
@@ -551,6 +553,7 @@ class Train_Controler_SW_UI(QMainWindow):
 
         self.e_brake_button = QPushButton("E-BRAKE", brake_frame)
         self.e_brake_button.setFont(brake_font)
+        self.e_brake_button.setCheckable(True)
         
 
         self.s_brake_button.setStyleSheet(
@@ -595,6 +598,10 @@ class Train_Controler_SW_UI(QMainWindow):
     {
         background-color: #CC0000;  /* button becomes darker when pressed */
     }
+    QPushButton:checked
+            {
+                background-color: #CC0000;  /* button becomes darker when pressed */
+            }
     """)
         
         #service brake is pressed
@@ -913,6 +920,17 @@ class Train_Controler_SW_UI(QMainWindow):
         #set kp and Ki values
         self.input_kp.setPlaceholderText(f"{self.train_list[i].k_p}")
         self.input_ki.setPlaceholderText(f"{self.train_list[i].k_i}")
+
+        if self.train_list[self.current_train].get_e_brake() == True:      #sets e_brake_staus to opposite status
+            self.e_brake_button.setChecked(True)
+        else:
+            self.e_brake_button.setChecked(False)
+        
+        #checks if there are any current failures
+        if self.train_list[self.current_train].check_any_failures() and self.train_list[self.current_train].get_e_brake() == True:
+            self.e_brake_button.setEnabled(False)
+        else:
+            self.e_brake_button.setEnabled(True)
         
 
         #check manual mode
@@ -1074,12 +1092,6 @@ class Train_Controler_SW_UI(QMainWindow):
 
     def manual_mode(self):
 
-        #check to see if e_brake has been pressed
-        if self.train_list[self.current_train].get_e_brake() == False:
-            self.e_brake_button.setEnabled(True)
-        else:
-            self.e_brake_button.setEnabled(False)
-
         if self.train_list[self.current_train].manual_mode == True:
             #enable all widgets
             self.manual_widget.setChecked(True)
@@ -1107,6 +1119,8 @@ class Train_Controler_SW_UI(QMainWindow):
             self.i_light_button.setEnabled(False)
             self.temperature_control.setEnabled(False)
             self.s_brake_button.setEnabled(False)
+            #self.s_brake_button.setCheckable(True)
+            #self.s_brake_button.setChecked(True)
             
 
     def check_errors(self):
@@ -1172,18 +1186,26 @@ class Train_Controler_SW_UI(QMainWindow):
     #handles when service brake is pressed
     def s_brake_pressed(self):
         self.train_list[self.current_train].set_s_brake(True)  #sets bool to true when pressed
-        print("Service Brake Pressed")
+        #print("Service Brake Pressed")
 
      #handles when service brake is released
     def s_brake_released(self):
         self.train_list[self.current_train].set_s_brake(False)  #sets bool back to false when released
-        print("Service Brake Released")
+        #print("Service Brake Released")
 
 
     #hands when emergency brake is clicked
     def e_brake_clicked(self):
-        self.train_list[self.current_train].set_e_brake(True)
-        self.e_brake_button.setEnabled(False)
+        if self.train_list[self.current_train].get_e_brake() == False:      #sets e_brake_staus to opposite status
+            self.train_list[self.current_train].set_e_brake(True)
+            self.e_brake_button.setChecked(True)
+        else:
+            self.train_list[self.current_train].set_e_brake(False)
+            self.e_brake_button.setChecked(False)
+        
+        #checks if there are any current failures
+        if self.train_list[self.current_train].check_any_failures():
+            self.e_brake_button.setEnabled(False)
 
         #set set-speed to 0 which in turn turns off power
         #self.train_list[self.current_train].setpoint_velocity = 0
@@ -1282,7 +1304,7 @@ class Train_Controler_SW_UI(QMainWindow):
     def feet_to_meters(self, imperial):
         return imperial/3.28084
     
-    #function that calculates power
+    #function that calculates power and does all other timed function
     def calculate_power(self):
 
         #checks if train is in manual mode
@@ -1295,15 +1317,24 @@ class Train_Controler_SW_UI(QMainWindow):
                 self.s_brake_pressed()
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
+                print("haha")
             elif self.train_list[self.current_train].get_setpoint_velocity() < self.train_list[self.current_train].get_actual_velocity() and self.train_list[self.current_train].get_e_brake() == False:
                 self.s_brake_pressed()
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
+                print("dada")
             else:
                 self.s_brake_released()
-                self.s_brake_button.setCheckable(False)
                 self.s_brake_button.setChecked(False)
+                self.s_brake_button.setCheckable(False)
+                print("lala")
 
+
+        #if e_brake is pressed, checks if it can be unpressed
+        if self.train_list[self.current_train].get_e_brake() == True:
+            if self.train_list[self.current_train].check_any_failures() == False:
+                self.e_brake_button.setEnabled(True)
+                print(self.train_list[self.current_train].get_e_brake())
 
         #make sure setpoint can not exceed commanded
         self.train_list[self.current_train].SetSetPointVelocity()

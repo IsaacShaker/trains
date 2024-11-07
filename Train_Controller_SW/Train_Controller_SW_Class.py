@@ -186,6 +186,13 @@ class Train_Controller:
     def get_failure_signal(self):
         return self.failure_signal
     
+    #checks if any failures exist
+    def check_any_failures(self):
+        if self.failure_engine or self.failure_brake or self.failure_signal:
+            return True
+        else:
+            return False
+    
     #set commanded power
     def get_commanded_power(self):
         return self.commanded_power
