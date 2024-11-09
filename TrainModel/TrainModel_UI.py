@@ -22,18 +22,6 @@ from PyQt6.QtGui import QFont, QPixmap
 from PyQt6.QtCore import QSize, QTimer
 from PyQt6.QtCore import Qt
 
-# Define train_list globally
-train_list = []
-
-# Instantiate TrainList globally
-train_list = TrainList()
-
-train_list.add_train()
-train_list.add_train()
-train_list.add_train()
-
-train_list[0].set_announcements("yuh")
-
 #train_list[1].atStation=False
 #train_list[1].passCount=100
 #train_list[1].update_passengers()
@@ -71,6 +59,15 @@ train_list[0].set_announcements("yuh")
 class Train_UI(QMainWindow):
     def __init__(self, parent=None):
         super(Train_UI, self).__init__(parent)
+
+        # Instantiate TrainList globally
+        self.train_list = TrainList()
+
+        self.train_list.add_train()
+        self.train_list.add_train()
+        self.train_list.add_train()
+
+        self.train_list[0].set_announcements("Stay clear of doors")
 
         self.setWindowTitle("Train Model")
         self.setGeometry(100, 100, 800, 600)
@@ -124,7 +121,7 @@ class Train_UI(QMainWindow):
         container.setLayout(main_layout)
         self.setCentralWidget(container)
 
-        self.selected_train=train_list[0]
+        self.selected_train=self.train_list[0]
         self.train_select_update()
 
         # Connect the signal to the slot
@@ -162,7 +159,7 @@ class Train_UI(QMainWindow):
         self.train_dropdown.setStyleSheet("font-size: 18px;")
         
         # Populate the dropdown with train names
-        for i in range(len(train_list)):
+        for i in range(len(self.train_list)):
             self.train_dropdown.addItem(f"Train {i}")
 
         # Connect the dropdown to the train_selected function
@@ -687,8 +684,7 @@ class Train_UI(QMainWindow):
     def send_authority(self):
         authority_value = self.authority_input.text()
         if authority_value.isdigit():  # Simple validation
-            self.selected_train.authority = int(authority_value)
-            print(f"Authority set to {self.selected_train.authority} meters.")
+            self.selected_train.set_authority(authority_value)
             self.authority_input.clear()
         else:
             print("Invalid Authority value")
@@ -709,9 +705,7 @@ class Train_UI(QMainWindow):
         power_value = self.power_input.text()
         try:
             power = float(power_value)
-            self.selected_train.currPower = power
-            print(f"Power command set to {self.selected_train.currPower} W.")
-            self.selected_train.receive_power()
+            self.selected_train.set_commanded_power(power)
         except ValueError:
             print("Invalid Power value")
 

@@ -3,6 +3,22 @@ from flask import Flask, render_template_string, jsonify, request
 app = Flask(__name__)
 app.qt_app_instance = None
 
+
+
+@app.route('/train-model/recieve-commanded-power', methods=['POST'])
+def recieve_commanded_power():
+    data = request.get_json()
+
+    float_value = data.get("commanded_power", None)
+    index = data.get("train_id", None)
+
+    if float_value is None or index is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.train_model.train_list[index].set_commanded_power(float_value)
+
+
+
     
 @app.route('/track-controller/get-data/block_occupancies', methods=['GET'])
 def get_data():
@@ -13,16 +29,6 @@ def get_data():
             return jsonify(data), 200
     else:
         return jsonify({"error": "Data not available"}), 500
-
-# @app.route('/update_authority', methods=['POST'])
-# def update_authority():
-#     data = request.get_json()
-#     if 'authority' in data:
-#         authority = data['authority']
-#         result = train_controller.update_authority(authority)
-#         return jsonify(result), 200
-#     else:
-#         return jsonify({"error": "No authority value provided"}), 400
 
 def shutdown_server():
     func = request.environ.get('werkzeug.server.shutdown')

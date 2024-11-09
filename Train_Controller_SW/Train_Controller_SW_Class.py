@@ -1,5 +1,10 @@
 import sys
 import time
+import requests
+
+URL = 'http://127.0.0.1:5000'
+
+
 ############################
 #  Variable Declaration 
 ############################
@@ -8,7 +13,7 @@ import time
 class Train_Controller:
 
     #train constructor function
-    def __init__ (self):
+    def __init__ (self, id):
         self.manual_mode = False
         self.e_brake = False
         self.s_brake = False
@@ -39,10 +44,45 @@ class Train_Controller:
         self.setpoint_velocity = 0
         self.temperature = 70
         self.beacon_info = 0
-        self.train_id = 0
+        self.train_id = id
 
         #Strings
         self.pa_announcement = ""
+
+        #output dictionaries
+        self.commanded_power_dict = {
+            "commanded_power": self.commanded_power,
+            "train_id": self.train_id
+        }
+
+        self.pa_announcement_dict = {
+            "pa_announcement": self.pa_announcement,
+            "train_id": self.train_id
+        }
+
+        self.temperature_dict = {
+            "temperature": self.temperature,
+            "train_id": self.train_id
+        }
+
+        self.lights_dict = {
+            "o_light": self.o_light,
+            "i_light": self.i_light,
+            "train_id": self.train_id
+        }
+
+        self.doors_dict = {
+            "l_door": self.l_door,
+            "r_door": self.r_door,
+            "train_id": self.train_id
+        }
+
+        self.brakes_dict = {
+            "s_brake": self.s_brake,
+            "e_brake": self.e_brake,
+            "train_id": self.train_id
+        }
+
 
     ############################
     #  Function Declaration 
@@ -61,17 +101,21 @@ class Train_Controller:
     #set doors
     def set_l_door(self, left):
         self.l_door = left
+        self.doors_dict["l_door"] = self.l_door
 
     def set_r_door(self, right):
         self.r_door = right
+        self.doors_dict["r_door"] = self.r_door
 
     #set lights
     def set_i_light(self, inside):
         self.i_light = inside
+        self.lights_dict["i_light"] = self.i_light
 
     #set lights
     def set_o_light(self, outside):
         self.o_light = outside
+        self.lights_dict["o_light"] = self.o_light
 
     #set lights
     def set_beacon_info(self, info):
@@ -85,13 +129,16 @@ class Train_Controller:
     #set temperature
     def set_temperature(self, temp):
         self.temperature = temp
+        self.temperature_dict["temperature"] = self.temperature
         
     #set brakes
     def set_s_brake(self, status):
         self.s_brake = status
+        self.brakes_dict["s_brake"] = self.s_brake
 
     def set_e_brake(self, status):
         self.e_brake = status
+        self.brakes_dict["e_brake"] = self.e_brake
 
     #set authority
     def set_authority(self, distance):
@@ -117,6 +164,8 @@ class Train_Controller:
     #set commanded power
     def set_commanded_power(self, power):
         self.commanded_power = power
+
+        self.commanded_power_dict["commanded_power"] = self.commanded_power
 
     #set failure modes
     def set_failure_engine(self, truth):
@@ -252,6 +301,8 @@ class Train_Controller:
         else:
             self.pa_announcement = ""
 
+        self.pa_announcement_dict["pa_announcement"] = self.pa_announcement
+
     #this function will return the commanded Power and will be called every 50 ms
     def calculate_commanded_power(self):
 
@@ -278,7 +329,13 @@ class Train_Controller:
             self.uk = self.uk_1
 
         #calculate commaneded power (kp*ek + ki*uk)
-        self.commanded_power = self.k_p*self.ek + self.k_i*self.uk
+        self.set_commanded_power(self.k_p*self.ek + self.k_i*self.uk)
+
+        response = requests.post(URL + "/train-model/recieve-commanded-power", json=self.commanded_power_dict)
+
+
+
+
 
     # Initialize the counter at the current time (in seconds)
     start_time = time.time()
