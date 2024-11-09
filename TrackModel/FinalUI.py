@@ -2,9 +2,12 @@ import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QTabWidget, QWidget, QLineEdit, QComboBox, QLabel, QTableView, QVBoxLayout
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QPixmap, QStandardItemModel, QStandardItem, QFont
-from TrackModel import buildTrack
-from Section import Section
-from Train import Train
+from TrackModel.TrackModel import buildTrack
+from TrackModel.Section import Section
+from TrackModel.Train import Train
+# from TrackModel import buildTrack
+# from Section import Section
+# from Train import Train
 
 redYard = [] 
 redBlocks = []

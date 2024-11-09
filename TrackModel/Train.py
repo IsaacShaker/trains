@@ -1,5 +1,6 @@
 import requests
-from Station import Station
+from TrackModel.Station import Station
+# from Station import Station
 class Train:
     def __init__(self, fLocOnBlock, fBlock, length):
         self.id = 0
