@@ -1,8 +1,8 @@
 import time
 import sys
 
-from Train_Controller_SW.Train_Controller_SW_Class import Train_Controller
-#from Train_Controller_SW_Class import Train_Controller
+#from Train_Controller_SW.Train_Controller_SW_Class import Train_Controller
+from Train_Controller_SW_Class import Train_Controller
 
 
 from PyQt6.QtGui import QFont
@@ -1308,6 +1308,13 @@ class Train_Controler_SW_UI(QMainWindow):
     
     #function that calculates power and does all other timed function
     def calculate_power(self):
+
+        #updates UI info
+        self.authority_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Authority: </span> <span style="color: white;">{self.meters_to_feet(self.train_list[self.current_train].get_authority())} ft</span>')
+
+        self.actual_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Actual Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[self.current_train].get_actual_velocity())} MPH</span>')
+        
+        self.check_errors()
 
         #checks if train is in manual mode
         #If in auto, sets setpoint velocity to commanded and automatically brakes if setpoint velocity is below actual velocity
