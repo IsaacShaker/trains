@@ -8,8 +8,9 @@ from PyQt6.QtCore import pyqtSignal, QObject, QTimer
 class TrainModel(QObject):
 
     temperature_changed = pyqtSignal(float)
-    power_changed = pyqtSignal(float)
+    power_changed = pyqtSignal()
     passengers_changed = pyqtSignal()
+    ui_refresh = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -22,11 +23,12 @@ class TrainModel(QObject):
         self.ID=0
 
         #Key outputs
-        self.commandedSpeed = 0.0
         self.currentVelocity = 0.0
         self.currAccel = 0.0
-        self.authority = False
-        self.power = 0.0
+
+        self.commandedSpeed = 0.0
+        self.authority = 0.0
+        self.beaconInfo=0
 
         #Brakes
         self.emergencyBrake = False
@@ -35,7 +37,6 @@ class TrainModel(QObject):
         #User mode other outputs
         self.headLights = False
         self.insideLights = False
-        self.advertisements = False
         self.announcements = ""
         self.rightDoor = True
         self.leftDoor = True
@@ -57,14 +58,14 @@ class TrainModel(QObject):
         self.brakeFailure = False
 
         self.stationName = ""
-        self.atStation = False
 
         #Calculations
-        self.currForce = 0
-        self.currPower = 0
+        self.currForce = 0.0
+        self.currPower = 0.0
         self.samplePeriod = 0.5
-        self.lastVel=0
+        self.lastVel=0.0
 
+        #Constants
         self.MAX_PASSENGERS=222
         self.PERSON_WEIGHT_POUNDS=150 #pounds
         self.CAR_MASS = 40.9 #tons
@@ -72,6 +73,85 @@ class TrainModel(QObject):
         self.S_BRAKE_ACC = -1.2 #m/s^2
         self.ACCELERATION_LIMIT=0.5 #m/s^2
         self.VELOCITY_LIMIT=19.4444444 #m/s
+
+    #Setters and getters for api
+
+    #Setters
+    def set_headLights(self, state: bool):
+        self.headLights = state
+        print(f"Headlights set to {'on' if state else 'off'}.")
+        self.ui_refresh.emit()
+
+    def set_insideLights(self, state: bool):
+        self.insideLights = state
+        print(f"Inside lights set to {'on' if state else 'off'}.")
+        self.ui_refresh.emit()
+
+    def set_announcements(self, message: str):
+        self.announcements = message
+        print(f"Announcement set to: {message}")
+        self.ui_refresh.emit()
+
+    def set_rightDoor(self, state: bool):
+        self.rightDoor = state
+        print(f"Right door set to {'open' if state else 'closed'}.")
+        self.ui_refresh.emit()
+
+    def set_leftDoor(self, state: bool):
+        self.leftDoor = state
+        print(f"Left door set to {'open' if state else 'closed'}.")
+        self.ui_refresh.emit()
+
+    def set_commandedTemperature(self, temp: float):
+        self.commandedTemperature = temp
+        print(f"Commanded temperature set to {temp}°F.")
+        self.ui_refresh.emit()
+
+    def set_commandedSpeed(self, speed: float):
+        self.commandedSpeed = speed
+        print(f"Commanded speed set to {speed} m/s.")
+        self.ui_refresh.emit()
+
+    def set_authority(self, authority: float):
+        self.authority = authority
+        print(f"Authority set to {authority}.")
+        self.ui_refresh.emit()
+
+    def set_beaconInfo(self, info: int):
+        self.beaconInfo = info
+        print(f"Beacon info set to {info}.")
+        self.ui_refresh.emit()
+
+    def set_emergencyBrake(self, state: bool):
+        self.emergencyBrake = state
+        print(f"Emergency brake set to {'engaged' if state else 'disengaged'}.")
+        self.ui_refresh.emit()
+
+    def set_serviceBrake(self, state: bool):
+        self.serviceBrake = state
+        print(f"Service brake set to {'engaged' if state else 'disengaged'}.")
+        self.ui_refresh.emit()
+
+    def set_power(self, cmd: float):
+        self.currPower=cmd
+        print(f"Power set to {cmd}.")
+        self.ui_refresh.emit()
+
+    #Getters
+    def get_commandedSpeed(self):
+        return self.commandedSpeed
+
+    # Getter for authority
+    def get_authority(self):
+        return self.authority
+
+    # Getter for beaconInfo
+    def get_beaconInfo(self):
+        return self.beaconInfo
+
+    # Getter for currentVelocity
+    def get_currentVelocity(self):
+        return self.currentVelocity
 
     def mps_to_mph(self, vel):
         vel=vel*2.2369
@@ -125,25 +205,6 @@ class TrainModel(QObject):
         if(self.numberOfCars<5):
             self.trainLength=32.2-((5-self.numberOfCars)*6.6)
         print(f"Length: {self.trainLength}")
-        
-
-    # def travelled_dist(self):
-    #     total_vel = (self.lastVel + self.currVel) / 2  # Average velocity
-    #     dist = self.lastPos + (self.elapsedTime / 2) * total_vel  # Distance calculation
-    #     return dist
-
-    # def calc_velocity(self):
-    #     """Calculate average velocity from the last loop."""
-    #     total_acc = (self.lastAccel + self.currAccel) / 2  # Average acceleration
-    #     vel = self.lastVel + (self.elapsedTime / 2) * total_acc  # Velocity calculation
-
-    #     # Limit so that if velocity calculation is less than 0, it is = 0
-    #     if vel < 0:
-    #         vel = 0
-    #     if self.lastVel <= 0 and (self.serviceBrake or self.emergencyBrake):
-    #         vel = 0
-
-    #     return vel
 
     def limit_force(self):
         max_force = self.tons_to_kg(self.totalMass) * 0.5
@@ -244,13 +305,13 @@ class TrainModel(QObject):
         print(f"Velocity: {self.currentVelocity}")
 
         
-        self.power_changed.emit(self.temperature)
+        self.power_changed.emit()
 
         self.lastVel=self.currentVelocity
         # currentPosition = 0
         # positionCalc = 0
 
         
-        # # POSITION
+        # POSITION
         # positionCalc = self.currentVelocity*self.samplePeriod
         # currentPosition = previousPosition + positionCalc

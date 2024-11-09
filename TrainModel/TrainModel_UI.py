@@ -14,7 +14,10 @@ from PyQt6.QtWidgets import (
     QGroupBox,
     QSizePolicy
 )
-from TrainModel import TrainModel
+from TrainModel.TrainModel import TrainModel
+from TrainModel.TrainList import TrainList
+# from TrainModel import TrainModel
+# from TrainList import TrainList
 from PyQt6.QtGui import QFont, QPixmap
 from PyQt6.QtCore import QSize, QTimer
 from PyQt6.QtCore import Qt
@@ -22,15 +25,14 @@ from PyQt6.QtCore import Qt
 # Define train_list globally
 train_list = []
 
-def addTrain(): 
-    new_train = TrainModel()
-    train_list.append(new_train)
+# Instantiate TrainList globally
+train_list = TrainList()
 
-# Call addTrain to populate the list
-addTrain()
-addTrain()
-addTrain()
+train_list.add_train()
+train_list.add_train()
+train_list.add_train()
 
+train_list[0].set_announcements("yuh")
 
 #train_list[1].atStation=False
 #train_list[1].passCount=100
@@ -66,9 +68,9 @@ addTrain()
 
 
 
-class MainWindow(QMainWindow):
+class Train_UI(QMainWindow):
     def __init__(self, parent=None):
-        super(MainWindow, self).__init__(parent)
+        super(Train_UI, self).__init__(parent)
 
         self.setWindowTitle("Train Model")
         self.setGeometry(100, 100, 800, 600)
@@ -105,12 +107,12 @@ class MainWindow(QMainWindow):
         test_bench_page=QWidget()
 
         # Create pages
-        select_train_page = self.create_select_train_page()
+        # select_train_page = self.create_select_train_page()
         user_mode_page = self.create_user_mode_page()
         test_bench_page = self.create_test_bench_page()
 
         # Add tabs
-        self.tabs.addTab(select_train_page, "Select a Train")
+        #self.tabs.addTab(select_train_page, "Select a Train")
         self.tabs.addTab(user_mode_page, "User Mode")
         self.tabs.addTab(test_bench_page, "Testing")
 
@@ -129,9 +131,10 @@ class MainWindow(QMainWindow):
         self.selected_train.temperature_changed.connect(self.update_temperature_label)
         self.selected_train.power_changed.connect(self.update_speeds_label)
         self.selected_train.passengers_changed.connect(self.update_beacon_label)
+        self.selected_train.ui_refresh.connect(self.train_select_update)
 
     def create_user_mode_page(self):
-        user_mode_widget=QWidget()
+        user_mode_widget = QWidget()
 
         # Create main layout
         main_layout = QVBoxLayout()
@@ -139,12 +142,67 @@ class MainWindow(QMainWindow):
         # Create a horizontal layout for the top section (Image)
         top_layout = QHBoxLayout()
 
+        # Create a vertical layout for the train selection elements
+        train_selection_layout = QVBoxLayout()
+
+        # Add the selected train label
+        self.selected_train_label = QLabel("Selected Train: 0")
+        self.selected_train_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.selected_train_label.setFont(QFont('Arial', 20, QFont.Weight.Bold))
+        train_selection_layout.addWidget(self.selected_train_label)
+
+        # Add instructions label below the selected train label
+        # instructions_label = QLabel("Select a train and press 'Confirm' to select a new train.")
+        # instructions_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        # instructions_label.setFont(QFont('Arial', 16, QFont.Weight.Bold))
+        # train_selection_layout.addWidget(instructions_label)
+
+        # Create the train dropdown
+        self.train_dropdown = QComboBox()
+        self.train_dropdown.setStyleSheet("font-size: 18px;")
+        
+        # Populate the dropdown with train names
+        for i in range(len(train_list)):
+            self.train_dropdown.addItem(f"Train {i}")
+
+        # Connect the dropdown to the train_selected function
+        self.train_dropdown.currentIndexChanged.connect(self.train_selected)
+        train_selection_layout.addWidget(self.train_dropdown)
+
+        # Create a button to confirm train selection
+        select_train_button = QPushButton("Confirm Train Selection")
+        select_train_button.setStyleSheet("""
+            QPushButton {
+                background-color: #772ce8;
+                color: white;
+                border: none;
+                padding: 15px 20px;
+                font-size: 14px;
+                border-radius: 8px;
+            }
+            QPushButton:hover {
+                background-color: #9e30ff;
+            }
+        """)
+        select_train_button.clicked.connect(self.select_train)
+        select_train_button.setFixedHeight(50)
+        train_selection_layout.addWidget(select_train_button)
+
+        # Add the train selection layout to the top layout (left side)
+        top_layout.addLayout(train_selection_layout)
+
+        # Add stretch to push content to the top-left
+        train_selection_layout.addStretch()
+
         # Display an image using a relative path
         image_label = QLabel()
         image_path = os.path.join(os.path.dirname(__file__), 'images', 'primantis.png')
-        pixmap = QPixmap(image_path).scaled(700, 150, Qt.AspectRatioMode.KeepAspectRatio)  # Adjust size as needed
-        image_label.setPixmap(pixmap)
-        image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        if os.path.exists(image_path):
+            pixmap = QPixmap(image_path).scaled(250, 150, Qt.AspectRatioMode.KeepAspectRatio)
+            image_label.setPixmap(pixmap)
+        else:
+            image_label.setText("Image not found.")
+        image_label.setAlignment(Qt.AlignmentFlag.AlignRight)
         top_layout.addWidget(image_label)
 
         # Add top layout to the main layout
@@ -159,6 +217,13 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(announcement_label)
         main_layout.addWidget(self.announcement_text)
 
+        # Emergency Brake Button (move it above the grids)
+        self.emergency_brake_button = QPushButton("Emergency Brake")
+        self.emergency_brake_button.setStyleSheet("background-color: red; color: white; font-size: 24px")
+        self.emergency_brake_button.setFixedHeight(50)
+        self.emergency_brake_button.clicked.connect(self.toggle_ebrake)
+        main_layout.addWidget(self.emergency_brake_button)
+        
         # Create a horizontal layout for left and right sections for group boxes
         horizontal_layout = QHBoxLayout()
 
@@ -168,15 +233,21 @@ class MainWindow(QMainWindow):
         # Create right layout for Lights/Doors and Failure Modes
         right_layout = QVBoxLayout()
 
-        # Emergency Brake Button
-        self.emergency_brake_button = QPushButton("Emergency Brake")
-        self.emergency_brake_button.setStyleSheet("background-color: red; color: white;")
-        self.emergency_brake_button.setFixedHeight(50)
-        self.emergency_brake_button.clicked.connect(self.toggle_ebrake)
-        left_layout.addWidget(self.emergency_brake_button)
-
-        # Create and style Speed Information Group Box
+        #Velocity and acceleration grid
         speed_group_box = QGroupBox("Speed Information")
+        speed_group_box.setStyleSheet("""
+            QGroupBox {
+                border: 3px solid #C0C0C0;
+                border-radius: 8px;
+                font-size:18px;
+                padding: 6px;
+            }
+            QLabel {
+                border: none;
+                font-size:16px;
+            }
+        """)
+        speed_group_box.setFixedHeight(100)  # Adjust the height as needed
         speed_layout = QVBoxLayout()
 
         # Velocity
@@ -194,6 +265,9 @@ class MainWindow(QMainWindow):
         speed_layout.addLayout(acceleration_layout)
 
         speed_group_box.setLayout(speed_layout)
+
+        # Add the Speed Information Group Box to the left layout
+        left_layout.addWidget(speed_group_box)
 
         # Create and style Train Dimensions Group Box
         train_dimensions_group_box = QGroupBox("Train Dimensions")
@@ -264,7 +338,6 @@ class MainWindow(QMainWindow):
         train_status_group_box.setLayout(train_status_layout)
 
         # Add group boxes to left layout
-        left_layout.addWidget(speed_group_box)
         left_layout.addWidget(train_dimensions_group_box)
         left_layout.addWidget(train_status_group_box)
 
@@ -277,7 +350,6 @@ class MainWindow(QMainWindow):
         right_door_layout.addWidget(QLabel("Right Door:"))
         self.right_door_label = QLabel("Closed")  # Change from button to QLabel
         self.right_door_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center align the door state
-        self.right_door_label.setStyleSheet("background-color: green; padding: 5px;")  # Default color
         right_door_layout.addWidget(self.right_door_label)
         doors_layout.addLayout(right_door_layout)
 
@@ -286,7 +358,6 @@ class MainWindow(QMainWindow):
         left_door_layout.addWidget(QLabel("Left Door:"))
         self.left_door_label = QLabel("Closed")  # Change from button to QLabel
         self.left_door_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center align the door state
-        self.left_door_label.setStyleSheet("background-color: green; padding: 5px;")  # Default color
         left_door_layout.addWidget(self.left_door_label)
         doors_layout.addLayout(left_door_layout)
 
@@ -327,31 +398,29 @@ class MainWindow(QMainWindow):
         self.brake_button = QPushButton("Brakes")
         self.signal_pickup_button = QPushButton("Signal Pickup")
 
-        # Connect buttons to their corresponding toggle functions
-        self.engine_button.clicked.connect(self.toggle_engine_failure)
-        self.brake_button.clicked.connect(self.toggle_brake_failure)
-        self.signal_pickup_button.clicked.connect(self.toggle_signal_pickup_failure)
-
-        # Set buttons to red
-        self.engine_button.setStyleSheet("background-color: red; color: white;")
-        self.brake_button.setStyleSheet("background-color: red; color: white;")
-        self.signal_pickup_button.setStyleSheet("background-color: red; color: white;")
+        # Set styles for failure mode buttons
+        for button in [self.engine_button, self.brake_button, self.signal_pickup_button]:
+            button.setStyleSheet("background-color: red; color: white;")
+            button.clicked.connect(self.toggle_engine_failure)  # Connect to the toggle function
 
         failure_modes_layout.addWidget(self.engine_button)
         failure_modes_layout.addWidget(self.brake_button)
         failure_modes_layout.addWidget(self.signal_pickup_button)
+
         failure_modes_group_box.setLayout(failure_modes_layout)
         right_layout.addWidget(failure_modes_group_box)
 
-        # Add both layouts to the horizontal layout
+        # Add left and right layouts to horizontal layout
         horizontal_layout.addLayout(left_layout)
         horizontal_layout.addLayout(right_layout)
 
-        # Add horizontal layout to the main layout
+        # Add the horizontal layout to the main layout
         main_layout.addLayout(horizontal_layout)
 
+        # Set the main layout to the user mode widget
         user_mode_widget.setLayout(main_layout)
         return user_mode_widget
+
 
     def toggle_ebrake(self):
         self.selected_train.emergencyBrake = not self.selected_train.emergencyBrake
@@ -372,10 +441,10 @@ class MainWindow(QMainWindow):
     def update_ebrake_button(self):
         if self.selected_train.emergencyBrake:
             self.emergency_brake_button.setText("Emergency Brake Pulled")
-            self.emergency_brake_button.setStyleSheet("background-color: darkred; color: white;")  # Darker shade for failure
+            self.emergency_brake_button.setStyleSheet("background-color: darkred; color: white; font-size: 24px ")  # Darker shade for failure
         else:
             self.emergency_brake_button.setText("Emergency Brake")
-            self.emergency_brake_button.setStyleSheet("background-color: red; color: white;")
+            self.emergency_brake_button.setStyleSheet("background-color: red; color: white; font-size: 24px")
 
     def apply_service_brake(self):
         # Apply the brake
@@ -443,61 +512,10 @@ class MainWindow(QMainWindow):
 
     def update_door_states(self):
         self.right_door_label.setText("Closed" if self.selected_train.rightDoor else "Open")
-        self.right_door_label.setStyleSheet("background-color: green;" if self.selected_train.rightDoor else "background-color: red;")
+        self.right_door_label.setStyleSheet("background-color: red;" if self.selected_train.rightDoor else "background-color: green;")
         
         self.left_door_label.setText("Closed" if self.selected_train.leftDoor else "Open")
-        self.left_door_label.setStyleSheet("background-color: green;" if self.selected_train.leftDoor else "background-color: red;")
-
-    def create_select_train_page(self):
-        # Create a widget for the Select Train page
-        select_train_widget = QWidget()
-        layout = QVBoxLayout()
-
-        # Add a label to display the currently selected train
-        self.selected_train_label = QLabel("Selected Train: 0")
-        self.selected_train_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.selected_train_label.setFont(QFont('Arial', 20, QFont.Weight.Bold))
-        layout.addWidget(self.selected_train_label)
-
-        # Add instructions label below the selected train label
-        instructions_label = QLabel("Select a train and press 'Confirm' to select a new train.")
-        instructions_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        instructions_label.setFont(QFont('Arial', 16, QFont.Weight.Bold))
-        layout.addWidget(instructions_label)
-
-        self.train_dropdown = QComboBox()  # Make this an instance variable
-        self.train_dropdown.setStyleSheet("font-size: 18px;") 
-
-        # Create a dropdown for available trains
-        for i in range(len(train_list)):
-            self.train_dropdown.addItem(f"Train {i}")  # Update dropdown with train names
-
-        # Connect the dropdown selection to the train_selected function
-        self.train_dropdown.currentIndexChanged.connect(self.train_selected)
-
-        layout.addWidget(self.train_dropdown)
-
-        # Button to confirm selection with improved styling
-        select_train_button = QPushButton("Confirm Train Selection")
-        select_train_button.setStyleSheet("""
-            QPushButton {
-                background-color: #772ce8;
-                color: white;
-                border: none;
-                padding: 15px 20px;
-                font-size: 14px;
-                border-radius: 8px;
-            }
-            QPushButton:hover {
-                background-color: #9e30ff;
-            }
-        """)
-        select_train_button.clicked.connect(self.select_train)  # Connect button to selection logic
-        layout.addWidget(select_train_button)
-
-        layout.addStretch()
-        select_train_widget.setLayout(layout)
-        return select_train_widget
+        self.left_door_label.setStyleSheet("background-color: red;" if self.selected_train.leftDoor else "background-color: green;")
 
     def create_test_bench_page(self):
         test_bench_widget = QWidget()
@@ -704,9 +722,7 @@ class MainWindow(QMainWindow):
     # Function to handle announcement input
     def send_announcement(self):
         announcement = self.announcement_input.text()
-        self.selected_train.announcements = announcement
-        print(f"Announcement set: {self.selected_train.announcements}")
-        self.announcement_text.setText(self.selected_train.announcements)
+        self.selected_train.set_announcements(announcement)
         self.announcement_input.clear()
 
     # Function to handle temperature input
@@ -714,7 +730,7 @@ class MainWindow(QMainWindow):
         temperature_value = self.temperature_input.text()
         try:
             temperature = float(temperature_value)
-            self.selected_train.commandedTemperature = temperature
+            self.selected_train.set_commandedTemperature(temperature)
             print(f"Temperature set to {self.selected_train.commandedTemperature} °F.")
             self.selected_train.start_adjusting_temperature()
             self.temperature_input.clear()
@@ -742,7 +758,6 @@ class MainWindow(QMainWindow):
             button.setStyleSheet("background-color: gray;")
 
     def train_selected(self):
-        """Handle train selection change."""
         selected_index = self.train_dropdown.currentIndex()
 
     def select_train(self):
@@ -759,6 +774,8 @@ class MainWindow(QMainWindow):
 
         self.update_lights_state()
         self.update_door_states()
+
+        self.announcement_text.setText(f"{self.selected_train.announcements}")
 
         self.height_label.setText(f"{self.selected_train.m_to_ft(self.selected_train.trainHeight):.2f}")
         self.width_label.setText(f"{self.selected_train.m_to_ft(self.selected_train.trainWidth):.2f}")
@@ -777,6 +794,6 @@ if __name__ == "__main__":
     from PyQt6.QtWidgets import QApplication
     
     app = QApplication(sys.argv)
-    main_window = MainWindow()
+    main_window = Train_UI()
     main_window.show()
     sys.exit(app.exec())
