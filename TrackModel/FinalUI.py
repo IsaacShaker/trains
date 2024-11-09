@@ -1146,6 +1146,6 @@ class MainWindow(QMainWindow):
 # Main entry to start the application
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    upload_window = StartWindow()
+    upload_window = TrackUI()
     upload_window.show()
     sys.exit(app.exec())    

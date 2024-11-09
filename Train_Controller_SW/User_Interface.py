@@ -1,8 +1,8 @@
 import time
 import sys
 
-#from Train_Controller_SW.Train_Controller_SW_Class import Train_Controller
-from Train_Controller_SW_Class import Train_Controller
+from Train_Controller_SW.Train_Controller_SW_Class import Train_Controller
+#from Train_Controller_SW_Class import Train_Controller
 
 
 from PyQt6.QtGui import QFont
