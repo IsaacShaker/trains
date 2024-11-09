@@ -1,4 +1,5 @@
-from TrainModel import TrainModel
+#from TrainModel import TrainModel
+from TrainModel.TrainModel import TrainModel
 
 class TrainList:
     def __init__(self):
@@ -8,6 +9,8 @@ class TrainList:
         """Add a new TrainModel to the list."""
         train_model = TrainModel()
         self.train_list.append(train_model)
+        train_model.ID = len(self.train_list) - 1
+    
 
     def remove_train(self, train_name):
         """Remove a train by name."""

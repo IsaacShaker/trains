@@ -14,6 +14,16 @@ def get_data():
     else:
         return jsonify({"error": "Data not available"}), 500
 
+# @app.route('/update_authority', methods=['POST'])
+# def update_authority():
+#     data = request.get_json()
+#     if 'authority' in data:
+#         authority = data['authority']
+#         result = train_controller.update_authority(authority)
+#         return jsonify(result), 200
+#     else:
+#         return jsonify({"error": "No authority value provided"}), 400
+
 def shutdown_server():
     func = request.environ.get('werkzeug.server.shutdown')
     if func:

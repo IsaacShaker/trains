@@ -14,8 +14,10 @@ from PyQt6.QtWidgets import (
     QGroupBox,
     QSizePolicy
 )
-from TrainModel import TrainModel
-from TrainList import TrainList
+from TrainModel.TrainModel import TrainModel
+from TrainModel.TrainList import TrainList
+# from TrainModel import TrainModel
+# from TrainList import TrainList
 from PyQt6.QtGui import QFont, QPixmap
 from PyQt6.QtCore import QSize, QTimer
 from PyQt6.QtCore import Qt
@@ -66,9 +68,9 @@ train_list[0].set_announcements("yuh")
 
 
 
-class MainWindow(QMainWindow):
+class Train_UI(QMainWindow):
     def __init__(self, parent=None):
-        super(MainWindow, self).__init__(parent)
+        super(Train_UI, self).__init__(parent)
 
         self.setWindowTitle("Train Model")
         self.setGeometry(100, 100, 800, 600)
@@ -792,6 +794,6 @@ if __name__ == "__main__":
     from PyQt6.QtWidgets import QApplication
     
     app = QApplication(sys.argv)
-    main_window = MainWindow()
+    main_window = Train_UI()
     main_window.show()
     sys.exit(app.exec())

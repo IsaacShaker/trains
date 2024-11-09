@@ -4,7 +4,7 @@ from TrackController.app import MyApp
 import requests
 from api import start_api
 from CTC.ctc import MyWindow
-from TrainModel.TrainModel_UI import MyTrain
+from TrainModel.TrainModel_UI import Train_UI
 from PyQt6.QtWidgets import QApplication
 
 def getBlocksFromTrackController(self):
@@ -24,7 +24,7 @@ class MainApp(QApplication):
         super().__init__(argv)
         self.ctc = MyWindow()
         self.track_controller = MyApp()
-        self.train_model=MyTrain()
+        self.train_model=Train_UI()
 
         self.track_controller.show()
         self.ctc.show()
