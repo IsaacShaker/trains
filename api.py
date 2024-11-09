@@ -19,7 +19,7 @@ def recieve_commanded_power():
 
 
 
-    
+
 @app.route('/track-controller/get-data/block_occupancies', methods=['GET'])
 def get_data():
     # Access the `data_main` attribute from the MyApp instance
