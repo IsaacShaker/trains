@@ -1,21 +1,103 @@
 from Beacon import Beacon
+from RailroadCrossing import RailroadCrossing
+from Station import Station
+from TrafficLight import TrafficLight
+from Switch import Switch
+from Train import Train
 class Block:
-    def __init__(self, line, section, number, length, grade, speedLimit, elevation, cumElevation):
+    def __init__(self, line, section, number, length, grade, speedLimit, elevation, cumElevation, underground):
         self.line = line
         self.section = section
         self.number = number
         self.nextBlock = None
+        self.previousBlock = None
         self.length = length
         self.grade = grade
         self.speedLimit = speedLimit
         self.elevation = elevation
         self.cumElevation = cumElevation
-        self.occupied = False
-        self.beacon = None
+        self.underground = underground
+
+        self.closed = False
         self.brokenTrack = False
         self.circuitFailure = False
         self.powerFailure = False
 
+        self.occupancy = False
+
+        self.beacon = None
+        self.station = None
+        self.railroad = None
+        self.switch = None
+        self.trafficLight = None
+        self.train = None
+
+        self.authority = None
+        self.commandedSpeed = None
+
+    def get_table_data(self, index):
+        if index == 0:
+            return self.section
+        elif index == 1:
+            return str(isinstance(self.train, Train))
+        elif index == 2:
+            return str(self.authority)
+        elif index == 3:
+            return str(self.commandedSpeed)
+        elif index == 4:
+            if isinstance(self.beacon, Beacon):
+                return self.beacon.get_staticData()
+            else:
+                return ""
+        elif index == 5:
+            if isinstance(self.station, Station):
+                return self.station.get_name()
+            else:
+                return ""
+        elif index == 6:
+            if isinstance(self.railroad, RailroadCrossing):
+                return self.railroad.get_status()
+            else:
+                return ""
+        elif index == 7:
+            if isinstance(self.switch, Switch):
+                return self.switch.get_LandR()
+            else:
+                return ""
+        elif index == 8:
+            if isinstance(self.trafficLight, TrafficLight):
+                return self.trafficLight.get_status()
+            else:
+                return ""
+        elif index == 9:
+            if isinstance(self.nextBlock, Block):
+                return str(self.nextBlock.get_num())
+            else:
+                return "None"
+        elif index == 10:
+            if isinstance(self.previousBlock, Block):
+                return str(self.previousBlock.get_num())
+            else:
+                return "None"
+        elif index == 11:
+            return str(self.length)
+        elif index == 12:
+            return str(self.grade)
+        elif index == 13:
+            return str(self.speedLimit)
+        elif index == 14:
+            return str(self.elevation)
+        elif index == 15:
+            return str(self.cumElevation)
+        elif index == 16:
+            return str(self.underground)
+        elif index == 17:
+            return str(self.brokenTrack)
+        elif index == 18:
+            return str(self.circuitFailure)
+        elif index == 19:
+            return str(self.powerFailure)
+        
     def display_info(self, index):
         if self.nextBlock == 0:
             return f"Block {index}:\n\tLine: {self.line} \n\tSection: {self.section} \n\tBlock Number: {self.number} \n\tBlock Length: {self.length} \n\tBlock Grade: {self.grade} \n\tSpeed Limit: {self.speedLimit} \n\tElevation: {self.elevation} \n\tCumulative Elevation: {self.cumElevation} \n\tOccupied: {self.occupied}\n\tBroken Track: {self.brokenTrack}\n\tTrack Circuit Failure: {self.circuitFailure}\n\tPower Failure: {self.powerFailure}"
@@ -24,67 +106,91 @@ class Block:
 
     def display_num(self):
         return f"{self.number}"
-
-    def get_num(self):
-        return self.number
-
-    def get_occupied(self):
-        return self.occupied
     
-    def change_occupied(self):
-        if(self.occupied):
-            self.occupied = False
+    def get_if_train(self):
+        if isinstance(self.train, Train):
+            return True
+        return False
+
+
+
+    def set_train(self, train, FOrB):
+        if isinstance(train, Train):
+            self.train = train
+            if self.authority != None and not FOrB:
+                self.train.set_auth(self.authority)
+            if self.commandedSpeed != None and not FOrB and self.train.get_auth() != 0:
+                self.train.set_speed(self.commandedSpeed)
+            if isinstance(self.beacon, Beacon) and not FOrB:
+                self.train.set_staticData(self.beacon.get_staticData())
+            if isinstance(self.station, Station) and (self.train.get_fLocOnBlock() < (self.length/2) - 11) and (self.train.get_fLocOnBlock() > (self.length/2) - 9) and self.train.get_speed == 0:
+                self.station.set_trainIn(True)
+            else:
+                if isinstance(self.station, Station):
+                    self.station.set_trainIn(False)
         else:
-            self.occupied = True
+            self.train = None
+            
+    def set_occupancies(self):
+        if isinstance(self.train, Train) or self.brokenTrack or self.circuitFailure or self.powerFailure or self.closed:
+            self.occupancy = True
+        else:
+            self.occupancy = False
 
     def set_O(self):
         self.occupied = True
-
     def set_N(self):
         self.occupied = False
-    
     def set_next_block(self, nBlock):
         if isinstance(nBlock, Block):
             self.nextBlock = nBlock
-        else:
-            print("Not a block")
-
-    def get_next_block(self):
-        return self.nextBlock, self.length
-    
-    def if_occupied(self, train):
-        if (self.occupied):
-            auth = train.get_auth()
-            if isinstance(self.beacon, Beacon):
-                train.set_staticData(self.beacon.get_staticData())
-            if self.number == 0:
-                authority = 470
-                speed = 40
-                train.set_info(authority, speed)
-            else:
-                if auth <= 0:
-                    authority = 0
-                    speed = 0
-                    train.set_info(authority, speed)
-                else:
-                    speed = 30
-                    train.set_speed(speed)
-    
+    def set_previous_block(self, pBlock):
+        if isinstance(pBlock, Block):
+            self.previousBlock = pBlock
+    def set_authority(self, auth):
+        self.authority = auth
+    def set_cmd_speed(self, cmd):
+        self.commandedSpeed = cmd
     def set_beacon(self, beacon):
         self.beacon = beacon
+    def set_station(self, station):
+        self.station = station
+    def set_railroad(self, railroad):
+        self.railroad = railroad
+    def set_switch(self, switch):
+        self.switch = switch
+    def set_traffic(self, traffic):
+        self.trafficLight = traffic
+
+    def get_num(self):
+        return self.number
+    def get_length(self):
+        return self.length
+    def get_occupied(self):
+        return self.occupied
+    def get_broken(self):
+        return self.brokenTrack
+    def get_circuit(self):
+        return self.circuitFailure
+    def get_power(self):
+        return self.powerFailure
+    def get_previous_block(self):
+        return self.previousBlock, self.previousBlock.get_length()
+    def get_next_block(self):
+        return self.nextBlock, self.nextBlock.get_length()
+    def get_station(self):
+        return self.station
 
     def change_broken(self):
         if (self.brokenTrack):
             self.brokenTrack = False
         else:
             self.brokenTrack = True
-
     def change_circuit(self):
         if (self.circuitFailure):
             self.circuitFailure = False
         else:
             self.circuitFailure = True
-
     def change_power(self):
         if (self.powerFailure):
             self.powerFailure = False
