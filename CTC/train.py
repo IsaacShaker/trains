@@ -6,8 +6,8 @@ class Train:
     def __init__(self, name, line):
         self.name = name
         self.line = line
-        self.current_authority = 0
-        self.suggested_speed = 0
+        self.current_authority = 0.00
+        self.suggested_speed = 0.00
         self.current_block = 0
         self.route_authorities = deque()
         self.station_stops = []
@@ -51,6 +51,8 @@ class Train:
                 #self.route_authorities.append(authority)
     
     def get_authority_from_map(self):
+        #self.route_authorities.clear()
+        print('Before = ', self.route_authorities)
         if self.line == 'Green':
             authority_list = self.myReader.calculate_green_authorities(self.station_stops)
             for authority in authority_list:
@@ -61,7 +63,7 @@ class Train:
                 #self.route_authorities.append(authority)
 
         self.set_current_authority(self.route_authorities[0])
-        print('route_authorities', self.route_authorities)
+        print('After = ', self.route_authorities)
 
     def updateAuthority(self):
         # Remove the previous authority

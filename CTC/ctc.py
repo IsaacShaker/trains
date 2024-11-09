@@ -1018,9 +1018,9 @@ class MyWindow(QMainWindow, Clock, Train):
 
     # Create the train object
     def submit_dispatch(self):
+        print('------------------------------------------------------')
         selected_name = self.schedule_train_combo_box.currentText()
         if selected_name == 'New Train': # Create a new train
-            print('new trains')
             if len(self.trains) == 0:
                 new_train = 'Train 1'
             else:
@@ -1034,7 +1034,6 @@ class MyWindow(QMainWindow, Clock, Train):
             
             new_train.add_stop(self.station_select_combo_box.currentText())
             new_train.get_authority_from_map()
-            print('current =', new_train.get_authority())
 
             if len(self.trains) == 0: # If we are adding the first train, delete the label
                 # Remove the current QLabel
@@ -1061,9 +1060,7 @@ class MyWindow(QMainWindow, Clock, Train):
 
         else: # Add a stop to the train
             selected_train = next((train for train in self.trains if train.name == selected_name), None)
-            print('clearing')
-            selected_train.route_authorities.clear()
-            print(selected_train.route_authorities)
+            #selected_train.route_authorities.clear()
             selected_train.add_stop(self.station_select_combo_box.currentText())
             selected_train.get_authority_from_map()
             
