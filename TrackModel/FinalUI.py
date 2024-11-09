@@ -9,6 +9,11 @@ from TrackModel.Train import Train
 # from Section import Section
 # from Train import Train
 
+#for running in launcher
+add_TM = "TrackModel."
+#for running individual
+add_TM = ""
+
 redYard = [] 
 redBlocks = []
 redSwitches = []
@@ -754,9 +759,9 @@ class MainWindow(QMainWindow):
         #White arrows are behind blue arrows so you can show or hide the blue arrows
         self.underRedArrows = []
         self.redArrows = []
-        original_pixmap_white = QPixmap("images/WhiteFlatArrow.png")
+        original_pixmap_white = QPixmap(add_TM+"images/WhiteFlatArrow.png")
         resized_pixmap_white = original_pixmap_white.scaled(60,30)
-        original_pixmap_blue = QPixmap("images/RedFlatArrow.png")
+        original_pixmap_blue = QPixmap(add_TM+"images/RedFlatArrow.png")
         resized_pixmap_blue = original_pixmap_blue.scaled(60,30)
         for i in range(10):
             self.underRedArrows.append(QLabel(tab1))
@@ -802,50 +807,50 @@ class MainWindow(QMainWindow):
         #White arrows are behind blue arrows so you can show or hide the blue arrows
         self.underGreenArrows = []
         self.greenArrows = []
-        original_pixmap_white = QPixmap("images/WhiteFlatArrow.png")
+        original_pixmap_white = QPixmap(add_TM+"images/WhiteFlatArrow.png")
         resized_pixmap_white = original_pixmap_white.scaled(60,30)
-        original_pixmap_green = QPixmap("images/GreenFlatArrow.png")
+        original_pixmap_green = QPixmap(add_TM+"images/GreenFlatArrow.png")
         resized_pixmap_green = original_pixmap_green.scaled(60,30)
-        original_tester = QPixmap("images/SizeTester.png")
-        section0_top = QPixmap("images/GreenSection0Top.png")
+        original_tester = QPixmap(add_TM+"images/SizeTester.png")
+        section0_top = QPixmap(add_TM+"images/GreenSection0Top.png")
         section0_top = section0_top.scaled(107,123)
-        section0_bot = QPixmap("images/GreenSection0Bot.png")
+        section0_bot = QPixmap(add_TM+"images/GreenSection0Bot.png")
         section0_bot = section0_bot.scaled(107,123)
-        section1_top = QPixmap("images/GreenSection1Top.png")
+        section1_top = QPixmap(add_TM+"images/GreenSection1Top.png")
         section1_top = section1_top.scaled(129,30)
-        section1_bot = QPixmap("images/GreenSection1Bot.png")
+        section1_bot = QPixmap(add_TM+"images/GreenSection1Bot.png")
         section1_bot = section1_bot.scaled(129,30)
-        section2_top = QPixmap("images/GreenSection2Top.png")
+        section2_top = QPixmap(add_TM+"images/GreenSection2Top.png")
         section2_top = section2_top.scaled(213,30)
-        section2_bot = QPixmap("images/GreenSection2Bot.png")
+        section2_bot = QPixmap(add_TM+"images/GreenSection2Bot.png")
         section2_bot = section2_bot.scaled(213,30)
-        section3_top = QPixmap("images/GreenSection3Top.png")
+        section3_top = QPixmap(add_TM+"images/GreenSection3Top.png")
         section3_top = section3_top.scaled(30,183)
-        section3_bot = QPixmap("images/GreenSection3Bot.png")
+        section3_bot = QPixmap(add_TM+"images/GreenSection3Bot.png")
         section3_bot = section3_bot.scaled(30,183)
-        section4_top = QPixmap("images/GreenSection4Top.png")
+        section4_top = QPixmap(add_TM+"images/GreenSection4Top.png")
         section4_top = section4_top.scaled(207,30)
-        section4_bot = QPixmap("images/GreenSection4Bot.png")
+        section4_bot = QPixmap(add_TM+"images/GreenSection4Bot.png")
         section4_bot = section4_bot.scaled(207,30)
-        section5_top = QPixmap("images/GreenSection5Top.png")
+        section5_top = QPixmap(add_TM+"images/GreenSection5Top.png")
         section5_top = section5_top.scaled(57,30)
-        section5_bot = QPixmap("images/GreenSection5Bot.png")
+        section5_bot = QPixmap(add_TM+"images/GreenSection5Bot.png")
         section5_bot = section5_bot.scaled(57,30)
-        section6_top = QPixmap("images/GreenSection0Top.png")
+        section6_top = QPixmap(add_TM+"images/GreenSection0Top.png")
         section6_top = section6_top.scaled(107,123)
-        section6_bot = QPixmap("images/GreenSection0Bot.png")
+        section6_bot = QPixmap(add_TM+"images/GreenSection0Bot.png")
         section6_bot = section6_bot.scaled(107,123)
-        section7_top = QPixmap("images/GreenSection7Top.png")
+        section7_top = QPixmap(add_TM+"images/GreenSection7Top.png")
         section7_top = section7_top.scaled(149, 30)
-        section7_bot = QPixmap("images/GreenSection7Bot.png")
+        section7_bot = QPixmap(add_TM+"images/GreenSection7Bot.png")
         section7_bot = section7_bot.scaled(149, 30)
-        section8_top = QPixmap("images/GreenSection8Top.png")
+        section8_top = QPixmap(add_TM+"images/GreenSection8Top.png")
         section8_top = section8_top.scaled(30,156)
-        section8_bot = QPixmap("images/GreenSection8Bot.png")
+        section8_bot = QPixmap(add_TM+"images/GreenSection8Bot.png")
         section8_bot = section8_bot.scaled(30,156)
-        section9_top = QPixmap("images/GreenSection9Top.png")
+        section9_top = QPixmap(add_TM+"images/GreenSection9Top.png")
         section9_top = section9_top.scaled(103,30)
-        section9_bot = QPixmap("images/GreenSection9Bot.png")
+        section9_bot = QPixmap(add_TM+"images/GreenSection9Bot.png")
         section9_bot = section9_bot.scaled(103,30)
         for i in range(10):
             self.underGreenArrows.append(QLabel(tab3))
@@ -912,19 +917,19 @@ class MainWindow(QMainWindow):
     def make_red_switches(self, tab3, x, y):
         self.leftRedSwitches = []
         self.rightRedSwitches = []
-        original_pixmap_left = QPixmap("images/SwitchLeft.png")
+        original_pixmap_left = QPixmap(add_TM+"images/SwitchLeft.png")
         resized_pixmap_left = original_pixmap_left.scaled(90,125, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
-        original_pixmap_right = QPixmap("images/SwitchRight.png")
+        original_pixmap_right = QPixmap(add_TM+"images/SwitchRight.png")
         resized_pixmap_right = original_pixmap_right.scaled(90,125, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
 
-        original_pixmap_left_reversed = QPixmap("images/SwitchLeftReversed.png")
+        original_pixmap_left_reversed = QPixmap(add_TM+"images/SwitchLeftReversed.png")
         resized_pixmap_left_reversed = original_pixmap_left_reversed.scaled(90,125, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
-        original_pixmap_right_reversed = QPixmap("images/SwitchRightReversed.png")
+        original_pixmap_right_reversed = QPixmap(add_TM+"images/SwitchRightReversed.png")
         resized_pixmap_right_reversed = original_pixmap_right_reversed.scaled(90,125, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
 
-        original_pixmap_left_red1 = QPixmap("images/SwitchLeftRed1.png")
+        original_pixmap_left_red1 = QPixmap(add_TM+"images/SwitchLeftRed1.png")
         resized_pixmap_left_red1 = original_pixmap_left_red1.scaled(90,125, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
-        original_pixmap_right_red1 = QPixmap("images/SwitchRightRed1.png")
+        original_pixmap_right_red1 = QPixmap(add_TM+"images/SwitchRightRed1.png")
         resized_pixmap_right_red1 = original_pixmap_right_red1.scaled(90,125, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
 
         self.leftRedSwitches.append(QLabel(tab3))
@@ -979,19 +984,19 @@ class MainWindow(QMainWindow):
     def make_green_switches(self, tab3, x, y):
         self.leftGreenSwitches = []
         self.rightGreenSwitches = []
-        original_pixmap_left = QPixmap("images/SwitchLeft.png")
+        original_pixmap_left = QPixmap(add_TM+"images/SwitchLeft.png")
         resized_pixmap_left = original_pixmap_left.scaled(80,125, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
-        original_pixmap_right = QPixmap("images/SwitchRight.png")
+        original_pixmap_right = QPixmap(add_TM+"images/SwitchRight.png")
         resized_pixmap_right = original_pixmap_right.scaled(80,125, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
 
-        original_pixmap_left_reversed = QPixmap("images/SwitchLeftReversed.png")
+        original_pixmap_left_reversed = QPixmap(add_TM+"images/SwitchLeftReversed.png")
         resized_pixmap_left_reversed = original_pixmap_left_reversed.scaled(80,125, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
-        original_pixmap_right_reversed = QPixmap("images/SwitchRightReversed.png")
+        original_pixmap_right_reversed = QPixmap(add_TM+"images/SwitchRightReversed.png")
         resized_pixmap_right_reversed = original_pixmap_right_reversed.scaled(80,125, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
 
-        original_pixmap_left_red1 = QPixmap("images/SwitchLeftRed1.png")
+        original_pixmap_left_red1 = QPixmap(add_TM+"images/SwitchLeftRed1.png")
         resized_pixmap_left_red1 = original_pixmap_left_red1.scaled(83,125, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
-        original_pixmap_right_red1 = QPixmap("images/SwitchRightRed1.png")
+        original_pixmap_right_red1 = QPixmap(add_TM+"images/SwitchRightRed1.png")
         resized_pixmap_right_red1 = original_pixmap_right_red1.scaled(83,125, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
 
         self.leftGreenSwitches.append(QLabel(tab3))
@@ -1057,9 +1062,9 @@ class MainWindow(QMainWindow):
     #     self.greenLight[1].setGeometry(435, 340-x, 40, 40)
 
     def make_green_crossings(self, tab3, x, y):
-        original_pixmap_red = QPixmap("images/RedCrossing.png")
+        original_pixmap_red = QPixmap(add_TM+"images/RedCrossing.png")
         resized_pixmap_red = original_pixmap_red.scaled(50,50)
-        original_pixmap_green = QPixmap("images/GreenCrossing.png")
+        original_pixmap_green = QPixmap(add_TM+"images/GreenCrossing.png")
         resized_pixmap_green = original_pixmap_green.scaled(50,50)
         self.redCrossings = []
         self.greenCrossings = []
@@ -1084,9 +1089,9 @@ class MainWindow(QMainWindow):
         self.trainLabel.setGeometry(50,40, 80, 25)
 
     def make_green_stations(self,tab1,x, y):
-        original_pixmap_station = QPixmap("images/Station.png")
+        original_pixmap_station = QPixmap(add_TM+"images/Station.png")
         resized_pixmap_station = original_pixmap_station.scaled(53,38)
-        original_pixmap_station_bot = QPixmap("images/StationBot.png")
+        original_pixmap_station_bot = QPixmap(add_TM+"images/StationBot.png")
         resized_pixmap_station_bot = original_pixmap_station_bot.scaled(53,38)
         self.stations = []
         self.stationsBot = []
