@@ -128,6 +128,11 @@ class Block:
             else:
                 if isinstance(self.station, Station):
                     self.station.set_trainIn(False)
+            self.train.dict_arr[self.train.id] = {
+                "authority" :  self.authority,
+                "commanded_speed" : self.commandedSpeed,
+                "beacon_data" : self.beacon.get_staticData()
+            }
         else:
             self.train = None
             

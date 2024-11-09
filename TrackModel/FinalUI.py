@@ -20,9 +20,11 @@ greenRailroadCrossings = []
 greenBeacons = []
 greenStations = []
 greenSections = []
-Train1 = None
 
-class StartWindow(QMainWindow):
+Trains = []
+post_dict = []
+
+class TrackUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Track Model UI")
@@ -157,7 +159,9 @@ class StartWindow(QMainWindow):
         
             
         #Train
-        Train1 = Train(10, greenBlocks[80], 20)
+        temp_dict = {"authority" : None, "commanded_speed" : None, "beacon_info" : ""}
+        Trains.append(Train(10, greenBlocks[80], 20))
+        post_dict.append(temp_dict)
 
         self.ui_window = MainWindow()
         self.ui_window = self.ui_window.show()    
@@ -185,6 +189,9 @@ class MainWindow(QMainWindow):
         self.train_timer.timeout.connect(Train1.moveTrain)
 
         self.train_timer.start(1)#10
+
+    def get_post_dict(self):
+        return {"data": post_dict}
 
     def create_tabs(self):
         #Tab 3 for green line
