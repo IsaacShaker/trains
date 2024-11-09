@@ -10,9 +10,9 @@ from TrackModel.Train import Train
 # from Train import Train
 
 #for running in launcher
-add_TM = "TrackModel."
+add_TM = "TrackModel/"
 #for running individual
-add_TM = ""
+#add_TM = ""
 
 redYard = [] 
 redBlocks = []
@@ -64,7 +64,7 @@ class TrackUI(QMainWindow):
         self.text_entry1.setFont(big_font)
         self.text_entry1.setStyleSheet("background-color: #772CE8; color: black")
         self.text_entry1.setPlaceholderText("Enter first value")
-        self.text_entry1.setText("RedLine.xlsx")
+        self.text_entry1.setText("trackData/RedLine.xlsx")
         self.text_entry1.setGeometry(150, 150, 240, 40)  # Position: (x=100, y=100), Size: (width=230, height=40)
 
         # Second text entry with custom position and size
@@ -72,7 +72,7 @@ class TrackUI(QMainWindow):
         self.text_entry2.setFont(big_font)
         self.text_entry2.setStyleSheet("background-color: #772CE8; color: black")
         self.text_entry2.setPlaceholderText("Enter second value")
-        self.text_entry2.setText("GreenLine.xlsx")
+        self.text_entry2.setText("trackData/GreenLine.xlsx")
         self.text_entry2.setGeometry(460, 150, 240, 40)  # Position: (x=400, y=100), Size: (width=230, height=40)
 
         # Save button with custom position and size
@@ -85,13 +85,13 @@ class TrackUI(QMainWindow):
     def save_text(self):
         global redYard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations, redSections
         global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
-        global Train1
+        global Trains
         # Store text entry values in separate variables
         self.input_value1 = self.text_entry1.text()
         self.input_value2 = self.text_entry2.text()
 
         #Red Line initial prep
-        redYard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations = buildTrack(self.input_value1)
+        redYard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations = buildTrack(add_TM+self.input_value1)
 
         redSections = []
         redSections.append(Section('A'))
@@ -127,7 +127,7 @@ class TrackUI(QMainWindow):
             elif i >= 71 and i < 76:
                 redSections[9].add_block(redBlocks[i])
             
-        greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations = buildTrack(self.input_value2)
+        greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations = buildTrack(add_TM+self.input_value2)
         for i in range(150):
             greenBlocks[i].set_cmd_speed(70)
         greenBlocks[80].set_authority(1446.6)
@@ -194,7 +194,7 @@ class MainWindow(QMainWindow):
         #All updating functions, updated every .1 second
         self.train_timer = QTimer()
         #Does the train movement 
-        self.train_timer.timeout.connect(Train1.moveTrain)
+        self.train_timer.timeout.connect(Trains[0].moveTrain)
 
         self.train_timer.start(1)#10
 
@@ -469,7 +469,7 @@ class MainWindow(QMainWindow):
             self.greenCrossings[i].setToolTip(greenRailroadCrossings[i].display_info(0))
             self.redCrossings[i].setToolTip(greenRailroadCrossings[i].display_info(0))
 
-        self.trainLabel.setToolTip(Train1.display_info(0))
+        self.trainLabel.setToolTip(Trains[0].display_info(0))
 
         for i in range(18):
             if greenStations[i].get_trainIn():

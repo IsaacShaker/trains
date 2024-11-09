@@ -95,7 +95,7 @@ def buildTrack(excelFileName):
     Switches = []
     Beacons = []
     #Read block data from excel file
-    fileName = 'trackData/' + excelFileName
+    fileName = excelFileName
     df = pd.read_excel(fileName, sheet_name='Sheet1', dtype={'Previous Block': str, 'Next Block' : str})
     for index, row in df.iterrows():
         line = row['Line']
