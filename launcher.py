@@ -7,17 +7,6 @@ from CTC.ctc import MyWindow
 from Train_Controller_SW.User_Interface import Train_Controler_SW_UI
 from PyQt6.QtWidgets import QApplication
 
-def getBlocksFromTrackController(self):
-        try:
-            url = '/track-controller/get-data/block_occupancies'
-            response = requests.get(url)
-            if response.status_code == 200:
-                data = response.json()  # Converts JSON to a dictionary
-                print("Data received:", data)
-            else:
-                print("Error:", response.json())
-        except requests.exceptions.RequestException as e:
-            print("An error occurred:", e)
 
 class MainApp(QApplication):
     def __init__(self, argv):

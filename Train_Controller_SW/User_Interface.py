@@ -1,8 +1,8 @@
 import time
 import sys
 
-#from Train_Controller_SW.Train_Controller_SW_Class import Train_Controller
-from Train_Controller_SW_Class import Train_Controller
+from Train_Controller_SW.Train_Controller_SW_Class import Train_Controller
+#from Train_Controller_SW_Class import Train_Controller
 
 
 from PyQt6.QtGui import QFont
@@ -61,6 +61,8 @@ class Train_Controler_SW_UI(QMainWindow):
     def __init__(self):
         super(Train_Controler_SW_UI, self).__init__()
 
+
+        self.next_train_id = 0
         self.train_list =[]
 
         self.add_train()
@@ -1331,7 +1333,7 @@ class Train_Controler_SW_UI(QMainWindow):
         if self.train_list[self.current_train].get_e_brake() == True:
             if self.train_list[self.current_train].check_any_failures() == False:
                 self.e_brake_button.setEnabled(True)
-                print(self.train_list[self.current_train].get_e_brake())
+                #print(self.train_list[self.current_train].get_e_brake())
 
         #make sure setpoint can not exceed commanded
         self.train_list[self.current_train].SetSetPointVelocity()
@@ -1351,7 +1353,10 @@ class Train_Controler_SW_UI(QMainWindow):
 
     def add_train(self):
         new_train = Train_Controller()
+        new_train.set_train_id = self.next_train_id
+        self.next_train_id += 1
         self.train_list.append(new_train)
+
 
 
 

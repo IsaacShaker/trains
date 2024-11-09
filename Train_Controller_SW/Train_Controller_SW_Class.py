@@ -39,6 +39,7 @@ class Train_Controller:
         self.setpoint_velocity = 0
         self.temperature = 70
         self.beacon_info = 0
+        self.train_id = 0
 
         #Strings
         self.pa_announcement = ""
@@ -127,6 +128,11 @@ class Train_Controller:
     def set_failure_signal(self, truth):
         self.failure_signal = truth
 
+    def set_train_id(self, number):
+        self.train_id = number
+
+    def get_train_id(self):
+        return self.train_id
 
 
     ############################
