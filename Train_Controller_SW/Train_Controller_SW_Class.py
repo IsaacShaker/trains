@@ -1,5 +1,10 @@
 import sys
 import time
+import requests
+
+URL = 'http://127.0.0.1:5000'
+
+
 ############################
 #  Variable Declaration 
 ############################
@@ -324,7 +329,13 @@ class Train_Controller:
             self.uk = self.uk_1
 
         #calculate commaneded power (kp*ek + ki*uk)
-        self.commanded_power = self.k_p*self.ek + self.k_i*self.uk
+        self.set_commanded_power(self.k_p*self.ek + self.k_i*self.uk)
+
+        response = requests.post(URL + "/train-model/recieve-commanded-power", json=self.commanded_power_dict)
+
+
+
+
 
     # Initialize the counter at the current time (in seconds)
     start_time = time.time()

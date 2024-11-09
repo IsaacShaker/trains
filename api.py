@@ -3,17 +3,19 @@ from flask import Flask, render_template_string, jsonify, request
 app = Flask(__name__)
 app.qt_app_instance = None
 
-@app.route('/train-controller/send-commanded_power', methods=['POST'])
-def send_commanded_power():
-    # Access the `data_main` attribute from the MyApp instance
-    if hasattr(app.qt_app_instance, 'track_controller'):
-        if hasattr(app.qt_app_instance.track_controller, 'data_test'):
-            data = app.qt_app_instance.track_controller.get_test_data()["Blue"]["SW"]["blocks"]
-            return jsonify(data), 200
-    else:
-        return jsonify({"error": "Data not available"}), 500
 
 
+@app.route('/train-model/recieve-commanded-power', methods=['POST'])
+def recieve_commanded_power():
+    data = request.get_json()
+
+    float_value = data.get("commanded_power", None)
+    index = data.get("train_id", None)
+
+    if float_value is None or index is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.train_model.train_list[index].set_commanded_power(float_value)
 
 
 
