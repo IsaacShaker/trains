@@ -1361,12 +1361,9 @@ class Train_Controler_SW_UI(QMainWindow):
             self.open_r_door()
 
     def add_train(self):
-        new_train = Train_Controller()
-        new_train.set_train_id = self.next_train_id
+        new_train = Train_Controller(self.next_train_id)
         self.next_train_id += 1
         self.train_list.append(new_train)
-
-
 
 
 
