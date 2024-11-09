@@ -1,5 +1,5 @@
 import pandas as pd
-from Block import Block
+from TrackModel.Block import Block
 from TrackModel.Switch import Switch
 from TrackModel.RailroadCrossing import RailroadCrossing
 from TrackModel.TrafficLight import TrafficLight
