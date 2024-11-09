@@ -1314,7 +1314,7 @@ class Train_Controler_SW_UI(QMainWindow):
 
         self.actual_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Actual Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[self.current_train].get_actual_velocity())} MPH</span>')
         
-        self.commanded_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[i].get_commanded_velocity())} MPH</span>')
+        self.commanded_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[self.current_train].get_commanded_velocity())} MPH</span>')
         
         self.check_errors()
 
