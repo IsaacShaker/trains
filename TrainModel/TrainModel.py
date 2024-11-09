@@ -74,6 +74,35 @@ class TrainModel(QObject):
         self.ACCELERATION_LIMIT=0.5 #m/s^2
         self.VELOCITY_LIMIT=19.4444444 #m/s
 
+    #Dictionaries
+    #input dictionary
+        self.authority_dict = {
+            "train_id" : self.ID,
+            "authority": self.authority
+        }
+
+        self.commanded_velcoity_dict = {
+            "train_id" : self.ID,
+            "commanded_velocity": self.commandedSpeed
+        }
+
+        self.beacon_info_dict = {
+            "train_id" : self.ID,
+            "beacon_info": self.beaconInfo
+        }
+
+        self.actual_velocity_dict = {
+            "train_id" : self.ID,
+            "actual_velocity": self.currentVelocity
+        }
+
+        self.failure_modes_dict = {
+            "train_id" : self.ID,
+            "failure_engine": self.engineFailure,
+            "failure_brake": self.brakeFailure,
+            "failure_signal": self.signalPickupFailure
+        }
+
     #Setters and getters for api
 
     #Setters
@@ -109,18 +138,28 @@ class TrainModel(QObject):
 
     def set_commandedSpeed(self, speed: float):
         self.commandedSpeed = speed
+        self.commanded_velocity_dict["commanded_velocity"]=self.commandedSpeed
         print(f"Commanded speed set to {speed} m/s.")
         self.ui_refresh.emit()
 
     def set_authority(self, authority: float):
         self.authority = authority
+        self.authority_dict["authority"]=self.authority
         print(f"Authority set to {authority}.")
+        self.send_authority_to_controller
         self.ui_refresh.emit()
 
     def set_beaconInfo(self, info: int):
         self.beaconInfo = info
+        self.beacon_info_dict["beacon_info"]=self.beaconInfo
         print(f"Beacon info set to {info}.")
         self.ui_refresh.emit()
+
+    def set_currentVelocity(self, vel: float):
+        self.currentVelocity=vel
+        self.actual_velocity_dict["actual_velocity"]=self.currentVelocity
+
+
 
     def set_emergencyBrake(self, state: bool):
         self.emergencyBrake = state
@@ -132,9 +171,10 @@ class TrainModel(QObject):
         print(f"Service brake set to {'engaged' if state else 'disengaged'}.")
         self.ui_refresh.emit()
 
-    def set_power(self, cmd: float):
+    def set_commanded_power(self, cmd: float):
         self.currPower=cmd
         print(f"Power set to {cmd}.")
+        self.receive_power()
         self.ui_refresh.emit()
 
     #Getters
@@ -300,7 +340,7 @@ class TrainModel(QObject):
             # If the velocity is LESS than 0
             velocityNew = 0
 
-        self.currentVelocity=velocityNew
+        self.set_currentVelocity(velocityNew)
 
         print(f"Velocity: {self.currentVelocity}")
 

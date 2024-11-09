@@ -8,8 +8,8 @@ class TrainList:
     def add_train(self):
         """Add a new TrainModel to the list."""
         train_model = TrainModel()
+        train_model.ID = len(self.train_list)
         self.train_list.append(train_model)
-        train_model.ID = len(self.train_list) - 1
     
 
     def remove_train(self, train_name):

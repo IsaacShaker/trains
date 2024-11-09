@@ -19,10 +19,27 @@ def get_data():
 #     data = request.get_json()
 #     if 'authority' in data:
 #         authority = data['authority']
-#         result = train_controller.update_authority(authority)
-#         return jsonify(result), 200
+#         # Assuming `train_controller` is available within `qt_app_instance`
+#         if hasattr(app.train_controller_sw, 'train_controller'):
+#             result = app.train_controller_sw.train_controller.set_authority(authority)
+#             return jsonify({"status": "success", "result": result}), 200
+#         else:
+#             return jsonify({"error": "TrainController not available"}), 500
 #     else:
 #         return jsonify({"error": "No authority value provided"}), 400
+
+# @app.route('/api/train/speed', methods=['POST'])
+# def update_train_speed():
+#     data = request.get_json()
+#     if "authority" in data:
+#         try:
+#             # Updating the speed property
+#             train_controller.set_authority(data["authority"])
+#             return jsonify({"message": "Authority updated successfully", "current_speed": train_controller.current_authority}), 200
+#         except ValueError as e:
+#             return jsonify({"error": str(e)}), 400
+#     else:
+#         return jsonify({"error": "No speed provided"}), 400
 
 def shutdown_server():
     func = request.environ.get('werkzeug.server.shutdown')
