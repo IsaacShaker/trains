@@ -31,9 +31,6 @@ class ScheduleReader(Train):
                             authority = rows['distance between stations']
                             greenTrains[i].add_authority(authority)
 
-        for train in greenTrains:
-            train.set_current_authority(train.route_authorities[0])
-
         return greenTrains
     
     def get_red_route(self, train):

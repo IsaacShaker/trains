@@ -4,6 +4,7 @@ import pandas as pd
 from train import Train
 from clock import Clock
 from scheduleReader import ScheduleReader
+from station import Station
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem
 from PyQt6.QtCore import Qt, QTimer
 
@@ -30,6 +31,34 @@ class MyWindow(QMainWindow, Clock, Train):
 
         # Create the trains list
         self.trains = []
+
+        # Create the stations and add them to a list
+        self.green_stations = []
+        self.glenbury = Station("STATION; GLENBURY", 65)
+        self.green_stations.append(self.glenbury)
+        self.dormont = Station("STATION; DORMONT", 73)
+        self.green_stations.append(self.dormont)
+        self.mt_lebanon = Station("STATION; MT LEBANON", 77)
+        self.green_stations.append(self.mt_lebanon)
+        self.poplar = Station("STATION; POPLAR", 88)
+        self.green_stations.append(self.poplar)
+        self.castle_shannon = Station("STATION; CASTLE SHANNON", 96)
+        self.green_stations.append(self.castle_shannon)
+        self.overbrook = Station("STATION; OVERBROOK", 123)
+        self.green_stations.append(self.overbrook)
+        self.inglewood = Station("STATION; INGLEWOOD", 132)
+        self.green_stations.append(self.inglewood)
+        self.central = Station("STATION; CENTRAL", 141)
+        self.green_stations.append(self.central)
+        self.whited = Station("STATION; WHITED", 22)
+        self.green_stations.append(self.whited)
+        self.edgebrook = Station("STATION; EDGEBROOK", 9)
+        self.green_stations.append(self.edgebrook)
+        self.pioneer = Station("STATION; PIONEER", 2)
+        self.green_stations.append(self.pioneer)
+        self.south_bank = Station("STATION; SOUTH_BANK", 31)
+        self.green_stations.append(self.south_bank)
+
 
         # Dictionary for block labels in block occupancy tab
         self.block_labels = {}
@@ -74,17 +103,33 @@ class MyWindow(QMainWindow, Clock, Train):
         self.start_time = time.time()
         self.timer.start(1000)  # Update every second
 
-        # Helps with toggling crossing button text
-        self.crossing_status = True
+        ###################################################
+        #               Integration Stuff                 #
+        ###################################################
+        self.block_for_wayside
+        self.status_for_wayside
+        self.line_for_wayside
+        self.authority_for_wayside
+        self.speed_for_wayside
+        
+        # Maintenance Blocks
+        self.maintenance_blocks_dict = {
+            "block": self.block_for_wayside,
+            "status": self.status_for_wayside
+        }
 
-        # Helps with toggling switch button text
-        self.switch_status = True
+        # Authority
+        self.authority_dict = {
+            "line": self.line_for_wayside,
+            "block": self.block_for_wayside,
+            "authority": self.authority_for_wayside
+        }
 
-        # Helps with toggling top light text
-        self.top_light_status = True
-
-        # Helps with toggling bottom light text
-        self.bottom_light_status = True
+        # Suggested Speed
+        self.suggested_speed_dict = {
+            "block": self.block_for_wayside,
+            "block_speed": self.speed_for_wayside
+        }
 
     # Create the Home and Test Bench tab for the window
     def create_tabs(self):
@@ -1111,5 +1156,8 @@ if __name__ == "__main__":
 
     window = MyWindow()
     window.show()
+
+    for i in window.green_stations:
+        print(window.green_stations.get_name())
 
     sys.exit(app.exec())
