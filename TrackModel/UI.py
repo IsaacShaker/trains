@@ -2,7 +2,8 @@ import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QTabWidget, QWidget, QLineEdit, QComboBox, QLabel
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QPixmap, QFont
-from TrackModel import buildTrack
+from TrackModel import buildBlueTrack
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -383,7 +384,8 @@ class MainWindow(QMainWindow):
         self.beacons[1].setGeometry(617, 221, 40, 60)
 
 if __name__ == "__main__":
-    Yard, blueBlocks, blueSwitch, blueRailroadCrossing, blueTrafficLights, blueBeacons, blueTrain, blueStations = buildTrack()
+    Yard, blueBlocks, blueSwitch, blueRailroadCrossing, blueTrafficLights, blueBeacons, blueTrain, blueStations = buildBlueTrack()
+
     app = QApplication(sys.argv)  
     window = MainWindow()          
     window.show()                  
