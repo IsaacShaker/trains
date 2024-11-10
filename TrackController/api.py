@@ -12,7 +12,7 @@ app.my_app_instance = None  # Placeholder for the MyApp instance
 #     else:
 #         return jsonify({"error": "Data not available"}), 500
     
-@app.route('/data/block_occupancies', methods=['GET'])
+@app.route('/data/block_occupancies/', methods=['GET'])
 def get_data():
     # Access the `data_main` attribute from the MyApp instance
     if hasattr(app.my_app_instance, 'data_main'):

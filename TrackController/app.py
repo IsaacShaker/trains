@@ -37,6 +37,7 @@ class MyApp(QWidget):
         self.auto = True
         self.data_main = copy.deepcopy(data)
         self.data_test = copy.deepcopy(data)
+        self.maintence_set = set()
         self.saved_values = []  # List to store saved input values
         self.blue_line_plc_manager = PLCManager(self.data_test["Blue"]["SW"], self.auto)
         self.blue_line_plc_manager_HW = PLCManager(self.data_test["Blue"]["HW"], self.auto)
@@ -66,6 +67,14 @@ class MyApp(QWidget):
 
         # Start the timer to call update_content every 500 milliseconds
         self.update_ui_timer.start(500)
+
+    def get_test_data(self):
+        return self.data_test
+
+    def add_maintenance(self, maintenance):
+        self.maintence_set.add(maintenance)
+
+    def remove_maintenance
 
     def closeEvent(self, event):
         """Override the close event to stop the timer before closing."""
