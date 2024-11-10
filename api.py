@@ -91,9 +91,7 @@ def recieve_commanded_power():
         return jsonify({"error": "No float vlaue recieved"}), 400
 
     app.qt_app_instance.train_model.train_list[index].set_commanded_power(float_value)
-
-
-
+    return jsonify("Success"), 200
 
 @app.route('/track-controller/get-data/block_occupancies', methods=['GET'])
 def get_data():

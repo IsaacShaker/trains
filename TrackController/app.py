@@ -74,7 +74,7 @@ class MyApp(QWidget):
     def add_maintenance(self, maintenance):
         self.maintence_set.add(maintenance)
 
-    def remove_maintenance
+    # def remove_maintenance
 
     def closeEvent(self, event):
         """Override the close event to stop the timer before closing."""
