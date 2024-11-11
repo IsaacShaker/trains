@@ -106,7 +106,7 @@ def recieve_lights():
     outside_lights = data.get("o_light", None)
     index = data.get("train_id", None)
 
-    if float_value is None or index is None:
+    if inside_lights is None or index is None or outside_lights:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
     app.qt_app_instance.train_model.train_list[index].set_insideLights(inside_lights)
@@ -121,7 +121,7 @@ def recieve_doors():
     right_door = data.get("r_door", None)
     index = data.get("train_id", None)
 
-    if float_value is None or index is None:
+    if left_door is None or index is None or right_door is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
     app.qt_app_instance.train_model.train_list[index].set_leftDoor(left_door)
@@ -135,7 +135,7 @@ def recieve_announcement():
     announcement = data.get("pa_announcement", None)
     index = data.get("train_id", None)
 
-    if float_value is None or index is None:
+    if announcement is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
     app.qt_app_instance.train_model.train_list[index].set_announcements(announcement)
@@ -148,7 +148,7 @@ def recieve_announcement():
     temperature = data.get("temperature", None)
     index = data.get("train_id", None)
 
-    if float_value is None or index is None:
+    if temperature is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
     app.qt_app_instance.train_model.train_list[index].set_temperature(temnperature)
@@ -162,7 +162,7 @@ def recieve_announcement():
     emergency_brake = data.get("e_brake", None)
     index = data.get("train_id", None)
 
-    if float_value is None or index is None:
+    if service_brake is None or index is None or emergency_brake:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
     app.qt_app_instance.train_model.train_list[index].set_serviceBrake(service_brake)
