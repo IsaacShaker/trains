@@ -5,8 +5,8 @@ import requests
 import serial
 
 URL = 'http://127.0.0.1:5000'
-# testing a commit one-drive
-class TrainControllerHardwareUI(QMainWindow):
+
+class Train_Controller_HW_UI(QMainWindow):
     def __init__(self):
         super().__init__()
 
@@ -23,9 +23,9 @@ class TrainControllerHardwareUI(QMainWindow):
             self.timer.timeout.connect(self.write_to_serial)
         self.timer.start(100)  # Read and write every 100ms
 
-##############################################################################################
-        #CLASS VARIABLES 
-##############################################################################################
+        ###################################
+        #       CLASS VARIABLES           #
+        ###################################
         #Data to read from arduino
         self.commanded_temperature = 70
         self.brake_state = 0
@@ -91,6 +91,7 @@ class TrainControllerHardwareUI(QMainWindow):
             "train_id": self.train_id
         }
 
+
     def init_ui(self):
         # Set up the main window
         self.setWindowTitle("Train Controller Hardware")
@@ -127,7 +128,6 @@ class TrainControllerHardwareUI(QMainWindow):
         main_widget.setLayout(layout)
         self.setCentralWidget(main_widget)
 
-
     def open_serial_port(self):
         if self.com_input.text():
             self.serial_port = self.com_input.text()
@@ -157,7 +157,6 @@ class TrainControllerHardwareUI(QMainWindow):
                 values = line.split(',')
                 if len(values) == 6:  # Ensure we have 6 values
                     self.set_commanded_temperature(values[0])
-                    #self.setpoint_velocity.setText(f"Setpoint Velocity: {values[1]} mph")
                     self.set_brake_state(values[2])
                     self.set_door_state(values[3])
                     self.set_light_state(values[4])
@@ -187,7 +186,7 @@ class TrainControllerHardwareUI(QMainWindow):
             #Assign variables for the case of a beacon at a station
             if len(values) == 3:  
                 self.set_beacon_identifier(values[0])
-                self.set_required_doors(values[1])
+                self.set_required_doors(int(values[1]))
                 self.set_pa_announcement(values[2])
                 self.set_at_stop(1)
             else:
@@ -398,10 +397,12 @@ class TrainControllerHardwareUI(QMainWindow):
         return self.train_id
     
 
-
+'''
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = TrainControllerHardwareUI()
     window.show()
     sys.exit(app.exec())
+
+'''

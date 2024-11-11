@@ -7,6 +7,7 @@ from api import start_api
 from TrainModel.TrainModel_UI import Train_UI
 from Train_Controller_SW.User_Interface import Train_Controler_SW_UI
 from TrackModel.FinalUI import TrackUI
+from Train_Controller_HW import Train_Controller_HW_UI
 from PyQt6.QtWidgets import QApplication
 
 
@@ -17,12 +18,15 @@ class MainApp(QApplication):
         self.track_controller = MyApp()
         self.train_model=Train_UI()
         self.train_controller_sw = Train_Controler_SW_UI()
+        self.train_controller_hw = Train_Controller_HW_UI()
         self.track_model = TrackUI()
+
 
         self.track_controller.show()
        # self.ctc.show()
         self.train_model.show()
         self.train_controller_sw.show()
+        self.train_controller_hw.show()
         self.track_model.show()
 
     def closeEvent(self, event):
