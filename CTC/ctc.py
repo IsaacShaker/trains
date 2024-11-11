@@ -1171,7 +1171,15 @@ class MyWindow(QMainWindow, Clock, Train):
         else:
             label.setStyleSheet("background-color: gray; color: white;")  # Default color
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            
+
+    # Update the wayside vision dictionary
+    def update_wayside_vision(self):
+        pass
+
+    # API function for wayside vision
+    def get_wayside_vision(self):
+        return self.wayside_vision_dict
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 

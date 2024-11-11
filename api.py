@@ -168,6 +168,18 @@ def root():
     """
     return render_template_string(html_content), 200
 
+####################################
+#       CTC API Endpoints          #
+####################################
+@app.route('/ctc/get-data/wayside_vision', methods=['GET'])
+def wayside_vision():
+    # Access the `data_main` attribute from the MyApp instance
+    if hasattr(app.qt_app_instance, 'ctc'):
+        data = app.qt_app_instance.ctc.get_wayside_vision()
+        return jsonify(data), 200
+    else:
+        return jsonify({"error": "Data not available"}), 500
+
 # Function to start the Flask server
 def start_api(qt_app_instance):
     app.qt_app_instance = qt_app_instance
