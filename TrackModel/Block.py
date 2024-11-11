@@ -1,15 +1,19 @@
-from TrackModel.Beacon import Beacon
-from TrackModel.RailroadCrossing import RailroadCrossing
-from TrackModel.Station import Station
-from TrackModel.TrafficLight import TrafficLight
-from TrackModel.Switch import Switch
-from TrackModel.Train import Train
-# from Beacon import Beacon
-# from RailroadCrossing import RailroadCrossing
-# from Station import Station
-# from TrafficLight import TrafficLight
-# from Switch import Switch
-# from Train import Train
+launcher = False
+if launcher:
+    from TrackModel.Beacon import Beacon
+    from TrackModel.RailroadCrossing import RailroadCrossing
+    from TrackModel.Station import Station
+    from TrackModel.TrafficLight import TrafficLight
+    from TrackModel.Switch import Switch
+    from TrackModel.Train import Train
+else:
+    from Beacon import Beacon
+    from RailroadCrossing import RailroadCrossing
+    from Station import Station
+    from TrafficLight import TrafficLight
+    from Switch import Switch
+    from Train import Train
+
 class Block:
     def __init__(self, line, section, number, length, grade, speedLimit, elevation, cumElevation, underground):
         self.line = line
@@ -43,7 +47,7 @@ class Block:
 
     def get_table_data(self, index):
         if index == 0:
-            return self.section
+            return str(self.section)
         elif index == 1:
             return str(isinstance(self.train, Train))
         elif index == 2:
@@ -52,27 +56,27 @@ class Block:
             return str(self.commandedSpeed)
         elif index == 4:
             if isinstance(self.beacon, Beacon):
-                return self.beacon.get_staticData()
+                return str(self.beacon.get_staticData())
             else:
                 return ""
         elif index == 5:
             if isinstance(self.station, Station):
-                return self.station.get_name()
+                return str(self.station.get_name())
             else:
                 return ""
         elif index == 6:
             if isinstance(self.railroad, RailroadCrossing):
-                return self.railroad.get_status()
+                return str(self.railroad.get_status())
             else:
                 return ""
         elif index == 7:
             if isinstance(self.switch, Switch):
-                return self.switch.get_LandR()
+                return str(self.switch.get_LandR())
             else:
                 return ""
         elif index == 8:
             if isinstance(self.trafficLight, TrafficLight):
-                return self.trafficLight.get_status()
+                return str(self.trafficLight.get_status())
             else:
                 return ""
         elif index == 9:
@@ -103,6 +107,9 @@ class Block:
             return str(self.circuitFailure)
         elif index == 19:
             return str(self.powerFailure)
+        else:
+            return ""
+
         
     def display_info(self, index):
         if self.nextBlock == 0:
@@ -118,8 +125,6 @@ class Block:
             return True
         return False
 
-
-
     def set_train(self, train, FOrB):
         if isinstance(train, Train):
             self.train = train
@@ -127,18 +132,17 @@ class Block:
                 self.train.set_auth(self.authority)
             if self.commandedSpeed != None and not FOrB and self.train.get_auth() != 0:
                 self.train.set_speed(self.commandedSpeed)
-            if isinstance(self.beacon, Beacon) and not FOrB:
+            if isinstance(self.beacon, Beacon) and not FOrB : #and self.train.fLocOnBlock == self.length
                 self.train.set_staticData(self.beacon.get_staticData())
             if isinstance(self.station, Station) and (self.train.get_fLocOnBlock() < (self.length/2) - 11) and (self.train.get_fLocOnBlock() > (self.length/2) - 9) and self.train.get_speed == 0:
                 self.station.set_trainIn(True)
             else:
                 if isinstance(self.station, Station):
                     self.station.set_trainIn(False)
-            self.train.dict_arr[self.train.id] = {
-                "authority" :  self.authority,
-                "commanded_speed" : self.commandedSpeed,
-                "beacon_data" : self.beacon.get_staticData()
-            }
+            # self.train.dict_arr[self.train.id] = {
+            #     "authority" :  self.authority,
+            #     "commanded_speed" : self.commandedSpeed
+            # }
         else:
             self.train = None
             
@@ -197,11 +201,13 @@ class Block:
             self.brokenTrack = False
         else:
             self.brokenTrack = True
+
     def change_circuit(self):
         if (self.circuitFailure):
             self.circuitFailure = False
         else:
             self.circuitFailure = True
+
     def change_power(self):
         if (self.powerFailure):
             self.powerFailure = False

@@ -1,18 +1,18 @@
+launcher = False
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QTabWidget, QWidget, QLineEdit, QComboBox, QLabel, QTableView, QVBoxLayout
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QPixmap, QStandardItemModel, QStandardItem, QFont
-from TrackModel.TrackModel import buildTrack
-from TrackModel.Section import Section
-from TrackModel.Train import Train
-# from TrackModel import buildTrack
-# from Section import Section
-# from Train import Train
-
-#for running in launcher
-add_TM = "TrackModel/"
-#for running individual
-#add_TM = ""
+if launcher:
+    from TrackModel.TrackModel import buildTrack
+    from TrackModel.Section import Section
+    from TrackModel.Train import Train
+    add_TM = "TrackModel/"
+else:
+    from TrackModel import buildTrack
+    from Section import Section
+    from Train import Train
+    add_TM = ""
 
 redYard = [] 
 redBlocks = []
@@ -31,6 +31,11 @@ greenSections = []
 
 Trains = []
 post_dict = []
+
+occs = [None] * 150
+
+auth = []
+cmd = []
 
 class TrackUI(QMainWindow):
     def __init__(self):
@@ -195,8 +200,20 @@ class MainWindow(QMainWindow):
         self.train_timer = QTimer()
         #Does the train movement 
         self.train_timer.timeout.connect(Trains[0].moveTrain)
-
         self.train_timer.start(1)#10
+
+
+    def get_occupancies(self):
+        occ_data = {"occupancies" : occs}
+        return occ_data
+
+    def get_track_to_train(self):
+        for i in range(len(Trains)):
+            auth[i] = Trains[i].trainAuth
+            cmd[i] = Trains[i].trainCmd
+        data = { "authority" : auth, 
+                 "commandedSpeed" : cmd}
+        return data
 
     def get_post_dict(self):
         return {"data": post_dict}
@@ -366,12 +383,6 @@ class MainWindow(QMainWindow):
                 else:
                     item.setBackground(Qt.GlobalColor.darkGray)
                 
-
-
-
-
-
-
     def update_red_ui(self):
         self.populate_red_table()
         #All "setToolTip" functions are updating the hover information for all objects
@@ -428,6 +439,7 @@ class MainWindow(QMainWindow):
         
         for i in range(150):
             greenBlocks[i].set_occupancies()
+            occs[i] = greenBlocks[i].occupancy
         #All "setToolTip" functions are updating the hover information for all objects
         #Constantly update block color based on occupied variable
         for i in range(10):

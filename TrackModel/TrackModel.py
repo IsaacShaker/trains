@@ -1,17 +1,21 @@
+launcher = False
 import pandas as pd
-from TrackModel.Block import Block
-from TrackModel.Switch import Switch
-from TrackModel.RailroadCrossing import RailroadCrossing
-from TrackModel.TrafficLight import TrafficLight
-from TrackModel.Beacon import Beacon
-from TrackModel.Train import Train
-from TrackModel.Station import Station
-# from Switch import Switch
-# from RailroadCrossing import RailroadCrossing
-# from TrafficLight import TrafficLight
-# from Beacon import Beacon
-# from Train import Train
-# from Station import Station
+if launcher:
+    from TrackModel.Block import Block
+    from TrackModel.Switch import Switch
+    from TrackModel.RailroadCrossing import RailroadCrossing
+    from TrackModel.TrafficLight import TrafficLight
+    from TrackModel.Beacon import Beacon
+    from TrackModel.Train import Train
+    from TrackModel.Station import Station
+else:
+    from Block import Block
+    from Switch import Switch
+    from RailroadCrossing import RailroadCrossing
+    from TrafficLight import TrafficLight
+    from Beacon import Beacon
+    from Train import Train
+    from Station import Station
 
 def buildBlueTrack():
     #Yard 
