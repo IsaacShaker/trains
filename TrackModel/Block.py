@@ -1,9 +1,15 @@
-from Beacon import Beacon
-from RailroadCrossing import RailroadCrossing
-from Station import Station
-from TrafficLight import TrafficLight
-from Switch import Switch
-from Train import Train
+from TrackModel.Beacon import Beacon
+from TrackModel.RailroadCrossing import RailroadCrossing
+from TrackModel.Station import Station
+from TrackModel.TrafficLight import TrafficLight
+from TrackModel.Switch import Switch
+from TrackModel.Train import Train
+# from Beacon import Beacon
+# from RailroadCrossing import RailroadCrossing
+# from Station import Station
+# from TrafficLight import TrafficLight
+# from Switch import Switch
+# from Train import Train
 class Block:
     def __init__(self, line, section, number, length, grade, speedLimit, elevation, cumElevation, underground):
         self.line = line
@@ -128,6 +134,11 @@ class Block:
             else:
                 if isinstance(self.station, Station):
                     self.station.set_trainIn(False)
+            self.train.dict_arr[self.train.id] = {
+                "authority" :  self.authority,
+                "commanded_speed" : self.commandedSpeed,
+                "beacon_data" : self.beacon.get_staticData()
+            }
         else:
             self.train = None
             

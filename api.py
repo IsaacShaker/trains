@@ -3,7 +3,87 @@ from flask import Flask, render_template_string, jsonify, request
 app = Flask(__name__)
 app.qt_app_instance = None
 
+###################################
+#Train Contoller Input Functions
+###################################
 
+@app.route('/train-controller/recieve-authority', methods=['POST'])
+def recieve_authority():
+    data = request.get_json()
+
+    float_value = data.get("authority", None)
+    index = data.get("train_id", None)
+
+    if float_value is None or index is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.Train_Controler_SW_UI.train_list[index].set_authority(float_value)
+    return jsonify("Success"), 200
+
+
+@app.route('/train-controller/recieve-beacon-info', methods=['POST'])
+def recieve_beacon_info():
+    data = request.get_json()
+
+    string_value = data.get("beacon_info", None)
+    index = data.get("train_id", None)
+
+    if string_value is None or index is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.Train_Controler_SW_UI.train_list[index].set_beacon_info(string_value)
+    return jsonify("Success"), 200
+
+
+@app.route('/train-controller/recieve-commanded-velocity', methods=['POST'])
+def recieve_commanded_velocity():
+    data = request.get_json()
+
+    float_value = data.get("commanded_velocity", None)
+    index = data.get("train_id", None)
+
+    if float_value is None or index is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.Train_Controler_SW_UI.train_list[index].set_commanded_velocity(float_value)
+    return jsonify("Success"), 200
+
+
+@app.route('/train-controller/recieve-actual-velocity', methods=['POST'])
+def recieve_actual_velocity():
+    data = request.get_json()
+
+    float_value = data.get("actual_velocity", None)
+    index = data.get("train_id", None)
+
+    if float_value is None or index is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.Train_Controler_SW_UI.train_list[index].set_actual_velocity(float_value)
+    return jsonify("Success"), 200
+
+
+@app.route('/train-controller/recieve-failure_modes', methods=['POST'])
+def recieve_failure_modes():
+    data = request.get_json()
+
+    engine_string = data.get("failure_engine", None)
+    brake_string = data.get("failure_brake", None)
+    signal_string = data.get("failure_signal", None)
+    index = data.get("train_id", None)
+
+    if engine_string is None or brake_string or signal_string or index is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.Train_Controler_SW_UI.train_list[index].set_failure_engine(engine_string)
+    app.qt_app_instance.Train_Controler_SW_UI.train_list[index].set_failure_brake(brake_string)
+    app.qt_app_instance.Train_Controler_SW_UI.train_list[index].set_failure_signal(signal_string)
+    return jsonify("Success"), 200
+
+
+###################################
+#Train Model Input Functions
+###################################
 
 @app.route('/train-model/recieve-commanded-power', methods=['POST'])
 def recieve_commanded_power():

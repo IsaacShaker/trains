@@ -1,6 +1,9 @@
 import sys
 import os
 import shutil
+import sys
+import os
+import shutil
 import json
 import copy
 from threading import Thread
@@ -34,8 +37,10 @@ class MyApp(QWidget):
         self.auto = True
         self.data_main = copy.deepcopy(data)
         self.data_test = copy.deepcopy(data)
+        self.maintence_set = set()
         self.saved_values = []  # List to store saved input values
         self.blue_line_plc_manager = PLCManager(self.data_test["Blue"]["SW"], self.auto)
+        self.blue_line_plc_manager_HW = PLCManager(self.data_test["Blue"]["HW"], self.auto)
 
         with open("TrackController/styles.qss", "r") as f:
             style = f.read()
@@ -52,7 +57,6 @@ class MyApp(QWidget):
 
         self.create_main_tab()
         self.create_test_tab()
-        self.create_upload_tab()
         self.tabs.currentChanged.connect(self.update_content)
 
         # Create a QTimer instance
@@ -66,10 +70,16 @@ class MyApp(QWidget):
 
     def get_test_data(self):
         return self.data_test
-    
+
+    def add_maintenance(self, maintenance):
+        self.maintence_set.add(maintenance)
+
+    # def remove_maintenance
+
     def closeEvent(self, event):
         """Override the close event to stop the timer before closing."""
         self.blue_line_plc_manager.stop_current_plc()  # Stop the PLC if running
+        self.blue_line_plc_manager_HW.stop_current_plc()  # Stop the PLC if running
         self.update_ui_timer.stop()  # Stop the timer when the app closes
         event.accept()  # Accept the event to close the window
         
@@ -89,6 +99,21 @@ class MyApp(QWidget):
         lines_dropdown_menu.setCurrentText(self.line)
         left_layout.addWidget(lines_dropdown_menu)
 
+        # Create a label to show the uploaded file path
+        file_label = QLabel("No file uploaded")
+        left_layout.addWidget(file_label)
+
+        # Create an upload button
+        upload_button = QPushButton("+")  # Set the button text to a plus sign
+        upload_button.setFixedSize(100, 40)  # Adjust the size to make the plus sign more prominent
+
+        # Style the button to center the plus symbol and make it look larger
+        upload_button.setStyleSheet("font-size: 20px;")
+
+        # Connect the button to the upload_file function
+        upload_button.clicked.connect(lambda: self.upload_file(file_label))
+        left_layout.addWidget(upload_button, stretch=1)
+
         # Add label for Block Occupancy
         left_layout.addWidget(QLabel("Block Occupancy"))
 
@@ -97,7 +122,7 @@ class MyApp(QWidget):
         block_scroll_widget = BlockOccupancy((self.data_test if test else self.data_main), self.line, self.mode, test)
         block_scroll.setWidget(block_scroll_widget)
         block_scroll.setWidgetResizable(True)
-        left_layout.addWidget(block_scroll)
+        left_layout.addWidget(block_scroll, stretch=4)
 
         # Right side layout for buttons (traffic lights, switches, crossings)
         right_layout = QVBoxLayout()
@@ -143,7 +168,7 @@ class MyApp(QWidget):
         # Connect dropdown menu to update content function
         lines_dropdown_menu.currentIndexChanged.connect(lambda: self.update_line(lines_dropdown_menu))
 
-        hw_sw_toggle_button.clicked.connect(self.toggle_hw_sw_mode)
+        # hw_sw_toggle_button.clicked.connect(self.toggle_hw_sw_mode)
         manual_auto_toggle_button.clicked.connect(self.toggle_manual_auto_mode)
 
         # Add left and right layouts to the main layout
@@ -238,46 +263,45 @@ class MyApp(QWidget):
 
         self.tabs.addTab(self.test_tab, "Test")
 
-    def create_upload_tab(self):
-        """Creates an upload tab and adds it to the provided QTabWidget."""
+    #def create_upload_tab(self):
+    #    """Creates an upload tab and adds it to the provided QTabWidget."""
         # Create the upload tab widget
-        upload_tab = QWidget()
-        upload_layout = QVBoxLayout()
+        #upload_tab = QWidget()
+        #upload_layout = QVBoxLayout()
         
         # Create dropdown menu for line selection
-        lines_dropdown_menu = QComboBox()
-        lines_dropdown_menu.addItems(["Blue", "Green", "Red"])
-        lines_dropdown_menu.setFixedHeight(40)  # Adjust height for a consistent look
-        lines_dropdown_menu.setFixedWidth(120)  # Adjust height for a consistent look
-        lines_dropdown_menu.setCurrentText(self.line)
-        lines_dropdown_menu.currentIndexChanged.connect(lambda: self.update_line(lines_dropdown_menu))
+        #lines_dropdown_menu = QComboBox()
+        #lines_dropdown_menu.addItems(["Blue", "Green", "Red"])
+        #lines_dropdown_menu.setFixedHeight(40)  # Adjust height for a consistent look
+        #lines_dropdown_menu.setFixedWidth(120)  # Adjust height for a consistent look
+        #lines_dropdown_menu.setCurrentText(self.line)
+        #lines_dropdown_menu.currentIndexChanged.connect(lambda: self.update_line(lines_dropdown_menu))
 
         # Create a label to show the uploaded file path
-        file_label = QLabel("No file uploaded")
+        #file_label = QLabel("No file uploaded")
         
         # Create an upload button
-        upload_button = QPushButton("+")  # Set the button text to a plus sign
-        upload_button.setFixedSize(100, 100)  # Adjust the size to make the plus sign more prominent
+        #upload_button = QPushButton("+")  # Set the button text to a plus sign
+        #upload_button.setFixedSize(40, 100)  # Adjust the size to make the plus sign more prominent
 
         # Style the button to center the plus symbol and make it look larger
-        upload_button.setStyleSheet("font-size: 40px;")
+        #upload_button.setStyleSheet("font-size: 20px;")
 
         # Connect the button to the upload_file function
-        upload_button.clicked.connect(lambda: self.upload_file(file_label))
+        #upload_button.clicked.connect(lambda: self.upload_file(file_label))
 
         # Add the label and button to the layout
-        upload_layout.addWidget(lines_dropdown_menu, alignment=Qt.AlignmentFlag.AlignCenter)
-        upload_layout.addWidget(upload_button, alignment=Qt.AlignmentFlag.AlignCenter)
-        upload_layout.addWidget(file_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        #upload_layout.addWidget(upload_button, alignment=Qt.AlignmentFlag.AlignCenter)
+        #upload_layout.addWidget(file_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Set alignment for the entire layout to center
-        upload_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        #upload_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Set the layout for the upload tab
-        upload_tab.setLayout(upload_layout)
+        #upload_tab.setLayout(upload_layout)
 
         # Add the upload tab to the provided tab widget
-        self.tabs.addTab(upload_tab, "Upload Tab")
+        #self.tabs.addTab(upload_tab, "Upload Tab")
 
     def upload_file(self, file_label):
         """Handles the file upload process, saves the file to a folder, and restarts the PLC program."""
@@ -382,12 +406,12 @@ class MyApp(QWidget):
         self.update_content()
 
     # Toggle between Hardware and Software modes
-    def toggle_hw_sw_mode(self):
-        if self.mode == "HW":
-            self.mode = "SW"
-        else:
-            self.mode = "HW"
-        self.update_content()
+    # def toggle_hw_sw_mode(self):
+    #    if self.mode == "HW":
+    #        self.mode = "SW"
+    #    else:
+    #        self.mode = "HW"
+    #   self.update_content()
 
     # Toggle between Manual and Auto modes
     def toggle_manual_auto_mode(self):
@@ -422,11 +446,5 @@ class MyApp(QWidget):
 # if __name__ == '__main__':
 #     app = QApplication(sys.argv)
 #     ex = MyApp()
-
-#     # Start the API server and pass the MyApp instance
-#     flask_thread = Thread(target=start_api, args=(ex,), daemon=True)
-#     flask_thread.start()
-
-#     # Run the PyQt application
 #     ex.show()
 #     sys.exit(app.exec())
