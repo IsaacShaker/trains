@@ -7,8 +7,8 @@ app.qt_app_instance = None
 #Train Contoller Input Functions
 ###################################
 
-@app.route('/train-controller/recieve-authority', methods=['POST'])
-def recieve_authority():
+@app.route('/train-controller/receive-authority', methods=['POST'])
+def receive_authority():
     data = request.get_json()
 
     float_value = data.get("authority", None)
@@ -21,8 +21,8 @@ def recieve_authority():
     return jsonify("Success"), 200
 
 
-@app.route('/train-controller/recieve-beacon-info', methods=['POST'])
-def recieve_beacon_info():
+@app.route('/train-controller/receive-beacon-info', methods=['POST'])
+def receive_beacon_info():
     data = request.get_json()
 
     string_value = data.get("beacon_info", None)
@@ -35,8 +35,8 @@ def recieve_beacon_info():
     return jsonify("Success"), 200
 
 
-@app.route('/train-controller/recieve-commanded-velocity', methods=['POST'])
-def recieve_commanded_velocity():
+@app.route('/train-controller/receive-commanded-velocity', methods=['POST'])
+def receive_commanded_velocity():
     data = request.get_json()
 
     float_value = data.get("commanded_velocity", None)
@@ -49,8 +49,8 @@ def recieve_commanded_velocity():
     return jsonify("Success"), 200
 
 
-@app.route('/train-controller/recieve-actual-velocity', methods=['POST'])
-def recieve_actual_velocity():
+@app.route('/train-controller/receive-actual-velocity', methods=['POST'])
+def receive_actual_velocity():
     data = request.get_json()
 
     float_value = data.get("actual_velocity", None)
@@ -63,8 +63,8 @@ def recieve_actual_velocity():
     return jsonify("Success"), 200
 
 
-@app.route('/train-controller/recieve-failure_modes', methods=['POST'])
-def recieve_failure_modes():
+@app.route('/train-controller/receive-failure_modes', methods=['POST'])
+def receive_failure_modes():
     data = request.get_json()
 
     engine_string = data.get("failure_engine", None)
@@ -85,8 +85,8 @@ def recieve_failure_modes():
 #Train Model Input Functions
 ###################################
 
-@app.route('/train-model/recieve-commanded-power', methods=['POST'])
-def recieve_commanded_power():
+@app.route('/train-model/receive-commanded-power', methods=['POST'])
+def receive_commanded_power():
     data = request.get_json()
 
     float_value = data.get("commanded_power", None)
@@ -98,23 +98,23 @@ def recieve_commanded_power():
     app.qt_app_instance.train_model.train_list[index].set_commanded_power(float_value)
     return jsonify({"status": "Ok"}), 200
  
-@app.route('/train-model/recieve-lights', methods=['POST'])
-def recieve_lights():
+@app.route('/train-model/receive-lights', methods=['POST'])
+def receive_lights():
     data = request.get_json()
 
     inside_lights = data.get("i_light", None)
     outside_lights = data.get("o_light", None)
     index = data.get("train_id", None)
 
-    if inside_lights is None or index is None or outside_lights:
+    if inside_lights is None or index is None or outside_lights is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
     app.qt_app_instance.train_model.train_list[index].set_insideLights(inside_lights)
     app.qt_app_instance.train_model.train_list[index].set_headLights(outside_lights)
     return jsonify({"status": "Ok"}), 200
 
-@app.route('/train-model/recieve-doors', methods=['POST'])
-def recieve_doors():
+@app.route('/train-model/receive-doors', methods=['POST'])
+def receive_doors():
     data = request.get_json()
 
     left_door = data.get("l_door", None)
@@ -128,8 +128,8 @@ def recieve_doors():
     app.qt_app_instance.train_model.train_list[index].set_rightDoor(right_door)
     return jsonify({"status": "Ok"}), 200
 
-@app.route('/train-model/recieve-announcement', methods=['POST'])
-def recieve_announcement():
+@app.route('/train-model/receive-announcement', methods=['POST'])
+def receive_announcement():
     data = request.get_json()
 
     announcement = data.get("pa_announcement", None)
@@ -141,8 +141,8 @@ def recieve_announcement():
     app.qt_app_instance.train_model.train_list[index].set_announcements(announcement)
     return jsonify({"status": "Ok"}), 200
 
-@app.route('/train-model/recieve-temperature', methods=['POST'])
-def recieve_announcement():
+@app.route('/train-model/receive-temperature', methods=['POST'])
+def receive_temperature():
     data = request.get_json()
 
     temperature = data.get("temperature", None)
@@ -151,18 +151,18 @@ def recieve_announcement():
     if temperature is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
-    app.qt_app_instance.train_model.train_list[index].set_temperature(temnperature)
+    app.qt_app_instance.train_model.train_list[index].set_temperature(temperature)
     return jsonify({"status": "Ok"}), 200
 
-@app.route('/train-model/recieve-brakes', methods=['POST'])
-def recieve_announcement():
+@app.route('/train-model/receive-brakes', methods=['POST'])
+def receive_brakes():
     data = request.get_json()
 
     service_brake = data.get("s_brake", None)
     emergency_brake = data.get("e_brake", None)
     index = data.get("train_id", None)
 
-    if service_brake is None or index is None or emergency_brake:
+    if service_brake is None or index is None or emergency_brake is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
     app.qt_app_instance.train_model.train_list[index].set_serviceBrake(service_brake)
