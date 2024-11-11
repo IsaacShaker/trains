@@ -1,5 +1,6 @@
 import sys
 import time
+import requests
 import pandas as pd
 from train import Train
 from clock import Clock
@@ -7,6 +8,8 @@ from scheduleReader import ScheduleReader
 from station import Station
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem
 from PyQt6.QtCore import Qt, QTimer
+
+URL = 'http://127.0.0.1:5000'
 
 class MyWindow(QMainWindow, Clock, Train):
     def __init__(self):
@@ -131,6 +134,12 @@ class MyWindow(QMainWindow, Clock, Train):
         self.suggested_speed_dict = {
             "block": self.block_for_wayside,
             "block_speed": self.speed_for_wayside
+        }
+
+        # Wayside Vision
+        self.output_blocks = []  # Index will say which wayside its intended for
+        self.wayside_vision_dict = {
+            "output_blocks": self.output_blocks
         }
 
     # Create the Home and Test Bench tab for the window
@@ -263,43 +272,43 @@ class MyWindow(QMainWindow, Clock, Train):
         layout.addLayout(grid_layout)
 
     # Handle what happend when the crossing is changed
-    def crossing_clicked(self):
-        self.crossing_status = not(self.crossing_status)
-        if self.crossing_status == False:
-            self.crossing_button.setStyleSheet("background-color: red; color: white; font-size: 20px")
-        else:
-            self.crossing_button.setStyleSheet("background-color: green; color: white; font-size: 20px")
+    # def crossing_clicked(self):
+    #     self.crossing_status = not(self.crossing_status)
+    #     if self.crossing_status == False:
+    #         self.crossing_button.setStyleSheet("background-color: red; color: white; font-size: 20px")
+    #     else:
+    #         self.crossing_button.setStyleSheet("background-color: green; color: white; font-size: 20px")
 
-    # Handle what happens when the switch is changed
-    def switch_clicked(self):
-        self.switch_status = not(self.switch_status)
+    # # Handle what happens when the switch is changed
+    # def switch_clicked(self):
+    #     self.switch_status = not(self.switch_status)
 
-        if self.switch_status == False:
-            self.switch_button.setText('5-->12')
-            self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
-        else:
-            self.switch_button.setText('5-->6')
-            self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
+    #     if self.switch_status == False:
+    #         self.switch_button.setText('5-->12')
+    #         self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
+    #     else:
+    #         self.switch_button.setText('5-->6')
+    #         self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
 
-    # Handle what happens when the top light changes states
-    def top_light_clicked(self):
-        self.top_light_status = not(self.top_light_status)
-        if self.top_light_status == False:
-            self.top_light.setText('Top Track Light')
-            self.top_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
-        else:
-            self.top_light.setText('Top Track Light')
-            self.top_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
+    # # Handle what happens when the top light changes states
+    # def top_light_clicked(self):
+    #     self.top_light_status = not(self.top_light_status)
+    #     if self.top_light_status == False:
+    #         self.top_light.setText('Top Track Light')
+    #         self.top_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
+    #     else:
+    #         self.top_light.setText('Top Track Light')
+    #         self.top_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
 
-    # Handle what happens when the bottom light changes states
-    def bottom_light_clicked(self):
-        self.bottom_light_status = not(self.bottom_light_status)
-        if self.bottom_light_status == False:
-            self.bottom_light.setText('Bottom Track Light')
-            self.bottom_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
-        else:
-            self.bottom_light.setText('Bottom Track Light')
-            self.bottom_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
+    # # Handle what happens when the bottom light changes states
+    # def bottom_light_clicked(self):
+    #     self.bottom_light_status = not(self.bottom_light_status)
+    #     if self.bottom_light_status == False:
+    #         self.bottom_light.setText('Bottom Track Light')
+    #         self.bottom_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
+    #     else:
+    #         self.bottom_light.setText('Bottom Track Light')
+    #         self.bottom_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
 
     # Handle the user confirming their Test Bench selection for occupancies
     def submit_test_bench(self):
@@ -689,6 +698,14 @@ class MyWindow(QMainWindow, Clock, Train):
             block_label = self.block_labels[new_block]
             self.update_label_background(block_label, new_block)
 
+            # Send maintenance block to wayside
+            self.maintenance_blocks_dict["block"] = block
+            self.maintenance_blocks_dict["status"] = 1
+            while(1):
+                response = requests.post(URL + "/", json=self.maintenance_blocks_dict)
+                if response.status_code == 200:
+                    break
+
             print("Block", block, "on the", line, "line has been closed for maintenance!")
             dialog.accept()
 
@@ -774,6 +791,14 @@ class MyWindow(QMainWindow, Clock, Train):
         if block in self.block_labels:
             block_label = self.block_labels[block]
             self.update_label_background(block_label, block)
+
+        # Send maintenance block to wayside
+        self.maintenance_blocks_dict["block"] = block
+        self.maintenance_blocks_dict["status"] = 0
+        while(1):
+            response = requests.post(URL + "/", json=self.maintenance_blocks_dict)
+            if response.status_code == 200:
+                break
 
         print("Block", block_line, "on the", block_number, "line has been reopened from maintenance!")
         dialog.accept()  
