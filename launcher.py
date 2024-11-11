@@ -3,7 +3,7 @@ from threading import Thread
 from TrackController.app import MyApp
 import requests
 from api import start_api
-from CTC.ctc import MyWindow
+#from CTC.ctc import MyWindow
 from TrainModel.TrainModel_UI import Train_UI
 from Train_Controller_SW.User_Interface import Train_Controler_SW_UI
 from PyQt6.QtWidgets import QApplication
@@ -12,13 +12,13 @@ from PyQt6.QtWidgets import QApplication
 class MainApp(QApplication):
     def __init__(self, argv):
         super().__init__(argv)
-        self.ctc = MyWindow()
+        #self.ctc = MyWindow()
         self.track_controller = MyApp()
         self.train_model=Train_UI()
         self.train_controller_sw = Train_Controler_SW_UI()
 
         self.track_controller.show()
-        self.ctc.show()
+        #self.ctc.show()
         self.train_model.show()
         self.train_controller_sw.show()
 

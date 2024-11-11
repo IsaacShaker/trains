@@ -16,8 +16,21 @@ def recieve_commanded_power():
         return jsonify({"error": "No float vlaue recieved"}), 400
 
     app.qt_app_instance.train_model.train_list[index].set_commanded_power(float_value)
+    return jsonify({"status": "Ok"}), 200
+ 
+# @app.route('/train-model/recieve-lights', methods=['POST'])
+# def recieve_lights():
+#     data = request.get_json()
 
+#     inside_lights = data.get("i_lights", None)
+#     index = data.get("train_id", None)
 
+#     if float_value is None or index is None:
+#         return jsonify({"error": "No float vlaue recieved"}), 400
+
+#     app.qt_app_instance.train_model.train_list[index].set_commanded_power(float_value)
+#     return jsonify({"status": "Ok"}), 200
+    
 
     
 @app.route('/track-controller/get-data/block_occupancies', methods=['GET'])
