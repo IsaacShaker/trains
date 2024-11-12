@@ -15,11 +15,14 @@ class TrainModel(QObject):
     power_changed = pyqtSignal()
     passengers_changed = pyqtSignal()
     ui_refresh = pyqtSignal()
+    start_temperature_adjustment_signal = pyqtSignal(float)
 
     def __init__(self):
         super().__init__()
-        self.adjust_timer = QTimer()
+        self.adjust_timer = QTimer(self)
         self.adjust_timer.timeout.connect(self.update_temperature)
+
+        self.start_temperature_adjustment_signal.connect(self.start_adjusting_temperature)
 
         # Initialize variables
 
@@ -143,8 +146,8 @@ class TrainModel(QObject):
 
     def set_commandedTemperature(self, temp: float):
         self.commandedTemperature = temp
-        self.start_adjusting_temperature()
         print(f"Commanded temperature set to {temp}°F.")
+        self.start_temperature_adjustment_signal.emit(temp)
         self.ui_refresh.emit()
 
     def set_commandedSpeed(self, speed: float):
@@ -172,6 +175,7 @@ class TrainModel(QObject):
         self.currentVelocity=vel
         self.actual_velocity_dict["actual_velocity"]=self.currentVelocity
         response = requests.post(URL + "/train-controller/receive-actual-velocity", json=self.actual_velocity_dict)
+        #response = requests.
         self.ui_refresh.emit()
 
     def set_signal_pickup_failure(self, state: bool):
@@ -294,22 +298,18 @@ class TrainModel(QObject):
     def limit_accel(self):
         failure_mode_active= self.signalPickupFailure or self.engineFailure or self.signalPickupFailure
         if (self.currAccel > self.ACCELERATION_LIMIT and not self.serviceBrake and not self.emergencyBrake):
-            print("Case 1")
             # If all brakes are OFF and self.currAccel is above the limit
             self.currAccel = self.ACCELERATION_LIMIT
         elif (self.serviceBrake and not self.emergencyBrake and not failure_mode_active): # self.currAccel < self.DECELERATION_LIMIT_SERVICE and
-            print("Case 2")
             # If the service brake is ON and self.currAccel is below the limit
             self.currAccel = self.S_BRAKE_ACC
         elif (not self.serviceBrake and (self.emergencyBrake or failure_mode_active)): # self.currAccel < self.DECELERATION_LIMIT_EMERGENCY and
             # If the emergency brake is ON and self.currAccel is below the limit
-            print("IN THERE")
             if(self.currentVelocity !=0):
                 self.currAccel = self.E_BRAKE_ACC
             else:
                 self.currAccel = 0
         elif (self.serviceBrake and (self.emergencyBrake or failure_mode_active)): # Edge case if both emergency brake and service brake are turned on
-            print("Case 4")
             if(self.currentVelocity !=0):
                 self.currAccel = self.E_BRAKE_ACC
             else:
@@ -385,10 +385,4 @@ class TrainModel(QObject):
         self.power_changed.emit()
 
         self.lastVel=self.currentVelocity
-        # currentPosition = 0
-        # positionCalc = 0
 
-        
-        # POSITION
-        # positionCalc = self.currentVelocity*self.samplePeriod
-        # currentPosition = previousPosition + positionCalc

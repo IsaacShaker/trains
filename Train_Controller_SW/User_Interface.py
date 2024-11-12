@@ -68,7 +68,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.add_train()
         self.add_train()
         self.add_train()
-        self.train_list[0].authority = 200
+        self.train_list[0].authority = 0
         self.train_list[1].authority = 250
         self.train_list[2].authority = 100
 
@@ -1311,7 +1311,7 @@ class Train_Controller_SW_UI(QMainWindow):
         
         #if received authority is negative, then that means we are supposed to receive new authority
         if self.train_list[self.current_train].get_received_authority() > 0 and self.train_list[self.current_train].get_can_get_authority():
-            self.train_list[self.current_train].set_authority(self.train_list[self.current_train].get_received_authority())
+            self.train_list[self.current_train].set_authority_to_received()
             self.train_list[self.current_train].set_can_get_authority(False)                                                    #COMMENT THIS OUT TO TEST WITHOUT THIS FUNCTION
 
         #updates UI info

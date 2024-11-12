@@ -177,6 +177,44 @@ def receive_brakes():
     app.qt_app_instance.train_model.train_list[index].set_emergencyBrake(emergency_brake)
     return jsonify({"status": "Ok"}), 200
     
+@app.route('/train-model/receive-commanded-speed', methods=['POST'])
+def receive_commanded_speed():
+    data = request.get_json()
+
+    commanded_speed = data.get("s_brake", None)
+    index = data.get("train_id", None)
+
+    if commanded_speed is None or index is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.train_model.train_list[index].set_commandedSpeed(commanded_speed)
+    return jsonify({"status": "Ok"}), 200
+
+@app.route('/train-model/receive-block-authority', methods=['POST'])
+def receive_block_authority():
+    data = request.get_json()
+
+    authority = data.get("authority", None)
+    index = data.get("train_id", None)
+
+    if authority is None or index is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.train_model.train_list[index].set_authority(authority)
+    return jsonify({"status": "Ok"}), 200
+    
+@app.route('/train-model/receive-block-beacon-info', methods=['POST'])
+def receive_block_beacon_info():
+    data = request.get_json()
+
+    beacon_info = data.get("beacon_info", None)
+    index = data.get("train_id", None)
+
+    if beacon_info is None or index is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.train_model.train_list[index].set_beaconInfo(beacon_info)
+    return jsonify({"status": "Ok"}), 200
     
 ###################################
 # Track Controller API Endpoints  #

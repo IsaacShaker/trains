@@ -303,6 +303,10 @@ class Train_Controller:
         else:
             self.s_brake = False
             return False
+    
+    #this function is called when we need to set authority to the authority sent us 
+    def set_authority_to_received(self):
+        self.set_authority(self.received_authority + self.authority)
         
     #this function updates authority in real time in order to have an accurate reading for the driver
     def update_authority(self):
@@ -339,6 +343,23 @@ class Train_Controller:
             elif values[0][0] == "B" or "b":
                 self.station_reached = not(self.station_reached)
 
+                #checks if it is shared tunnel station block
+                if len(values[0]) == 3:
+
+
+                    if values[0][1] == "3" or values[0][2] == "1":
+                        self.in_tunnel = not(self.in_tunnel)
+
+                        #turn lights on if in tunnel
+                        if self.in_tunnel:
+                            self.set_i_light(True)
+                            self.set_o_light(True)
+                        else:
+                            self.set_i_light(False)
+                            self.set_o_light(False)
+
+
+
                 if self.station_reached:
                     self.doors_can_open = True
 
@@ -357,7 +378,7 @@ class Train_Controller:
 
         #check setpoint speed first or if any brakes are being pressed
         if self.setpoint_velocity <= self.actual_velocity or self.s_brake or self.e_brake or self.authority <= 0:
-            self.commanded_power = 0
+            self.set_commanded_power(0)
             self.ek = 0
             self.ek_1 = 0
             self.uk = 0
@@ -383,9 +404,6 @@ class Train_Controller:
 
         response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
 
-    #this function updates authority
-    def update_authority(self):
-        self.authority -= self.actual_velocity*self.T
 
 
 
