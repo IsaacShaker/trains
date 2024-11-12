@@ -27,7 +27,7 @@ class Train_Controller_HW_UI(QMainWindow):
         #       CLASS VARIABLES           #
         ###################################
         #Data to read from arduino
-        self.commanded_temperature = 70
+        self.commanded_temperature = 68
         self.brake_state = 0
         self.light_state = 0
         self.door_state = 0
@@ -156,11 +156,19 @@ class Train_Controller_HW_UI(QMainWindow):
             if line:
                 values = line.split(',')
                 if len(values) == 6:  # Ensure we have 6 values
-                    self.set_commanded_temperature(values[0])
-                    self.set_brake_state(values[2])
-                    self.set_door_state(values[3])
-                    self.set_light_state(values[4])
-                    self.set_commanded_power(values[5])
+                    self.set_commanded_temperature(int(values[0]))
+                    self.set_brake_state(int(values[1]))
+                    self.set_door_state(int(values[2]))
+                    self.set_light_state(int(values[3]))
+                    self.set_commanded_power(float(values[4]))
+                    self.set_pa_announcement(values[5])
+
+                    response = requests.post(URL + "/train-model/recieve-temperature", json=self.temperature_dict)
+                    response = requests.post(URL + "/train-model/recieve-brakes", json=self.brakes_dict)
+                    response = requests.post(URL + "/train-model/recieve-doors", json=self.doors_dict)
+                    response = requests.post(URL + "/train-model/recieve-lights", json=self.lights_dict)
+                    response = requests.post(URL + "/train-model/recieve-commanded-power", json=self.commanded_power_dict)
+                    response = requests.post(URL + "/train-model/recieve-announcement", json=self.pa_announcement_dict)
 
     def write_to_serial(self):
         self.decode_beacon_info(self.beacon_info)
