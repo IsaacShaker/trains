@@ -66,7 +66,7 @@ class TrainModel(QObject):
         #Calculations
         self.currForce = 0.0
         self.currPower = 0.0
-        self.samplePeriod = 0.5
+        self.samplePeriod = 0.05
         self.lastVel=0.0
 
         #Constants
@@ -107,11 +107,11 @@ class TrainModel(QObject):
             "failure_signal": self.signalPickupFailure
         }
 
-        self.brakes_dict = {
-            "train_id" : self.ID,
-            "e_brake" : self.emergencyBrake,
-            "s_brake" : self.serviceBrake
-        }
+        # self.brakes_dict = {
+        #     "train_id" : self.ID,
+        #     "e_brake" : self.emergencyBrake,
+        #     "s_brake" : self.serviceBrake
+        # }
 
     #Setters and getters for api
 
@@ -192,12 +192,12 @@ class TrainModel(QObject):
         response = requests.post(URL + "/train-controller/receive-failure-modes", json=self.failure_modes_dict)
         self.ui_refresh.emit()
 
-    
+    def set_serviceBrake(self, state:bool):
+        self.serviceBrake = state
 
 
     def set_emergencyBrake(self, state: bool):
         self.emergencyBrake = state
-        self.brakes_dict["e_brake"]=self.emergencyBrake
         self.ui_refresh.emit()
 
     def set_commanded_power(self, cmd: float):
@@ -294,18 +294,22 @@ class TrainModel(QObject):
     def limit_accel(self):
         failure_mode_active= self.signalPickupFailure or self.engineFailure or self.signalPickupFailure
         if (self.currAccel > self.ACCELERATION_LIMIT and not self.serviceBrake and not self.emergencyBrake):
+            print("Case 1")
             # If all brakes are OFF and self.currAccel is above the limit
             self.currAccel = self.ACCELERATION_LIMIT
         elif (self.serviceBrake and not self.emergencyBrake and not failure_mode_active): # self.currAccel < self.DECELERATION_LIMIT_SERVICE and
+            print("Case 2")
             # If the service brake is ON and self.currAccel is below the limit
             self.currAccel = self.S_BRAKE_ACC
         elif (not self.serviceBrake and (self.emergencyBrake or failure_mode_active)): # self.currAccel < self.DECELERATION_LIMIT_EMERGENCY and
             # If the emergency brake is ON and self.currAccel is below the limit
+            print("IN THERE")
             if(self.currentVelocity !=0):
                 self.currAccel = self.E_BRAKE_ACC
             else:
                 self.currAccel = 0
         elif (self.serviceBrake and (self.emergencyBrake or failure_mode_active)): # Edge case if both emergency brake and service brake are turned on
+            print("Case 4")
             if(self.currentVelocity !=0):
                 self.currAccel = self.E_BRAKE_ACC
             else:

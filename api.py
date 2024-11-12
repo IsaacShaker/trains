@@ -195,53 +195,53 @@ def get_data1():
 def get_data2():
     data = request.get_json()
 
-    # check that the data is in the right format
-    for attribute in ["line", "index", "maintenance"]:
-        if attribute not in data:
-            return jsonify({"error": "Data not in correct format. Make sure 'line', 'index' and 'maintenance' are included in data."}), 500
+#     # check that the data is in the right format
+#     for attribute in ["line", "index", "maintenance"]:
+#         if attribute not in data:
+#             return jsonify({"error": "Data not in correct format. Make sure 'line', 'index' and 'maintenance' are included in data."}), 500
 
-    if hasattr(app.qt_app_instance, 'track_controller'):
-        data = app.qt_app_instance.track_controller.add_maintenance(data)
-        return jsonify(data), 200
+#     if hasattr(app.qt_app_instance, 'track_controller'):
+#         data = app.qt_app_instance.track_controller.add_maintenance(data)
+#         return jsonify(data), 200
     
 @app.route('/track-controller-sw/give-data/authority', methods=['POST'])
 def get_data3():
     data = request.get_json()
 
-    # check that the data is in the right format
-    for attribute in ["line", "index", "authority"]:
-        if attribute not in data:
-            return jsonify({"error": "Data not in correct format. Make sure 'line', 'index' and 'authority' are included in data."}), 500
+#     # check that the data is in the right format
+#     for attribute in ["line", "index", "authority"]:
+#         if attribute not in data:
+#             return jsonify({"error": "Data not in correct format. Make sure 'line', 'index' and 'authority' are included in data."}), 500
 
-    if hasattr(app.qt_app_instance, 'track_controller'):
-        data = app.qt_app_instance.track_controller.add_maintenance(data)
-        return jsonify(data), 200
+#     if hasattr(app.qt_app_instance, 'track_controller'):
+#         data = app.qt_app_instance.track_controller.add_maintenance(data)
+#         return jsonify(data), 200
     
 @app.route('/track-controller-sw/give-data/speed', methods=['POST'])
 def get_data4():
     data = request.get_json()
 
-    # check that the data is in the right format
-    for attribute in ["line", "index", "speed"]:
-        if attribute not in data:
-            return jsonify({"error": "Data not in correct format. Make sure 'line', 'index' and 'speed' are included in data."}), 500
+#     # check that the data is in the right format
+#     for attribute in ["line", "index", "speed"]:
+#         if attribute not in data:
+#             return jsonify({"error": "Data not in correct format. Make sure 'line', 'index' and 'speed' are included in data."}), 500
 
-    if hasattr(app.qt_app_instance, 'track_controller'):
-        data = app.qt_app_instance.track_controller.add_speed(data)
-        return jsonify(data), 200
+#     if hasattr(app.qt_app_instance, 'track_controller'):
+#         data = app.qt_app_instance.track_controller.add_speed(data)
+#         return jsonify(data), 200
     
 @app.route('/track-controller-sw/give-data/wayside-vsion', methods=['POST'])
 def get_data5():
     data = request.get_json()
 
-    # check that the data is in the right format
-    for attribute in ["line", "id", "vision"]:
-        if attribute not in data:
-            return jsonify({"error": "Data not in correct format. Make sure 'line', 'id' and 'vision' are included in data."}), 500
+#     # check that the data is in the right format
+#     for attribute in ["line", "id", "vision"]:
+#         if attribute not in data:
+#             return jsonify({"error": "Data not in correct format. Make sure 'line', 'id' and 'vision' are included in data."}), 500
 
-    if hasattr(app.qt_app_instance, 'track_controller'):
-        data = app.qt_app_instance.track_controller.wayside_vision(data)
-        return jsonify(data), 200
+#     if hasattr(app.qt_app_instance, 'track_controller'):
+#         data = app.qt_app_instance.track_controller.wayside_vision(data)
+#         return jsonify(data), 200
     
 def shutdown_server():
     func = request.environ.get('werkzeug.server.shutdown')
