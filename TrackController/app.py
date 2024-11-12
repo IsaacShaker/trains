@@ -8,7 +8,8 @@ import json
 import copy
 from threading import Thread
 import requests  # For triggering shutdown
-from PyQt6.QtCore import QTimer
+#from TrackController.api import start_api  # Import the API starter function
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QApplication, QWidget, QTabWidget, QComboBox, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog
 from TrackController.Components.Toggle_Buttons.AutoToggle import AutoToggle
 from TrackController.Components.Toggle_Buttons.ModeToggle import ModeToggle

@@ -356,7 +356,7 @@ class Train_Controller:
         #calculate commaneded power (kp*ek + ki*uk)
         self.set_commanded_power(self.k_p*self.ek + self.k_i*self.uk)
 
-        #response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
+        response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
 
 
 
