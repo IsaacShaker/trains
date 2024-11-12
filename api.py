@@ -182,7 +182,7 @@ def receive_brakes():
 ###################################
 
 @app.route('/track-controller-sw/get-data/block_data', methods=['GET'])
-def get_data():
+def get_data1():
     # Access the `data_main` attribute from the MyApp instance
     if hasattr(app.qt_app_instance, 'track_controller'):
         data = app.qt_app_instance.track_controller.get_block_data()
@@ -191,7 +191,7 @@ def get_data():
         return jsonify({"error": "Data not available"}), 500
 
 @app.route('/track-controller-sw/give-data/maintenance', methods=['POST'])
-def get_data():
+def get_data2():
     data = request.get_json()
 
     # check that the data is in the right format
@@ -204,7 +204,7 @@ def get_data():
         return jsonify(data), 200
     
 @app.route('/track-controller-sw/give-data/authority', methods=['POST'])
-def get_data():
+def get_data3():
     data = request.get_json()
 
     # check that the data is in the right format
@@ -217,7 +217,7 @@ def get_data():
         return jsonify(data), 200
     
 @app.route('/track-controller-sw/give-data/speed', methods=['POST'])
-def get_data():
+def get_data4():
     data = request.get_json()
 
     # check that the data is in the right format
@@ -230,7 +230,7 @@ def get_data():
         return jsonify(data), 200
     
 @app.route('/track-controller-sw/give-data/wayside-vsion', methods=['POST'])
-def get_data():
+def get_data5():
     data = request.get_json()
 
     # check that the data is in the right format
@@ -278,7 +278,7 @@ def recieve_signals():
 def get_data_track_model_occupancies():
     # Access the data_main attribute from the MyApp instance
     if hasattr(app.qt_app_instance, 'track_model'):
-        data = app.qt_app_instance.get_data_track_model_occupancies()
+        data = app.qt_app_instance.track_model.get_occupancies()
         return jsonify(data), 200
     else:
         return jsonify({"error": "Data not available"}), 500

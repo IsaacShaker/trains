@@ -71,10 +71,10 @@ class MyApp(QWidget):
 
         self.request_block_occupancies_timer = QTimer(self)
         self.request_block_occupancies_timer.timeout.connect(self.request_block_occupancies)
-        self.request_block_occupancies_timer.start()
+        self.request_block_occupancies_timer.start(1000)
 
     def request_block_occupancies(self):
-        response = requests.get("http://127.0.0.1:5000/track-model/get-block-occupancies")
+        response = requests.get("http://127.0.0.1:5000/track-model/get-data/occupancies")
         data_dict = {} # Initialize outside of if statemnt scope
 
         if response.status_code == 200:
@@ -84,29 +84,32 @@ class MyApp(QWidget):
             return
         
         # Blue
-        for block in self.data_main["Blue"]["HW"]["blocks"]:
-            block["toggled"] = data_dict['Blue'][block["block"]]
-        for block in self.data_main["Blue"]["SW"]["blocks"]:
-            block["toggled"] = data_dict['Blue'][block["block"]]
-
+        # for block in self.data_main["Blue"]["HW"]["blocks"]:
+        #     block["toggled"] = data_dict['Blue'][block["block"]]
+        # for block in self.data_main["Blue"]["SW"]["blocks"]:
+        #     block["toggled"] = data_dict['Blue'][block["block"]]
+        
+        # print("Updating block occupancies")
         # Green
-        for block in self.data_main["Green"]["HW"]["blocks"]:
-            block["toggled"] = data_dict['Green'][block["block"]]
-        for block in self.data_main["Green"]["SW"]["blocks"]:
-            block["toggled"] = data_dict['Green'][block["block"]]
+        for i, block in enumerate(self.data_main["Green"]["HW"]["blocks"]):
+            self.data_main["Green"]["HW"]["blocks"][i]["occupied"] = data_dict['Green'][block["block"]]
+        for i, block in enumerate(self.data_main["Green"]["SW"]["blocks"]):
+            self.data_main["Green"]["SW"]["blocks"][i]["occupied"] = data_dict['Green'][block["block"]]
 
         # Red
-        for block in self.data_main["Red"]["HW"]["blocks"]:
-            block["toggled"] = data_dict['Red'][block["block"]]
-        for block in self.data_main["Red"]["SW"]["blocks"]:
-            block["toggled"] = data_dict['Red'][block["block"]]
+        # for block in self.data_main["Red"]["HW"]["blocks"]:
+        #     block["toggled"] = data_dict['Red'][block["block"]]
+        # for block in self.data_main["Red"]["SW"]["blocks"]:
+        #     block["toggled"] = data_dict['Red'][block["block"]]
+        
+        
         
 
     def get_block_data(self):
         data = {
-            "Blue": self.data_test["Blue"]["SW"]["blocks"],
-            "Green": self.data_test["Green"]["SW"]["blocks"],
-            "Red": self.data_test["Red"]["SW"]["blocks"]
+            # "Blue": self.data_test["Blue"]["SW"]["blocks"],
+            "Green": self.data_main["Green"]["SW"]["blocks"],
+            "Red": self.data_main["Red"]["SW"]["blocks"]
         }
 
         return data
