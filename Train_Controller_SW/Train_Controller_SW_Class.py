@@ -44,7 +44,7 @@ class Train_Controller:
         self.actual_velocity = 0
         self.commanded_velocity = 0
         self.setpoint_velocity = 0
-        self.temperature = 70
+        self.temperature = 68
         self.beacon_info = 0
         self.train_id = id
         self.doors_to_open = "0"
@@ -105,20 +105,24 @@ class Train_Controller:
     def set_l_door(self, left):
         self.l_door = left
         self.doors_dict["l_door"] = self.l_door
+        response = requests.post(URL + "/train-model/receive-doors", json=self.doors_dict)
 
     def set_r_door(self, right):
         self.r_door = right
         self.doors_dict["r_door"] = self.r_door
+        response = requests.post(URL + "/train-model/receive-doors", json=self.doors_dict)
 
     #set lights
     def set_i_light(self, inside):
         self.i_light = inside
         self.lights_dict["i_light"] = self.i_light
+        response = requests.post(URL + "/train-model/receive-lights", json=self.lights_dict)
 
     #set lights
     def set_o_light(self, outside):
         self.o_light = outside
         self.lights_dict["o_light"] = self.o_light
+        response = requests.post(URL + "/train-model/receive-lights", json=self.lights_dict)
 
     #set lights
     def set_beacon_info(self, info):
@@ -136,15 +140,18 @@ class Train_Controller:
     def set_temperature(self, temp):
         self.temperature = temp
         self.temperature_dict["temperature"] = self.temperature
+        response = requests.post(URL + "/train-model/receive-temperature", json=self.temperature_dict)
         
     #set brakes
     def set_s_brake(self, status):
         self.s_brake = status
         self.brakes_dict["s_brake"] = self.s_brake
+        response = requests.post(URL + "/train-model/receive-brakes", json=self.brakes_dict)
 
     def set_e_brake(self, status):
         self.e_brake = status
         self.brakes_dict["e_brake"] = self.e_brake
+        response = requests.post(URL + "/train-model/receive-brakes", json=self.brakes_dict)
 
     #set authority
     def set_authority(self, distance):
@@ -328,6 +335,9 @@ class Train_Controller:
             self.pa_announcement = values[2]
             self.pa_announcement_dict["pa_announcement"] = self.pa_announcement
 
+            #send pa announcement to train model
+            response = requests.post(URL + "/train-model/receive-announcement", json=self.pa_announcement_dict)
+
     #this function will return the commanded Power and will be called every 50 ms
     def calculate_commanded_power(self):
 
@@ -356,14 +366,10 @@ class Train_Controller:
         #calculate commaneded power (kp*ek + ki*uk)
         self.set_commanded_power(self.k_p*self.ek + self.k_i*self.uk)
 
-        #response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
+        response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
 
 
 
-
-
-    # Initialize the counter at the current time (in seconds)
-    start_time = time.time()
 
     # To get the number of seconds that have passed since the start
     #def get_seconds_since_start():
