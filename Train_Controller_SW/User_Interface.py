@@ -1,8 +1,8 @@
 import time
 import sys
 
-from Train_Controller_SW.Train_Controller_SW_Class import Train_Controller
-#from Train_Controller_SW_Class import Train_Controller
+#from Train_Controller_SW.Train_Controller_SW_Class import Train_Controller
+from Train_Controller_SW_Class import Train_Controller
 
 
 from PyQt6.QtGui import QFont
@@ -1025,7 +1025,7 @@ class Train_Controler_SW_UI(QMainWindow):
     def open_l_door(self):
         #updates signal to tell train model to open door
         self.train_list[self.current_train].set_l_door(True)
-        self.train_list[self.current_train].set_station_reached(False)
+        self.train_list[self.current_train].set_doors_can_open(False)
 
         #disables button
         self.l_door_button.setEnabled(False)
@@ -1058,7 +1058,7 @@ class Train_Controler_SW_UI(QMainWindow):
     def open_r_door(self):
         #updates signal to tell train model to open door
         self.train_list[self.current_train].set_r_door(True)
-        self.train_list[self.current_train].set_station_reached(False)
+        self.train_list[self.current_train].set_doors_can_open(False)
 
         #disables button
         self.r_door_button.setEnabled(False)
@@ -1355,10 +1355,25 @@ class Train_Controler_SW_UI(QMainWindow):
         #update power in test bench
         self.commanded_power_output.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{self.train_list[self.current_train].get_commanded_power():.2f} Watts</span>')
 
+
+        #print(str(self.train_list[self.current_train].get_authority()))
         #check if doors have to open if train has stopped, auhority is 0, and doors haven't opened
-        if self.train_list[self.current_train].get_authority == 0 and self.train_list[self.current_train].get_actual_velocity() == 0 and self.train_list[self.current_train].get_station_reached():
-            self.open_l_door()
-            self.open_r_door()
+
+        if self.train_list[self.current_train].get_authority() == 0.0 and self.train_list[self.current_train].get_actual_velocity() == 0.0 and self.train_list[self.current_train].get_doors_can_open():
+            
+            #checks which doors to open
+            doors = self.train_list[self.current_train].get_doors_to_open()
+
+            print(doors)
+            #opens correct doors based off decoded beacon info
+            if doors == "3":
+                self.open_l_door()
+                self.open_r_door()
+            elif doors == "2":
+                self.open_l_door()
+            elif doors == "1":
+                self.open_r_door()
+    
 
     def add_train(self):
         new_train = Train_Controller(self.next_train_id)

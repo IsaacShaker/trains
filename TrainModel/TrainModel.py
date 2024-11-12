@@ -277,7 +277,7 @@ class TrainModel(QObject):
                 self.currAccel = self.E_BRAKE_ACC
             else:
                 self.currAccel = 0
-        print(f"Current Acceleration: {self.currAccel}")
+        #print(f"Current Acceleration: {self.currAccel}")
 
     def update_passengers(self):
         # If the doors are open and the train was not at a station in the previous loop
@@ -316,10 +316,10 @@ class TrainModel(QObject):
             self.currForce = self.currPower / self.currentVelocity
         else:
             self.currForce = 0  # Set force to zero if velocity is zero
-        print(f"Force: {self.currForce}")
+        #print(f"Force: {self.currForce}")
         self.limit_force()
 
-        print(f"Force: {self.currForce}")
+        #print(f"Force: {self.currForce}")
 
             # ACCELERATION
         if self.totalMass != 0:
@@ -329,7 +329,7 @@ class TrainModel(QObject):
 
         self.limit_accel()
 
-        print(f"Acceleration: {self.currAccel}")
+        #print(f"Acceleration: {self.currAccel}")
 
         # VELOCITY
         velocityNew = self.currentVelocity + ( (self.samplePeriod / 2) * (self.currAccel + previousAcceleration) ) # Velocity Limit: 19.4444 m/s
@@ -342,7 +342,7 @@ class TrainModel(QObject):
 
         self.set_currentVelocity(velocityNew)
 
-        print(f"Velocity: {self.currentVelocity}")
+        #print(f"Velocity: {self.currentVelocity}")
 
         
         self.power_changed.emit()

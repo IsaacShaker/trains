@@ -7,8 +7,8 @@ app.qt_app_instance = None
 #Train Contoller Input Functions
 ###################################
 
-@app.route('/train-controller/recieve-authority', methods=['POST'])
-def recieve_authority():
+@app.route('/train-controller/receive-authority', methods=['POST'])
+def receive_authority():
     data = request.get_json()
 
     float_value = data.get("authority", None)
@@ -18,11 +18,12 @@ def recieve_authority():
         return jsonify({"error": "No float vlaue recieved"}), 400
 
     app.qt_app_instance.Train_Controler_SW_UI.train_list[index].set_authority(float_value)
+    #app.qt_app_instance.Train_Controller_HW_UI.set_authority(float_value)
     return jsonify("Success"), 200
 
 
-@app.route('/train-controller/recieve-beacon-info', methods=['POST'])
-def recieve_beacon_info():
+@app.route('/train-controller/receive-beacon-info', methods=['POST'])
+def receive_beacon_info():
     data = request.get_json()
 
     string_value = data.get("beacon_info", None)
@@ -32,11 +33,12 @@ def recieve_beacon_info():
         return jsonify({"error": "No float vlaue recieved"}), 400
 
     app.qt_app_instance.Train_Controler_SW_UI.train_list[index].set_beacon_info(string_value)
+    #app.qt_app_instance.Train_Controller_HW_UI.set_beacon_information(string_value)
     return jsonify("Success"), 200
 
 
-@app.route('/train-controller/recieve-commanded-velocity', methods=['POST'])
-def recieve_commanded_velocity():
+@app.route('/train-controller/receive-commanded-velocity', methods=['POST'])
+def receive_commanded_velocity():
     data = request.get_json()
 
     float_value = data.get("commanded_velocity", None)
@@ -46,11 +48,12 @@ def recieve_commanded_velocity():
         return jsonify({"error": "No float vlaue recieved"}), 400
 
     app.qt_app_instance.Train_Controler_SW_UI.train_list[index].set_commanded_velocity(float_value)
+    #app.qt_app_instance.Train_Controller_HW_UI.set_commanded_velocity(float_value)
     return jsonify("Success"), 200
 
 
-@app.route('/train-controller/recieve-actual-velocity', methods=['POST'])
-def recieve_actual_velocity():
+@app.route('/train-controller/receive-actual-velocity', methods=['POST'])
+def receive_actual_velocity():
     data = request.get_json()
 
     float_value = data.get("actual_velocity", None)
@@ -60,11 +63,12 @@ def recieve_actual_velocity():
         return jsonify({"error": "No float vlaue recieved"}), 400
 
     app.qt_app_instance.Train_Controler_SW_UI.train_list[index].set_actual_velocity(float_value)
+    #app.qt_app_instance.Train_Controller_HW_UI.set_actual_velocity(float_value)
     return jsonify("Success"), 200
 
 
-@app.route('/train-controller/recieve-failure_modes', methods=['POST'])
-def recieve_failure_modes():
+@app.route('/train-controller/receive-failure_modes', methods=['POST'])
+def receive_failure_modes():
     data = request.get_json()
 
     engine_string = data.get("failure_engine", None)
@@ -78,6 +82,9 @@ def recieve_failure_modes():
     app.qt_app_instance.Train_Controler_SW_UI.train_list[index].set_failure_engine(engine_string)
     app.qt_app_instance.Train_Controler_SW_UI.train_list[index].set_failure_brake(brake_string)
     app.qt_app_instance.Train_Controler_SW_UI.train_list[index].set_failure_signal(signal_string)
+    #app.qt_app_instance.Train_Controller_HW_UI.set_engine_failure(engine_string)
+    #app.qt_app_instance.Train_Controller_HW_UI.set_brake_failure(brake_string)
+    #app.qt_app_instance.Train_Controller_HW_UI.set_signal_failure(signal_string)
     return jsonify("Success"), 200
 
 
@@ -85,8 +92,8 @@ def recieve_failure_modes():
 #Train Model Input Functions
 ###################################
 
-@app.route('/train-model/recieve-commanded-power', methods=['POST'])
-def recieve_commanded_power():
+@app.route('/train-model/receive-commanded-power', methods=['POST'])
+def receive_commanded_power():
     data = request.get_json()
 
     float_value = data.get("commanded_power", None)
@@ -96,23 +103,186 @@ def recieve_commanded_power():
         return jsonify({"error": "No float vlaue recieved"}), 400
 
     app.qt_app_instance.train_model.train_list[index].set_commanded_power(float_value)
-    return jsonify("Success"), 200
+    return jsonify({"status": "Ok"}), 200
+ 
+@app.route('/train-model/receive-lights', methods=['POST'])
+def receive_lights():
+    data = request.get_json()
 
-@app.route('/track-controller/get-data/block_occupancies', methods=['GET'])
+    inside_lights = data.get("i_light", None)
+    outside_lights = data.get("o_light", None)
+    index = data.get("train_id", None)
+
+    if inside_lights is None or index is None or outside_lights is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.train_model.train_list[index].set_insideLights(inside_lights)
+    app.qt_app_instance.train_model.train_list[index].set_headLights(outside_lights)
+    return jsonify({"status": "Ok"}), 200
+
+@app.route('/train-model/receive-doors', methods=['POST'])
+def receive_doors():
+    data = request.get_json()
+
+    left_door = data.get("l_door", None)
+    right_door = data.get("r_door", None)
+    index = data.get("train_id", None)
+
+    if left_door is None or index is None or right_door is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.train_model.train_list[index].set_leftDoor(left_door)
+    app.qt_app_instance.train_model.train_list[index].set_rightDoor(right_door)
+    return jsonify({"status": "Ok"}), 200
+
+@app.route('/train-model/receive-announcement', methods=['POST'])
+def receive_announcement():
+    data = request.get_json()
+
+    announcement = data.get("pa_announcement", None)
+    index = data.get("train_id", None)
+
+    if announcement is None or index is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.train_model.train_list[index].set_announcements(announcement)
+    return jsonify({"status": "Ok"}), 200
+
+@app.route('/train-model/receive-temperature', methods=['POST'])
+def receive_temperature():
+    data = request.get_json()
+
+    temperature = data.get("temperature", None)
+    index = data.get("train_id", None)
+
+    if temperature is None or index is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.train_model.train_list[index].set_temperature(temperature)
+    return jsonify({"status": "Ok"}), 200
+
+@app.route('/train-model/receive-brakes', methods=['POST'])
+def receive_brakes():
+    data = request.get_json()
+
+    service_brake = data.get("s_brake", None)
+    emergency_brake = data.get("e_brake", None)
+    index = data.get("train_id", None)
+
+    if service_brake is None or index is None or emergency_brake is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.train_model.train_list[index].set_serviceBrake(service_brake)
+    app.qt_app_instance.train_model.train_list[index].set_emergencyBrake(emergency_brake)
+    return jsonify({"status": "Ok"}), 200
+    
+    
+###################################
+# Train Controller API Endpoints  #
+###################################
+
+@app.route('/track-controller-sw/get-data/block_data', methods=['GET'])
 def get_data():
     # Access the `data_main` attribute from the MyApp instance
     if hasattr(app.qt_app_instance, 'track_controller'):
-        if hasattr(app.qt_app_instance.track_controller, 'data_test'):
-            data = app.qt_app_instance.track_controller.get_test_data()["Blue"]["SW"]["blocks"]
-            return jsonify(data), 200
+        data = app.qt_app_instance.track_controller.get_block_data()
+        return jsonify(data), 200
     else:
         return jsonify({"error": "Data not available"}), 500
 
+@app.route('/track-controller-sw/give-data/maintenance', methods=['POST'])
+def get_data():
+    data = request.get_json()
+
+    # check that the data is in the right format
+    for attribute in ["line", "index", "maintenance"]:
+        if attribute not in data:
+            return jsonify({"error": "Data not in correct format. Make sure 'line', 'index' and 'maintenance' are included in data."}), 500
+
+    if hasattr(app.qt_app_instance, 'track_controller'):
+        data = app.qt_app_instance.track_controller.add_maintenance(data)
+        return jsonify(data), 200
+    
+@app.route('/track-controller-sw/give-data/authority', methods=['POST'])
+def get_data():
+    data = request.get_json()
+
+    # check that the data is in the right format
+    for attribute in ["line", "index", "authority"]:
+        if attribute not in data:
+            return jsonify({"error": "Data not in correct format. Make sure 'line', 'index' and 'authority' are included in data."}), 500
+
+    if hasattr(app.qt_app_instance, 'track_controller'):
+        data = app.qt_app_instance.track_controller.add_maintenance(data)
+        return jsonify(data), 200
+    
+@app.route('/track-controller-sw/give-data/speed', methods=['POST'])
+def get_data():
+    data = request.get_json()
+
+    # check that the data is in the right format
+    for attribute in ["line", "index", "speed"]:
+        if attribute not in data:
+            return jsonify({"error": "Data not in correct format. Make sure 'line', 'index' and 'speed' are included in data."}), 500
+
+    if hasattr(app.qt_app_instance, 'track_controller'):
+        data = app.qt_app_instance.track_controller.add_speed(data)
+        return jsonify(data), 200
+    
+@app.route('/track-controller-sw/give-data/wayside-vsion', methods=['POST'])
+def get_data():
+    data = request.get_json()
+
+    # check that the data is in the right format
+    for attribute in ["line", "id", "vision"]:
+        if attribute not in data:
+            return jsonify({"error": "Data not in correct format. Make sure 'line', 'id' and 'vision' are included in data."}), 500
+
+    if hasattr(app.qt_app_instance, 'track_controller'):
+        data = app.qt_app_instance.track_controller.wayside_vision(data)
+        return jsonify(data), 200
+    
 def shutdown_server():
     func = request.environ.get('werkzeug.server.shutdown')
     if func:
         func()
     print("Flask server shutting down...")
+
+#Track Model 
+@app.route('/track-model/get-data/all', methods=['GET'])
+def get_data_track_model_all():
+    # Access the data_main attribute from the MyApp instance
+    if hasattr(app.qt_app_instance, 'track_model'):
+        data = app.qt_app_instance.track_model.get_post_dict()
+        return jsonify(data), 200
+    else:
+        return jsonify({"error": "Data not available"}), 500
+    
+@app.route('/train-model/get-data/current-speed', methods=['GET'])
+def get_data_train_model_current_speed():
+    # Access the data_main attribute from the MyApp instance
+    if hasattr(app.qt_app_instance, 'train_model'):
+        data = app.qt_app_instance.train_model.get_current_speed()
+        return jsonify(data), 200
+    else:
+        return jsonify({"error": "Data not available"}), 500
+    
+#Track Controller to Track Model
+@app.route('/track-model/recieve-signals', methods=['POST'])
+def recieve_signals():
+    data = request.get_json()
+    app.qt_app_instance.track_model.set_signals(data)
+
+#Track Model to Track Controller
+@app.route('/track-model/get-data/occupancies', methods=['GET'])
+def get_data_track_model_occupancies():
+    # Access the data_main attribute from the MyApp instance
+    if hasattr(app.qt_app_instance, 'track_model'):
+        data = app.qt_app_instance.get_data_track_model_occupancies()
+        return jsonify(data), 200
+    else:
+        return jsonify({"error": "Data not available"}), 500
+
 
 @app.route('/shutdown', methods=['GET'])
 def shutdown():
@@ -167,18 +337,6 @@ def root():
     </html>
     """
     return render_template_string(html_content), 200
-
-####################################
-#       CTC API Endpoints          #
-####################################
-@app.route('/ctc/get-data/wayside_vision', methods=['GET'])
-def wayside_vision():
-    # Access the `data_main` attribute from the MyApp instance
-    if hasattr(app.qt_app_instance, 'ctc'):
-        data = app.qt_app_instance.ctc.get_wayside_vision()
-        return jsonify(data), 200
-    else:
-        return jsonify({"error": "Data not available"}), 500
 
 # Function to start the Flask server
 def start_api(qt_app_instance):
