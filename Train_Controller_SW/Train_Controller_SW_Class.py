@@ -348,6 +348,7 @@ class Train_Controller:
             self.ek_1 = 0
             self.uk = 0
             self.uk_1 = 0
+            response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
             return
         
         #update ek_1 and uk_1

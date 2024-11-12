@@ -425,7 +425,6 @@ class Train_UI(QMainWindow):
     def toggle_ebrake(self):
         emergencyBrakeTemp = not self.selected_train.emergencyBrake
         self.selected_train.set_emergencyBrake(emergencyBrakeTemp)
-        self.update_ebrake_button()
 
     def toggle_engine_failure(self):
         engineFailureTemp = not self.selected_train.engineFailure
