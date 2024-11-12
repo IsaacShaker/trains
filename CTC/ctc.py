@@ -9,6 +9,9 @@ from CTC.station import Station
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem
 from PyQt6.QtCore import Qt, QTimer
 
+# Create an object from Clock class
+myClock = Clock()
+
 URL = 'http://127.0.0.1:5000'
 
 class MyWindow(QMainWindow, Clock, Train):
@@ -1173,7 +1176,7 @@ class MyWindow(QMainWindow, Clock, Train):
         
 
     def receive_block_occupancies(self):
-        response = requests.get('/track_controller-sw/get-data/block_data')
+        response = requests.get(URL + "/track-controller-sw/get-data/block_data")
 
         data_dict = {}
 
@@ -1186,13 +1189,15 @@ class MyWindow(QMainWindow, Clock, Train):
         self.occupied_blocks.clear()
         # Update my block occupancies based on received block occupancies
         for block in data_dict["Green"]:
-            if block in self.maintenance_blocks:
+            new_block = ("Green", block["block"])
+            if new_block in self.maintenance_blocks:
                 continue
             else:
-                if (block["occupied"]):
-                    self.occupied_blocks.add(block)
+                if (block["occupied"] == True):
+                    self.occupied_blocks.add(new_block)
                 else:
-                    self.recently_opened.add(block)
+                    self.recently_opened.add(new_block)
+
         self.update_label_background()
 
         # for block in data_dict["Red"]:
@@ -1206,11 +1211,8 @@ class MyWindow(QMainWindow, Clock, Train):
     def get_wayside_vision(self):
         return self.wayside_vision_dict
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
     app = QApplication(sys.argv)
-
-    # Create an object from Clock class
-    myClock = Clock()
 
     # Create an object from the ScheduleReader class
     myScheduleReader = ScheduleReader()

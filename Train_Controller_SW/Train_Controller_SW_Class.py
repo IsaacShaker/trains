@@ -27,6 +27,7 @@ class Train_Controller:
         self.failure_signal = False
         self.station_reached = False
         self.doors_can_open = False
+        self.can_get_authority = True
 
         #Floats
         self.k_p = 0.0
@@ -40,11 +41,12 @@ class Train_Controller:
         self.uk_1 = 0.0
 
         #Ints
+        self.received_authority = 0
         self.authority = 0
         self.actual_velocity = 0
         self.commanded_velocity = 0
         self.setpoint_velocity = 0
-        self.temperature = 70
+        self.temperature = 68
         self.beacon_info = 0
         self.train_id = id
         self.doors_to_open = "0"
@@ -105,20 +107,24 @@ class Train_Controller:
     def set_l_door(self, left):
         self.l_door = left
         self.doors_dict["l_door"] = self.l_door
+        response = requests.post(URL + "/train-model/receive-doors", json=self.doors_dict)
 
     def set_r_door(self, right):
         self.r_door = right
         self.doors_dict["r_door"] = self.r_door
+        response = requests.post(URL + "/train-model/receive-doors", json=self.doors_dict)
 
     #set lights
     def set_i_light(self, inside):
         self.i_light = inside
         self.lights_dict["i_light"] = self.i_light
+        response = requests.post(URL + "/train-model/receive-lights", json=self.lights_dict)
 
     #set lights
     def set_o_light(self, outside):
         self.o_light = outside
         self.lights_dict["o_light"] = self.o_light
+        response = requests.post(URL + "/train-model/receive-lights", json=self.lights_dict)
 
     #set lights
     def set_beacon_info(self, info):
@@ -136,19 +142,25 @@ class Train_Controller:
     def set_temperature(self, temp):
         self.temperature = temp
         self.temperature_dict["temperature"] = self.temperature
+        response = requests.post(URL + "/train-model/receive-temperature", json=self.temperature_dict)
         
     #set brakes
     def set_s_brake(self, status):
         self.s_brake = status
         self.brakes_dict["s_brake"] = self.s_brake
+        response = requests.post(URL + "/train-model/receive-brakes", json=self.brakes_dict)
 
     def set_e_brake(self, status):
         self.e_brake = status
         self.brakes_dict["e_brake"] = self.e_brake
+        response = requests.post(URL + "/train-model/receive-brakes", json=self.brakes_dict)
 
     #set authority
     def set_authority(self, distance):
         self.authority = distance
+
+    def set_received_authority(self, distance):
+        self.received_authority = distance
 
     #set velocities
     def set_actual_velocity(self, v):
@@ -182,6 +194,9 @@ class Train_Controller:
 
     def set_failure_signal(self, truth):
         self.failure_signal = truth
+
+    def set_can_get_authority(self, truth):
+        self.can_get_authority = truth
 
     def set_train_id(self, number):
         self.train_id = number
@@ -226,6 +241,9 @@ class Train_Controller:
     #get authority
     def get_authority(self):
         return self.authority
+    
+    def get_received_authority(self):
+        return self.received_authority
 
     #set velocities
     def get_actual_velocity(self):
@@ -271,6 +289,9 @@ class Train_Controller:
     def get_doors_to_open(self):
         return self.doors_to_open
     
+    def get_can_get_authority(self):
+        return self.can_get_authority
+    
 
     #checks if authority is at distance where braking should occur in auto mode
     def stop_at_station(self):
@@ -282,6 +303,10 @@ class Train_Controller:
         else:
             self.s_brake = False
             return False
+    
+    #this function is called when we need to set authority to the authority sent us 
+    def set_authority_to_received(self):
+        self.set_authority(self.received_authority + self.authority)
         
     #this function updates authority in real time in order to have an accurate reading for the driver
     def update_authority(self):
@@ -318,6 +343,23 @@ class Train_Controller:
             elif values[0][0] == "B" or "b":
                 self.station_reached = not(self.station_reached)
 
+                #checks if it is shared tunnel station block
+                if len(values[0]) == 3:
+
+
+                    if values[0][1] == "3" or values[0][2] == "1":
+                        self.in_tunnel = not(self.in_tunnel)
+
+                        #turn lights on if in tunnel
+                        if self.in_tunnel:
+                            self.set_i_light(True)
+                            self.set_o_light(True)
+                        else:
+                            self.set_i_light(False)
+                            self.set_o_light(False)
+
+
+
                 if self.station_reached:
                     self.doors_can_open = True
 
@@ -328,16 +370,20 @@ class Train_Controller:
             self.pa_announcement = values[2]
             self.pa_announcement_dict["pa_announcement"] = self.pa_announcement
 
+            #send pa announcement to train model
+            response = requests.post(URL + "/train-model/receive-announcement", json=self.pa_announcement_dict)
+
     #this function will return the commanded Power and will be called every 50 ms
     def calculate_commanded_power(self):
 
         #check setpoint speed first or if any brakes are being pressed
-        if self.setpoint_velocity <= self.actual_velocity or self.s_brake or self.e_brake:
-            self.commanded_power = 0
+        if self.setpoint_velocity <= self.actual_velocity or self.s_brake or self.e_brake or self.authority <= 0:
+            self.set_commanded_power(0)
             self.ek = 0
             self.ek_1 = 0
             self.uk = 0
             self.uk_1 = 0
+            response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
             return
         
         #update ek_1 and uk_1
@@ -356,14 +402,11 @@ class Train_Controller:
         #calculate commaneded power (kp*ek + ki*uk)
         self.set_commanded_power(self.k_p*self.ek + self.k_i*self.uk)
 
-        #response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
+        response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
 
 
 
 
-
-    # Initialize the counter at the current time (in seconds)
-    start_time = time.time()
 
     # To get the number of seconds that have passed since the start
     #def get_seconds_since_start():

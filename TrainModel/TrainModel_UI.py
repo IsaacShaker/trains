@@ -1,5 +1,7 @@
 import sys
 import os
+
+
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -393,10 +395,13 @@ class Train_UI(QMainWindow):
         self.brake_button = QPushButton("Brakes")
         self.signal_pickup_button = QPushButton("Signal Pickup")
 
+        self.engine_button.clicked.connect(self.toggle_engine_failure)
+        self.brake_button.clicked.connect(self.toggle_brake_failure)
+        self.signal_pickup_button.clicked.connect(self.toggle_signal_pickup_failure)
+
         # Set styles for failure mode buttons
         for button in [self.engine_button, self.brake_button, self.signal_pickup_button]:
-            button.setStyleSheet("background-color: red; color: white;")
-            button.clicked.connect(self.toggle_engine_failure)  # Connect to the toggle function
+            button.setStyleSheet("background-color: red; color: white;") 
 
         failure_modes_layout.addWidget(self.engine_button)
         failure_modes_layout.addWidget(self.brake_button)
@@ -418,20 +423,20 @@ class Train_UI(QMainWindow):
 
 
     def toggle_ebrake(self):
-        self.selected_train.emergencyBrake = not self.selected_train.emergencyBrake
-        self.update_ebrake_button()
+        emergencyBrakeTemp = not self.selected_train.emergencyBrake
+        self.selected_train.set_emergencyBrake(emergencyBrakeTemp)
 
     def toggle_engine_failure(self):
-        self.selected_train.engineFailure = not self.selected_train.engineFailure
-        self.update_failure_mode_button()
+        engineFailureTemp = not self.selected_train.engineFailure
+        self.selected_train.set_engine_failure(engineFailureTemp)
 
     def toggle_brake_failure(self):
-        self.selected_train.brakeFailure = not self.selected_train.brakeFailure
-        self.update_failure_mode_button()
+        brakeFailureTemp = not self.selected_train.brakeFailure
+        self.selected_train.set_brake_failure(brakeFailureTemp)
 
     def toggle_signal_pickup_failure(self):
-        self.selected_train.signalPickupFailure = not self.selected_train.signalPickupFailure
-        self.update_failure_mode_button()
+        signalPickupFailureTemp = not self.selected_train.signalPickupFailure
+        self.selected_train.set_signal_pickup_failure(signalPickupFailureTemp)
 
     def update_ebrake_button(self):
         if self.selected_train.emergencyBrake:
@@ -506,11 +511,11 @@ class Train_UI(QMainWindow):
         self.update_door_states()
 
     def update_door_states(self):
-        self.right_door_label.setText("Closed" if self.selected_train.rightDoor else "Open")
-        self.right_door_label.setStyleSheet("background-color: red;" if self.selected_train.rightDoor else "background-color: green;")
+        self.right_door_label.setText("Open" if self.selected_train.rightDoor else "Closed")
+        self.right_door_label.setStyleSheet("background-color: green;" if self.selected_train.rightDoor else "background-color: red;")
         
-        self.left_door_label.setText("Closed" if self.selected_train.leftDoor else "Open")
-        self.left_door_label.setStyleSheet("background-color: red;" if self.selected_train.leftDoor else "background-color: green;")
+        self.left_door_label.setText("Open" if self.selected_train.leftDoor else "Closed")
+        self.left_door_label.setStyleSheet("background-color: green;" if self.selected_train.leftDoor else "background-color: red;")
 
     def create_test_bench_page(self):
         test_bench_widget = QWidget()
@@ -664,8 +669,7 @@ class Train_UI(QMainWindow):
     #Function to send our beacon info
     def send_beacon_info(self):
         print("SEND BEACON")
-        self.selected_train.announcements="Station B"
-        self.selected_train.update_passengers()
+        self.selected_train.set_beaconInfo("b1,2,lebron")
 
     def update_beacon_label(self):
         self.passenger_count_label.setText(f"{self.selected_train.passCount}")  # Update the UI label with new temperature
@@ -682,7 +686,7 @@ class Train_UI(QMainWindow):
     def send_authority(self):
         authority_value = self.authority_input.text()
         if authority_value.isdigit():  # Simple validation
-            self.selected_train.set_authority(authority_value)
+            self.selected_train.set_authority(float(authority_value))
             self.authority_input.clear()
         else:
             print("Invalid Authority value")
@@ -692,7 +696,7 @@ class Train_UI(QMainWindow):
         speed_value = self.speed_input.text()
         try:
             speed = float(speed_value)
-            self.selected_train.commandedSpeed = speed
+            self.selected_train.set_commandedSpeed(speed)
             print(f"Commanded speed set to {self.selected_train.commandedSpeed} mph.")
             self.speed_input.clear()
         except ValueError:
@@ -724,7 +728,6 @@ class Train_UI(QMainWindow):
             temperature = float(temperature_value)
             self.selected_train.set_commandedTemperature(temperature)
             print(f"Temperature set to {self.selected_train.commandedTemperature} °F.")
-            self.selected_train.start_adjusting_temperature()
             self.temperature_input.clear()
         except ValueError:
             print("Invalid Temperature value")
@@ -754,7 +757,7 @@ class Train_UI(QMainWindow):
 
     def select_train(self):
         selected_index = self.train_dropdown.currentIndex()
-        self.selected_train = train_list[selected_index]
+        self.selected_train = self.train_list[selected_index]
         self.selected_train.ID=selected_index
         self.train_select_update()
 
@@ -766,6 +769,8 @@ class Train_UI(QMainWindow):
 
         self.update_lights_state()
         self.update_door_states()
+        self.update_failure_mode_button()
+        self.update_ebrake_button()
 
         self.announcement_text.setText(f"{self.selected_train.announcements}")
 

@@ -2,6 +2,10 @@
 
 import time
 import random
+import requests
+import string
+
+URL = 'http://127.0.0.1:5000'
 
 from PyQt6.QtCore import pyqtSignal, QObject, QTimer
 
@@ -11,11 +15,14 @@ class TrainModel(QObject):
     power_changed = pyqtSignal()
     passengers_changed = pyqtSignal()
     ui_refresh = pyqtSignal()
+    start_temperature_adjustment_signal = pyqtSignal(float)
 
     def __init__(self):
         super().__init__()
-        self.adjust_timer = QTimer()
+        self.adjust_timer = QTimer(self)
         self.adjust_timer.timeout.connect(self.update_temperature)
+
+        self.start_temperature_adjustment_signal.connect(self.start_adjusting_temperature)
 
         # Initialize variables
 
@@ -38,8 +45,8 @@ class TrainModel(QObject):
         self.headLights = False
         self.insideLights = False
         self.announcements = ""
-        self.rightDoor = True
-        self.leftDoor = True
+        self.rightDoor = False
+        self.leftDoor = False
         self.temperature = 68.0 #F
         self.commandedTemperature = 0
 
@@ -62,7 +69,7 @@ class TrainModel(QObject):
         #Calculations
         self.currForce = 0.0
         self.currPower = 0.0
-        self.samplePeriod = 0.5
+        self.samplePeriod = 0.05
         self.lastVel=0.0
 
         #Constants
@@ -81,7 +88,7 @@ class TrainModel(QObject):
             "authority": self.authority
         }
 
-        self.commanded_velcoity_dict = {
+        self.commanded_velocity_dict = {
             "train_id" : self.ID,
             "commanded_velocity": self.commandedSpeed
         }
@@ -102,6 +109,12 @@ class TrainModel(QObject):
             "failure_brake": self.brakeFailure,
             "failure_signal": self.signalPickupFailure
         }
+
+        # self.brakes_dict = {
+        #     "train_id" : self.ID,
+        #     "e_brake" : self.emergencyBrake,
+        #     "s_brake" : self.serviceBrake
+        # }
 
     #Setters and getters for api
 
@@ -134,41 +147,61 @@ class TrainModel(QObject):
     def set_commandedTemperature(self, temp: float):
         self.commandedTemperature = temp
         print(f"Commanded temperature set to {temp}°F.")
+        self.start_temperature_adjustment_signal.emit(temp)
         self.ui_refresh.emit()
 
     def set_commandedSpeed(self, speed: float):
-        self.commandedSpeed = speed
+        self.commandedSpeed = self.mph_to_mps(speed)
         self.commanded_velocity_dict["commanded_velocity"]=self.commandedSpeed
         print(f"Commanded speed set to {speed} m/s.")
+        response = requests.post(URL + "/train-controller/receive-commanded-velocity", json=self.commanded_velocity_dict)
         self.ui_refresh.emit()
 
     def set_authority(self, authority: float):
         self.authority = authority
         self.authority_dict["authority"]=self.authority
         print(f"Authority set to {authority}.")
-        self.send_authority_to_controller
+        response = requests.post(URL + "/train-controller/receive-authority", json=self.authority_dict)
         self.ui_refresh.emit()
 
-    def set_beaconInfo(self, info: int):
+    def set_beaconInfo(self, info: string):
         self.beaconInfo = info
         self.beacon_info_dict["beacon_info"]=self.beaconInfo
         print(f"Beacon info set to {info}.")
+        response = requests.post(URL + "/train-controller/receive-beacon-info", json=self.beacon_info_dict)
         self.ui_refresh.emit()
 
     def set_currentVelocity(self, vel: float):
         self.currentVelocity=vel
         self.actual_velocity_dict["actual_velocity"]=self.currentVelocity
+        response = requests.post(URL + "/train-controller/receive-actual-velocity", json=self.actual_velocity_dict)
+        #response = requests.
+        self.ui_refresh.emit()
 
+    def set_signal_pickup_failure(self, state: bool):
+        self.signalPickupFailure=state
+        self.failure_modes_dict["failure_signal"]=self.signalPickupFailure
+        response = requests.post(URL + "/train-controller/receive-failure-modes", json=self.failure_modes_dict)
+        self.ui_refresh.emit()
+
+    def set_engine_failure(self, state: bool):
+        self.engineFailure=state
+        self.failure_modes_dict["failure_engine"]=self.engineFailure
+        response = requests.post(URL + "/train-controller/receive-failure-modes", json=self.failure_modes_dict)
+        self.ui_refresh.emit()
+
+    def set_brake_failure(self, state: bool):
+        self.brakeFailure=state
+        self.failure_modes_dict["failure_brake"]=self.brakeFailure
+        response = requests.post(URL + "/train-controller/receive-failure-modes", json=self.failure_modes_dict)
+        self.ui_refresh.emit()
+
+    def set_serviceBrake(self, state:bool):
+        self.serviceBrake = state
 
 
     def set_emergencyBrake(self, state: bool):
         self.emergencyBrake = state
-        print(f"Emergency brake set to {'engaged' if state else 'disengaged'}.")
-        self.ui_refresh.emit()
-
-    def set_serviceBrake(self, state: bool):
-        self.serviceBrake = state
-        print(f"Service brake set to {'engaged' if state else 'disengaged'}.")
         self.ui_refresh.emit()
 
     def set_commanded_power(self, cmd: float):
@@ -195,6 +228,10 @@ class TrainModel(QObject):
 
     def mps_to_mph(self, vel):
         vel=vel*2.2369
+        return vel
+
+    def mph_to_mps(self, vel):
+        vel=vel/2.2369
         return vel
 
     def m_to_ft(self, num):
@@ -348,10 +385,4 @@ class TrainModel(QObject):
         self.power_changed.emit()
 
         self.lastVel=self.currentVelocity
-        # currentPosition = 0
-        # positionCalc = 0
 
-        
-        # POSITION
-        # positionCalc = self.currentVelocity*self.samplePeriod
-        # currentPosition = previousPosition + positionCalc
