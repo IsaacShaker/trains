@@ -2,10 +2,10 @@ import sys
 import time
 import pandas as pd
 import requests
-from CTC.train import Train
-from CTC.clock import Clock
-from CTC.scheduleReader import ScheduleReader
-from CTC.station import Station
+from train import Train
+from clock import Clock
+from scheduleReader import ScheduleReader
+from station import Station
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem
 from PyQt6.QtCore import Qt, QTimer
 
@@ -142,9 +142,9 @@ class MyWindow(QMainWindow, Clock, Train):
         }
 
         #               Timer Stuff                 #
-        self.request_block_occupancies_timer = QTimer(self)
-        self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
-        self.request_block_occupancies_timer.start(1000)
+        # self.request_block_occupancies_timer = QTimer(self)
+        # self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
+        # self.request_block_occupancies_timer.start(1000)
 
     # Create the Home and Test Bench tab for the window
     def create_tabs(self):
