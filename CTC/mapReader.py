@@ -7,9 +7,10 @@ class MapReader():
         self.route_authorities_list = []
 
     def calculate_green_authorities(self, stops):
-        # Open the track layout
+        # Open the train path file
         file_path = 'C:/Trains C/trains/Train Paths.xlsx'
         df = pd.read_excel(file_path, sheet_name='Green Line')
+        df['Block Length (m)'] = df['Block Length (m)'].astype(float)
         
         for i in range(len(stops) + 1):
             # Determine the current and next stop
@@ -26,17 +27,27 @@ class MapReader():
             print('next stop = ', next_stop)
             # Find indices for the current and next stops
             current_stop_index = df[df['Infrastructure'] == current_stop].index
+            print('current index =', current_stop_index)
             next_stop_index = df[df['Infrastructure'] == next_stop].index
+            print('current index =', next_stop_index)
 
+            authority = 0.00
             # Check if indices are found to avoid errors
             if not current_stop_index.empty and not next_stop_index.empty:
-                start = current_stop_index[0]
-                end = next_stop_index[0]
-                # Sum the block lengths from start to end
-                authority = df.loc[start:end, 'Block Length (m)'].sum()
                 if i == 0:
-                    authority += 17
-                self.route_authorities_list.append(int(authority))
+                    start = current_stop_index[0]
+                    end = next_stop_index[0]
+                    # Sum the block lengths from start to end
+                    authority = df.loc[start:end - 1, 'Block Length (m)'].sum()
+                    authority += df.loc[end, 'Block Length (m)']/2 + 13
+                    self.route_authorities_list.append(int(authority))
+                else:
+                    start = current_stop_index[0]
+                    end = next_stop_index[0]
+                    # Sum the block lengths from start to end
+                    authority = df.loc[start + 1:end - 1, 'Block Length (m)'].sum()
+                    authority += df.loc[end, 'Block Length (m)']/2 + 13
+                    self.route_authorities_list.append(int(authority))
             else:
                 print(f"Stop '{current_stop}' or '{next_stop}' not found in the data.")
                 
