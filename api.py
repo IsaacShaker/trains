@@ -68,6 +68,7 @@ def receive_actual_velocity():
 
 
 @app.route('/train-controller/receive-failure-modes', methods=['POST'])
+@app.route('/train-controller/receive-failure-modes', methods=['POST'])
 def receive_failure_modes():
     data = request.get_json()
 
@@ -158,7 +159,7 @@ def receive_temperature():
     if temperature is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
-    app.qt_app_instance.train_model.train_list[index].set_temperature(temperature)
+    app.qt_app_instance.train_model.train_list[index].set_commandedTemperature(temperature)
     return jsonify({"status": "Ok"}), 200
 
 @app.route('/train-model/receive-brakes', methods=['POST'])

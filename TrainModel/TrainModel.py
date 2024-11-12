@@ -143,7 +143,7 @@ class TrainModel(QObject):
 
     def set_commandedTemperature(self, temp: float):
         self.commandedTemperature = temp
-        self.selected_train.start_adjusting_temperature()
+        self.start_adjusting_temperature()
         print(f"Commanded temperature set to {temp}°F.")
         self.ui_refresh.emit()
 
