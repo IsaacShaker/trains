@@ -1,7 +1,7 @@
 import sys
 import time
-import requests
 import pandas as pd
+import requests
 from train import Train
 from clock import Clock
 from scheduleReader import ScheduleReader
@@ -21,16 +21,16 @@ class MyWindow(QMainWindow, Clock, Train):
         # Helps with toggling mode button text
         self.automatic_mode = True # the system begins in automatic mode
 
-        # Create the open block list, everything should open upon creation
+        # Create the open block list, everything should be open upon creation
         self.open_blocks = []
         for i in range(1,151): # fill the list with all necesary blocks
             self.open_blocks.append(('Green', i))
 
         # Create the maintenance blocks list
-        self.maintenance_blocks = []
+        self.maintenance_blocks = set()
 
         # Create the occupied block list
-        self.occupied_blocks = []
+        self.occupied_blocks = set()
 
         # Create the trains list
         self.trains = []
@@ -111,11 +111,11 @@ class MyWindow(QMainWindow, Clock, Train):
         ###################################################
         #               Integration Stuff                 #
         ###################################################
-        self.block_for_wayside
-        self.status_for_wayside
-        self.line_for_wayside
-        self.authority_for_wayside
-        self.speed_for_wayside
+        self.block_for_wayside = 0
+        self.status_for_wayside = False
+        self.line_for_wayside = ""
+        self.authority_for_wayside = 0
+        self.speed_for_wayside = 0
         
         # Maintenance Blocks
         self.maintenance_blocks_dict = {
@@ -196,7 +196,7 @@ class MyWindow(QMainWindow, Clock, Train):
         """)
 
         # Create the wayside blocks list
-        self.wayside_blocks = [f'Blue {i}' for i in range(1, 17)]  # Create block labels dynamically
+        self.wayside_blocks = [f'Green {i}' for i in range(1, 17)]  # Create block labels dynamically
 
         # Add the wayside blocks as options for the checklist
         for block in self.wayside_blocks:
@@ -272,43 +272,43 @@ class MyWindow(QMainWindow, Clock, Train):
         layout.addLayout(grid_layout)
 
     # Handle what happend when the crossing is changed
-    # def crossing_clicked(self):
-    #     self.crossing_status = not(self.crossing_status)
-    #     if self.crossing_status == False:
-    #         self.crossing_button.setStyleSheet("background-color: red; color: white; font-size: 20px")
-    #     else:
-    #         self.crossing_button.setStyleSheet("background-color: green; color: white; font-size: 20px")
+    def crossing_clicked(self):
+        self.crossing_status = not(self.crossing_status)
+        if self.crossing_status == False:
+            self.crossing_button.setStyleSheet("background-color: red; color: white; font-size: 20px")
+        else:
+            self.crossing_button.setStyleSheet("background-color: green; color: white; font-size: 20px")
 
-    # # Handle what happens when the switch is changed
-    # def switch_clicked(self):
-    #     self.switch_status = not(self.switch_status)
+    # Handle what happens when the switch is changed
+    def switch_clicked(self):
+        self.switch_status = not(self.switch_status)
 
-    #     if self.switch_status == False:
-    #         self.switch_button.setText('5-->12')
-    #         self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
-    #     else:
-    #         self.switch_button.setText('5-->6')
-    #         self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
+        if self.switch_status == False:
+            self.switch_button.setText('5-->12')
+            self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
+        else:
+            self.switch_button.setText('5-->6')
+            self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
 
-    # # Handle what happens when the top light changes states
-    # def top_light_clicked(self):
-    #     self.top_light_status = not(self.top_light_status)
-    #     if self.top_light_status == False:
-    #         self.top_light.setText('Top Track Light')
-    #         self.top_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
-    #     else:
-    #         self.top_light.setText('Top Track Light')
-    #         self.top_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
+    # Handle what happens when the top light changes states
+    def top_light_clicked(self):
+        self.top_light_status = not(self.top_light_status)
+        if self.top_light_status == False:
+            self.top_light.setText('Top Track Light')
+            self.top_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
+        else:
+            self.top_light.setText('Top Track Light')
+            self.top_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
 
-    # # Handle what happens when the bottom light changes states
-    # def bottom_light_clicked(self):
-    #     self.bottom_light_status = not(self.bottom_light_status)
-    #     if self.bottom_light_status == False:
-    #         self.bottom_light.setText('Bottom Track Light')
-    #         self.bottom_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
-    #     else:
-    #         self.bottom_light.setText('Bottom Track Light')
-    #         self.bottom_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
+    # Handle what happens when the bottom light changes states
+    def bottom_light_clicked(self):
+        self.bottom_light_status = not(self.bottom_light_status)
+        if self.bottom_light_status == False:
+            self.bottom_light.setText('Bottom Track Light')
+            self.bottom_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
+        else:
+            self.bottom_light.setText('Bottom Track Light')
+            self.bottom_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
 
     # Handle the user confirming their Test Bench selection for occupancies
     def submit_test_bench(self):
@@ -316,10 +316,10 @@ class MyWindow(QMainWindow, Clock, Train):
             block = self.wayside_occupancies.item(i)
             block_text = block.text()
             block_number = int(block_text.split()[1])
-            new_block = ('Blue', block_number)
+            new_block = ('Green', block_number)
             if block.checkState() == Qt.CheckState.Checked:
                 if self.maintenance_blocks.count(new_block) > 0:
-                    print("Train cannot move to block Blue #"+str(block_number)+" since it is under maintenance")
+                    print("Train cannot move to block Green #"+str(block_number)+" since it is under maintenance")
                 elif self.occupied_blocks.count(new_block) == 0 and self.maintenance_blocks.count(new_block) == 0:
                     self.occupied_blocks.append(new_block)
                     self.open_blocks.remove(new_block)
@@ -516,7 +516,7 @@ class MyWindow(QMainWindow, Clock, Train):
         # Add widgets for dispatch rate (placeholders)
         self.rate_label = QLabel("Trains/hr")
         self.rate_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.rate_label.setStyleSheet("background-color: blue; color: white; font-size: 16px;")
+        self.rate_label.setStyleSheet("background-color: green; color: white; font-size: 16px;")
         self.rate_label.setAlignment(Qt.AlignmentFlag.AlignCenter) # Center the text
         dispatch_layout.addWidget(self.rate_label)
         dispatch_frame.setLayout(dispatch_layout)
@@ -541,14 +541,14 @@ class MyWindow(QMainWindow, Clock, Train):
         # Create the label for train authority
         self.train_authority_label = QLabel("Authority")
         self.train_authority_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.train_authority_label.setStyleSheet("background-color: blue; color: white; font-size: 14px;")
+        self.train_authority_label.setStyleSheet("background-color: green; color: white; font-size: 14px;")
         self.train_authority_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         self.train_data_small_layout.addWidget(self.train_authority_label)
 
         #Create the label for suggested speed
         self.train_suggested_speed_label = QLabel("Suggested Speed")
         self.train_suggested_speed_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.train_suggested_speed_label.setStyleSheet("background-color: blue; color: white; font-size: 12px;")
+        self.train_suggested_speed_label.setStyleSheet("background-color: green; color: white; font-size: 12px;")
         self.train_suggested_speed_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         self.train_data_small_layout.addWidget(self.train_suggested_speed_label)
         self.train_data_big_layout.addLayout(self.train_data_small_layout)
@@ -689,7 +689,7 @@ class MyWindow(QMainWindow, Clock, Train):
         if self.occupied_blocks.count(new_block) > 0:
             print('Cannot place block under maintenance since train is occupying block')
         else:
-            self.maintenance_blocks.append((line, block))
+            self.maintenance_blocks.add((line, block))
             self.update_opening_button_state()
             self.open_blocks.remove((line, block))
 
@@ -701,10 +701,10 @@ class MyWindow(QMainWindow, Clock, Train):
             # Send maintenance block to wayside
             self.maintenance_blocks_dict["block"] = block
             self.maintenance_blocks_dict["status"] = 1
-            while(1):
-                response = requests.post(URL + "/", json=self.maintenance_blocks_dict)
-                if response.status_code == 200:
-                    break
+            # while(1):
+            #     response = requests.post(URL + "/", json=self.maintenance_blocks_dict)
+            #     if response.status_code == 200:
+            #         break
 
             print("Block", block, "on the", line, "line has been closed for maintenance!")
             dialog.accept()
@@ -795,10 +795,10 @@ class MyWindow(QMainWindow, Clock, Train):
         # Send maintenance block to wayside
         self.maintenance_blocks_dict["block"] = block
         self.maintenance_blocks_dict["status"] = 0
-        while(1):
-            response = requests.post(URL + "/", json=self.maintenance_blocks_dict)
-            if response.status_code == 200:
-                break
+        # while(1):
+        #     response = requests.post(URL + "/", json=self.maintenance_blocks_dict)
+        #     if response.status_code == 200:
+        #         break
 
         print("Block", block_line, "on the", block_number, "line has been reopened from maintenance!")
         dialog.accept()  
@@ -871,22 +871,22 @@ class MyWindow(QMainWindow, Clock, Train):
             print('-------------Switch Safety-------------')
             # Perform possible safety meaures relating to the switch
             for train in self.trains:
-                if train.destination == "STATION: B" and self.switch_status == False and self.occupied_blocks.count(('Blue', 4)):
+                if train.destination == "STATION: B" and self.switch_status == False and self.occupied_blocks.count(('Green', 4)):
                     print('Wrong Switch scenario')
                     # Prevent train for going the wrong way
                     train.setSuggestedSpeed(0)
                     self.train_suggested_speed_label.setText('Suggested Speed = 0 mph')
-                elif train.destination == "STATION: C" and self.switch_status == True and self.occupied_blocks.count(('Blue', 4)):
+                elif train.destination == "STATION: C" and self.switch_status == True and self.occupied_blocks.count(('Green', 4)):
                     print('Wrong Switch Scenario')
                     # Prevent train for going the wrong way
                     train.setSuggestedSpeed(0)
                     self.train_suggested_speed_label.setText('Suggested Speed = 0 mph')
-                elif train.destination == "STATION: B" and self.top_light_status == False and self.occupied_blocks.count(('Blue', 6)):
+                elif train.destination == "STATION: B" and self.top_light_status == False and self.occupied_blocks.count(('Green', 6)):
                     print('Top Light Scenario')
                     # Prevent train from running the light
                     train.setSuggestedSpeed(0)
                     self.train_suggested_speed_label.setText('Suggested Speed = 0 mph')
-                elif train.destination == "STATION: C" and self.bottom_light_status == False and self.occupied_blocks.count(('Blue', 12)):
+                elif train.destination == "STATION: C" and self.bottom_light_status == False and self.occupied_blocks.count(('Green', 12)):
                     print('Bottom Light Measure')
                     # Prevent train from running the light
                     train.setSuggestedSpeed(0)
@@ -1172,6 +1172,35 @@ class MyWindow(QMainWindow, Clock, Train):
             label.setStyleSheet("background-color: gray; color: white;")  # Default color
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+    def receive_block_occupancies(self):
+        response = requests.get('/track_controller-sw/get-data/block_data')
+
+        data_dict = {}
+
+        if response.status_code == 200:
+            data_dict = response.json()
+        else:
+            print("Failed to retrieve data", response.text)
+            return
+        
+        self.occupied_blocks.clear()
+        # Update my block occupancies based on received block occupancies
+        for block in data_dict["Green"]:
+            if block in self.maintenance_blocks:
+                continue
+            else:
+                block_number = block["block"]
+                occupied = block["occupied"]
+                if (occupied):
+                    self.occupied_blocks.add(block_number)
+                    self.update_label_background(label, block_number)
+                else:
+                    continue
+          
+
+        # for block in data_dict["Red"]:
+        #     pass
+
     # Update the wayside vision dictionary
     def update_wayside_vision(self):
         pass
@@ -1191,8 +1220,5 @@ if __name__ == "__main__":
 
     window = MyWindow()
     window.show()
-
-    for i in window.green_stations:
-        print(window.green_stations.get_name())
 
     sys.exit(app.exec())
