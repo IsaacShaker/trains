@@ -1,4 +1,4 @@
-launcher = True
+launcher = False
 import requests
 if launcher:
     from TrackModel.Station import Station
@@ -57,7 +57,6 @@ class Train:
             self.authority = self.authority - mpsSpeed
             self.moveFront(mpsSpeed)
             self.syncBack()
-        self.check_station()
         self.trainAuth = self.fBlock.authority
         self.trainCmd = self.fBlock.commandedSpeed
 
@@ -66,6 +65,8 @@ class Train:
             self.fLocOnBlock = self.fLocOnBlock - mpsSpeed
             self.fBlock.set_train(self, False)
         else:
+            
+            self.fBlock.train_set_beacon(self)
             remainingDistance = self.fLocOnBlock
             if self.fBackwards:
                 self.fBlock.set_train(None, False)
@@ -97,14 +98,6 @@ class Train:
             self.bBlock.set_train(None, True)
             self.bBlock = self.fBlock
             self.bBlock.set_train(self, True)
-    
-    def check_station(self):
-        station = self.fBlock.get_station()
-        if isinstance(station, Station):
-            if self.fLocOnBlock > (self.fBlock.get_length()/2 - self.length/2 - 2) and self.fLocOnBlock < (self.fBlock.get_length()/2 - self.length/2 + 2) and self.speed == 0:
-                station.set_trainIn(True)
-            else:
-                station.set_trainIn(False)
             
     def set_info(self, authority, speed):
         self.authority = authority
