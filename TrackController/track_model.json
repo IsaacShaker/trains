@@ -4,63 +4,78 @@
       "blocks": [
         {
           "block": 1,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 2,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 3,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 4,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 5,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 6,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 7,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 8,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 9,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 10,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 11,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 12,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 13,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 14,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 15,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         }
       ],
       "switches": [
@@ -97,63 +112,78 @@
       "blocks": [
         {
           "block": 1,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 2,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 3,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 4,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 5,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 6,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 7,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 8,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 9,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 10,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 11,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 12,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 13,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 14,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 15,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         }
       ],
       "switches": [
@@ -211,279 +241,348 @@
       "blocks": [
         {
           "block": 1,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 2,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 3,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 4,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 5,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 6,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 7,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 8,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 9,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 10,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 11,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 12,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 13,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 14,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 15,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 16,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 17,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 18,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 19,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 20,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 21,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 22,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 23,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 24,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 25,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 26,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 27,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 28,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 29,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 30,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 31,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 32,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 33,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 34,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 35,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 117,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 118,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 119,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 120,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 121,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 122,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 123,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 124,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 125,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 126,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 127,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 128,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 129,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 130,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 131,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 132,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 133,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 134,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 135,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 136,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 137,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 138,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 139,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 140,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 141,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 142,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 143,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 144,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 145,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 146,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 147,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 148,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 149,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 150,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         }
       ],
       "switches": [
@@ -540,327 +639,408 @@
       "blocks": [
         {
           "block": 36,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 37,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 38,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 39,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 40,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 41,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 42,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 43,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 44,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 45,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 46,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 47,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 48,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 49,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 50,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 51,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 52,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 53,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 54,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 55,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 56,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 57,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 58,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 59,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 60,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 61,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 62,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 63,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 64,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 65,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 66,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 67,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 68,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 69,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 70,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 71,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 72,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 73,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 74,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 75,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 76,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 77,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 78,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 79,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 80,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 81,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 82,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 83,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 84,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 85,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 86,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 87,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 88,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 89,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 90,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 91,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 92,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 93,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 94,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 95,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 96,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 97,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 98,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 99,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 100,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 101,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 102,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 103,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 104,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 105,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 106,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 107,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 108,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 109,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 110,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 111,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 112,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 113,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 114,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 115,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         },
         {
           "block": 116,
-          "occupied": false
+          "occupied": false,
+          "speed_hazard": false
         }
       ],
       "switches": [
