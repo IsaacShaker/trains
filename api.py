@@ -248,6 +248,42 @@ def shutdown_server():
         func()
     print("Flask server shutting down...")
 
+#Track Model 
+@app.route('/track-model/get-data/all', methods=['GET'])
+def get_data_track_model_all():
+    # Access the data_main attribute from the MyApp instance
+    if hasattr(app.qt_app_instance, 'track_model'):
+        data = app.qt_app_instance.track_model.get_post_dict()
+        return jsonify(data), 200
+    else:
+        return jsonify({"error": "Data not available"}), 500
+    
+@app.route('/train-model/get-data/current-speed', methods=['GET'])
+def get_data_train_model_current_speed():
+    # Access the data_main attribute from the MyApp instance
+    if hasattr(app.qt_app_instance, 'train_model'):
+        data = app.qt_app_instance.train_model.get_current_speed()
+        return jsonify(data), 200
+    else:
+        return jsonify({"error": "Data not available"}), 500
+    
+#Track Controller to Track Model
+@app.route('/track-model/recieve-signals', methods=['POST'])
+def recieve_signals():
+    data = request.get_json()
+    app.qt_app_instance.track_model.set_signals(data)
+
+#Track Model to Track Controller
+@app.route('/track-model/get-data/occupancies', methods=['GET'])
+def get_data_track_model_occupancies():
+    # Access the data_main attribute from the MyApp instance
+    if hasattr(app.qt_app_instance, 'track_model'):
+        data = app.qt_app_instance.get_data_track_model_occupancies()
+        return jsonify(data), 200
+    else:
+        return jsonify({"error": "Data not available"}), 500
+
+
 @app.route('/shutdown', methods=['GET'])
 def shutdown():
     shutdown_server()
