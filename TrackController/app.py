@@ -70,8 +70,8 @@ class MyApp(QWidget):
         self.update_ui_timer.start(500)
 
         self.request_block_occupancies_timer = QTimer(self)
-        self.request_block_occupancies_timer = QTimer(self)
         self.request_block_occupancies_timer.timeout.connect(self.request_block_occupancies)
+        self.request_block_occupancies_timer.start()
 
     def request_block_occupancies(self):
         response = requests.get("http://127.0.0.1:5000/track-model/get-block-occupancies")
@@ -83,7 +83,24 @@ class MyApp(QWidget):
             print("Failed to retrieve data:", response.text)
             return
         
-        # TODO: parse data_dict and update local values
+        # Blue
+        for block in self.data_main["Blue"]["HW"]["blocks"]:
+            block["toggled"] = data_dict['Blue'][block["block"]]
+        for block in self.data_main["Blue"]["SW"]["blocks"]:
+            block["toggled"] = data_dict['Blue'][block["block"]]
+
+        # Green
+        for block in self.data_main["Green"]["HW"]["blocks"]:
+            block["toggled"] = data_dict['Green'][block["block"]]
+        for block in self.data_main["Green"]["SW"]["blocks"]:
+            block["toggled"] = data_dict['Green'][block["block"]]
+
+        # Red
+        for block in self.data_main["Red"]["HW"]["blocks"]:
+            block["toggled"] = data_dict['Red'][block["block"]]
+        for block in self.data_main["Red"]["SW"]["blocks"]:
+            block["toggled"] = data_dict['Red'][block["block"]]
+        
 
     def get_block_data(self):
         data = {
