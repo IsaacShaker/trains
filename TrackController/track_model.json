@@ -607,21 +607,25 @@
       ],
       "traffic_lights": [
         {
+          "id": 0,
           "name_1": "Block 1 - Red",
           "name_2": "Block 1 - Green",
           "toggled": false
         },
         {
+          "id": 1,
           "name_1": "Block 12 - Red",
           "name_2": "Block 12 - Green",
           "toggled": false
         },
         {
+          "id": 2,
           "name_1": "Block 28 - Red",
           "name_2": "Block 28 - Green",
           "toggled": false
         },
         {
+          "id": 3,
           "name_1": "Block 150 - Red",
           "name_2": "Block 150 - Green",
           "toggled": false
@@ -1083,31 +1087,37 @@
       ],
       "traffic_lights": [
         {
+          "id": 4,
           "name_1": "Block 57 - Red",
           "name_2": "Block 57 - Green",
           "toggled": false
         },
         {
+          "id": 5,
           "name_1": "Block 63 - Red",
           "name_2": "Block 63 - Green",
           "toggled": false
         },
         {
+          "id": 6,
           "name_1": "Block 76 - Red",
           "name_2": "Block 76 - Green",
           "toggled": false
         },
         {
+          "id": 7,
           "name_1": "Block 86 - Red",
           "name_2": "Block 86 - Green",
           "toggled": false
         },
         {
+          "id": 8,
           "name_1": "Block 100 - Red",
           "name_2": "Block 100 - Green",
           "toggled": false
         },
         {
+          "id": 9,
           "name_1": "Block 101 - Red",
           "name_2": "Block 101 - Green",
           "toggled": false
