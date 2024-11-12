@@ -757,7 +757,7 @@ class Train_UI(QMainWindow):
 
     def select_train(self):
         selected_index = self.train_dropdown.currentIndex()
-        self.selected_train = train_list[selected_index]
+        self.selected_train = self.train_list[selected_index]
         self.selected_train.ID=selected_index
         self.train_select_update()
 
