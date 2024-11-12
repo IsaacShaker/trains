@@ -21,10 +21,12 @@ class Train_Controller:
         self.l_door = False
         self.i_light = False
         self.o_light = False
+        self.in_tunnel = False
         self.failure_engine = False
         self.failure_brake = False
         self.failure_signal = False
         self.station_reached = False
+        self.doors_can_open = False
 
         #Floats
         self.k_p = 0.0
@@ -45,6 +47,7 @@ class Train_Controller:
         self.temperature = 70
         self.beacon_info = 0
         self.train_id = id
+        self.doors_to_open = "0"
 
         #Strings
         self.pa_announcement = ""
@@ -125,6 +128,9 @@ class Train_Controller:
     #set station_reached
     def set_station_reached(self, reached):
         self.station_reached = reached
+
+    def set_doors_can_open(self, can_open):
+        self.doors_can_open = can_open
 
     #set temperature
     def set_temperature(self, temp):
@@ -259,6 +265,12 @@ class Train_Controller:
     def get_station_reached(self):
         return self.station_reached
     
+    def get_doors_can_open(self):
+        return self.doors_can_open
+    
+    def get_doors_to_open(self):
+        return self.doors_to_open
+    
 
     #checks if authority is at distance where braking should occur in auto mode
     def stop_at_station(self):
@@ -275,11 +287,6 @@ class Train_Controller:
     def update_authority(self):
         self.authority -= self.actual_velocity*self.T   #multiple time interval by actual velocity
 
-
-
-    
-
-
     #this function will return the setpoint velocity based on the commaned velocity and user inputed set point velocity
     #if the user inputs a value higher than commaned velocity, the set point will default to the commanded velocity
     def SetSetPointVelocity(self):
@@ -288,20 +295,38 @@ class Train_Controller:
 
     #this function will decode the beacon signal
     def decode_signal(self):
+        
+        #split signal in 3 segments
+        values = self.beacon_info.split(',')
 
-        #Check if beacon is an enter station beacon
-        self.station_reached = True
+        #this decodes the 3 segments of information
+        if len(values) == 3:
 
-        if self.beacon_info == "1":
-            self.pa_announcement = "Lebron"
-        elif self.beacon_info == "2":
-            self.pa_announcement = "Now Arriving at Station B"
-        elif self.beacon_info == "3":
-            self.pa_announcement = "Now Arriving at Station C"
-        else:
-            self.pa_announcement = ""
+            #check if tunnel beacon
+            if values[0][0] == "T" or values[0][0] == "t":
+                self.in_tunnel = not(self.in_tunnel)    #flip in_tunnel bool
 
-        self.pa_announcement_dict["pa_announcement"] = self.pa_announcement
+                #turn lights on if in tunnel
+                if self.in_tunnel:
+                    self.set_i_light(True)
+                    self.set_o_light(True)
+                else:
+                    self.set_i_light(False)
+                    self.set_o_light(False)
+
+            #checks if station beacon
+            elif values[0][0] == "B" or "b":
+                self.station_reached = not(self.station_reached)
+
+                if self.station_reached:
+                    self.doors_can_open = True
+
+            #check which doors open
+            self.doors_to_open = values[1]
+
+            #set pa announcement string
+            self.pa_announcement = values[2]
+            self.pa_announcement_dict["pa_announcement"] = self.pa_announcement
 
     #this function will return the commanded Power and will be called every 50 ms
     def calculate_commanded_power(self):
@@ -331,7 +356,7 @@ class Train_Controller:
         #calculate commaneded power (kp*ek + ki*uk)
         self.set_commanded_power(self.k_p*self.ek + self.k_i*self.uk)
 
-        response = requests.post(URL + "/train-model/recieve-commanded-power", json=self.commanded_power_dict)
+        #response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
 
 
 

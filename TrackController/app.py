@@ -8,8 +8,7 @@ import json
 import copy
 from threading import Thread
 import requests  # For triggering shutdown
-from TrackController.api import start_api  # Import the API starter function
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QApplication, QWidget, QTabWidget, QComboBox, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog
 from TrackController.Components.Toggle_Buttons.AutoToggle import AutoToggle
 from TrackController.Components.Toggle_Buttons.ModeToggle import ModeToggle
@@ -37,8 +36,12 @@ class MyApp(QWidget):
         self.auto = True
         self.data_main = copy.deepcopy(data)
         self.data_test = copy.deepcopy(data)
-        self.maintence_set = set()
-        self.saved_values = []  # List to store saved input values
+
+        self.maintence_list = []
+        self.authority_list = []
+        self.speed_list = []
+        self.wayside_vision = []
+
         self.blue_line_plc_manager = PLCManager(self.data_test["Blue"]["SW"], self.auto)
         self.blue_line_plc_manager_HW = PLCManager(self.data_test["Blue"]["HW"], self.auto)
 
@@ -61,20 +64,59 @@ class MyApp(QWidget):
 
         # Create a QTimer instance
         self.update_ui_timer = QTimer(self)
-
         # Connect the timer's timeout signal to the update_content method
         self.update_ui_timer.timeout.connect(self.update_content)
-
         # Start the timer to call update_content every 500 milliseconds
         self.update_ui_timer.start(500)
 
-    def get_test_data(self):
-        return self.data_test
+        self.request_block_occupancies_timer = QTimer(self)
+        self.request_block_occupancies_timer = QTimer(self)
+        self.request_block_occupancies_timer.timeout.connect(self.request_block_occupancies)
+
+    def request_block_occupancies(self):
+        response = requests.get("http://127.0.0.1:5000/track-model/get-block-occupancies")
+        data_dict = {} # Initialize outside of if statemnt scope
+
+        if response.status_code == 200:
+            data_dict = response.json()  # This converts the JSON response to a Python dictionary
+        else:
+            print("Failed to retrieve data:", response.text)
+            return
+        
+        # TODO: parse data_dict and update local values
+
+    def get_block_data(self):
+        data = {
+            "Blue": self.data_test["Blue"]["SW"]["blocks"],
+            "Green": self.data_test["Green"]["SW"]["blocks"],
+            "Red": self.data_test["Red"]["SW"]["blocks"]
+        }
+
+        return data
 
     def add_maintenance(self, maintenance):
-        self.maintence_set.add(maintenance)
+        self.maintence_list.append(maintenance)
 
-    # def remove_maintenance
+        # TODO:
+        # send the maintenance to the Track Model
+    
+    def add_authority(self, authority):
+        self.authority_list.append(authority)
+        
+        # TODO:
+        # send the authority to the Track Model
+
+    def add_speed(self, speed):
+        self.speed_list.append(speed)
+        
+        # TODO:
+        # send the speed to the Track Model
+
+    def add_wayside_vision(self, vision):
+        self.wayside_vision.append(vision)
+
+        # TODO:
+        # parse and give it to the waysides
 
     def closeEvent(self, event):
         """Override the close event to stop the timer before closing."""
