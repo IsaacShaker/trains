@@ -7,7 +7,7 @@ from CTC.ctc import MyWindow
 from TrainModel.TrainModel_UI import Train_UI
 from TrackController.app import MyApp
 from Train_Controller_SW.User_Interface import Train_Controler_SW_UI
-#from TrackModel.FinalUI import TrackUI
+from TrackModel.FinalUI import TrackUI
 from Train_Controller_HW.TrainControllerHW import Train_Controller_HW_UI
 from PyQt6.QtWidgets import QApplication
 
