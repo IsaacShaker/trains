@@ -1,4 +1,4 @@
-launcher = True
+launcher = False
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QTabWidget, QWidget, QLineEdit, QComboBox, QLabel, QTableView, QVBoxLayout
 from PyQt6.QtCore import QTimer, Qt
@@ -8,14 +8,17 @@ if launcher:
     from TrackModel.Section import Section
     from TrackModel.Train import Train
     from TrackModel.Trains import Trains
+    from TrackModel.TrafficLight import TrafficLight
     add_TM = "TrackModel/"
 else:
     from TrackModel import buildTrack
     from Section import Section
     from Train import Train
     from Trains import Trains
+    from TrafficLight import TrafficLight
     add_TM = ""
 
+#Initialize all track global variables
 redYard = [] 
 redBlocks = []
 redSwitches = []
@@ -27,16 +30,16 @@ greenYard = []
 greenBlocks = [] 
 greenSwitches = [] 
 greenRailroadCrossings = []
+greenTrafficLights = []
 greenBeacons = []
 greenStations = []
 greenSections = []
-
+#Initialize train global variables
 greenTrains = Trains()
-post_dict = []
-
+#Initialize global occupation variables for Wayside
 greenOccs = [False] * 151
 redOccs = [False] * 77
-
+#Initialize global variables for trains to recieve
 auth = []
 cmd = []
 
@@ -51,46 +54,37 @@ class TrackUI(QMainWindow):
         self.input_value1 = ""
         self.input_value2 = ""
 
-        # Create a font for labels and inputs
-        big_font = QFont("Arial", 14)
-
-        # Create labels
-        self.label1 = QLabel("Red Track Excel Data", self)
+        #Intialize start page widgets
+        big_font = QFont("Arial", 14) # Create a font for labels and inputs
+        self.label1 = QLabel("Red Track Excel Data", self) # Create labels
         self.label1.setStyleSheet("background-color: #772CE8; color: black; border-radius: 10px;")  # Rounded corners
         self.label1.setFont(big_font)
         self.label1.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center-align text
-        self.label1.setGeometry(165, 100, 210, 40)  # Position: (x=100, y=50), Size: (width=210, height=30)
-
+        self.label1.setGeometry(165, 100, 210, 40)
         self.label2 = QLabel("Green Track Excel Data", self)
         self.label2.setStyleSheet("background-color: #772CE8; color: black; border-radius: 10px;")  # Rounded corners
         self.label2.setFont(big_font)
         self.label2.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center-align text
-        self.label2.setGeometry(475, 100, 210, 40)  # Position: (x=400, y=50), Size: (width=210, height=30)
-
-        # First text entry with custom position and size
-        self.text_entry1 = QLineEdit(self)
+        self.label2.setGeometry(475, 100, 210, 40)
+        self.text_entry1 = QLineEdit(self) # First text entry with custom position and size
         self.text_entry1.setFont(big_font)
         self.text_entry1.setStyleSheet("background-color: #772CE8; color: black")
         self.text_entry1.setPlaceholderText("Enter first value")
         self.text_entry1.setText("trackData/RedLine.xlsx")
-        self.text_entry1.setGeometry(150, 150, 240, 40)  # Position: (x=100, y=100), Size: (width=230, height=40)
-
-        # Second text entry with custom position and size
-        self.text_entry2 = QLineEdit(self)
+        self.text_entry1.setGeometry(150, 150, 240, 40)
+        self.text_entry2 = QLineEdit(self) # Second text entry with custom position and size
         self.text_entry2.setFont(big_font)
         self.text_entry2.setStyleSheet("background-color: #772CE8; color: black")
         self.text_entry2.setPlaceholderText("Enter second value")
         self.text_entry2.setText("trackData/GreenLine.xlsx")
-        self.text_entry2.setGeometry(460, 150, 240, 40)  # Position: (x=400, y=100), Size: (width=230, height=40)
-
-        # Save button with custom position and size
-        self.button = QPushButton("Build Track", self)
+        self.text_entry2.setGeometry(460, 150, 240, 40)
+        self.button = QPushButton("Build Track", self) # Save button with custom position and size
         self.button.setStyleSheet("background-color: #772CE8; color: black")
         self.button.setFont(big_font)
-        self.button.setGeometry(365, 240, 120, 50)  # Position: (x=325, y=200), Size: (width=120, height=50)
-        self.button.clicked.connect(self.save_text)
+        self.button.setGeometry(365, 240, 120, 50)
+        self.button.clicked.connect(self.initialize_track)
 
-    def save_text(self):
+    def initialize_track(self):
         global redYard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations, redSections
         global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
         global greenTrains
@@ -101,7 +95,7 @@ class TrackUI(QMainWindow):
         #Red Line initial prep
         redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations = buildTrack(add_TM+self.input_value1)
 
-        redSections = []
+        redSections = [] # Make red sections
         redSections.append(Section('A'))
         redSections.append(Section('B'))
         redSections.append(Section('C'))
@@ -113,7 +107,7 @@ class TrackUI(QMainWindow):
         redSections.append(Section('I'))
         redSections.append(Section('J'))
 
-        for i in range(76):
+        for i in range(76): #Place blocks in sections
             if i >= 0 and i < 9:
                 redSections[0].add_block(redBlocks[i])
             elif i >= 9 and i < 15:
@@ -136,11 +130,16 @@ class TrackUI(QMainWindow):
                 redSections[9].add_block(redBlocks[i])
             
         greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations = buildTrack(add_TM+self.input_value2)
+        for i in range(10):
+            greenTrafficLights.append(TrafficLight("Green", i))
+
+        #override for sake of spawn simulation
         for i in range(150):
             greenBlocks[i].set_cmd_speed(70)
         greenBlocks[81].set_authority(1446.6)
+        greenBlocks[10].set_authority(1446.6)
         
-        greenSections = []
+        greenSections = [] # make green sections
         greenSections.append(Section('A'))
         greenSections.append(Section('B'))
         greenSections.append(Section('C'))
@@ -152,7 +151,7 @@ class TrackUI(QMainWindow):
         greenSections.append(Section('I'))
         greenSections.append(Section('J'))
         greenSections.append(Section('Yard'))
-        for i in range(150):
+        for i in range(150): #Place blocks in sections
             if i == 0:
                 greenSections[10].add_block(greenBlocks[i])
             elif i >= 1 and i < 13:
@@ -177,22 +176,28 @@ class TrackUI(QMainWindow):
                 greenSections[9].add_block(greenBlocks[i])   
         
             
-        #Train
-        temp_dict = {"authority" : None, "commanded_speed" : None, "beacon_info" : ""}
-        tempTrain = Train(10, greenBlocks[81], 20)
+        #Train (temporary until we figure out how to initialize a train)
+        tempTrain = Train(10, greenBlocks[85], 20)
         greenTrains.addTrain(tempTrain)
+        auth.append(0.0)
+        cmd.append(0.0)
+        tempTrain = Train(10, greenBlocks[10], 20)
+        greenTrains.addTrain(tempTrain)
+        auth.append(0.0)
+        cmd.append(0.0)
 
-        post_dict.append(temp_dict)
-
+        #Start the window
         self.ui_window = MainWindow()
         self.ui_window = self.ui_window.show()    
         self.close()
     
+    #For Wayside
     def get_occupancies(self):
         occ_data = {"Green" : greenOccs,
                     "Red" : redOccs}
         return occ_data
 
+    #For Train Model
     def get_track_to_train(self):
         for i in range(len(Trains)):
             auth[i] = Trains[i].trainAuth
@@ -201,6 +206,7 @@ class TrackUI(QMainWindow):
                  "commandedSpeed" : cmd}
         return data
     
+    #From Wayside
     def set_signals(self, data):
         for switch in data['Green']['switches']:
             switch_id = switch['id']
@@ -221,9 +227,7 @@ class TrackUI(QMainWindow):
             else:
                 greenRailroadCrossings[crossing_id].set_G()
 
-    def get_post_dict(self):
-        return {"data": post_dict}
-        
+#Main UI with maps, tables, test benches      
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -240,12 +244,12 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tab_widget)
         self.create_tabs()
 
-        #All updating functions, updated every .1 second
+        #Train movement function, called every ms
         self.train_timer = QTimer()
-        #Does the train movement 
         self.train_timer.timeout.connect(greenTrains.moveTrains)
-        self.train_timer.start(1)#10
+        self.train_timer.start(1)
 
+    #initializes all maps, tables, test benches
     def create_tabs(self):
         #Tab 3 for green line
         tab4 = QWidget()
@@ -264,9 +268,13 @@ class MainWindow(QMainWindow):
 
         self.make_green_stations(tab4, 0, 0)
 
+        self.make_green_lights(tab4, 0)
+
         # self.make_beacons(tab1)
 
-        # self.make_failure_buttons(tab1)
+        self.make_green_failure_buttons(tab4)
+        
+        self.make_green_temp(tab4)
     
         #Tab 5 for table info 
         tab5 = QWidget()
@@ -319,6 +327,7 @@ class MainWindow(QMainWindow):
         
         self.make_red_test_bench(tab3, -30)
 
+    #initializes red line table
     def make_red_table(self, tab):
         self.red_block_table = QStandardItemModel(len(redBlocks), 15)
         self.red_block_table.setHorizontalHeaderLabels(["Section", "Occupied", "Authority", "Commanded Speed", "Beacon", "Station", "Railroad", "Switch", "Traffic Light", "Next Block", "Previous Block", "Length", "Grade", "Speed Limit", "Elevation", "Cum. Elevation", "Underground", "Broken Track", "Circuit Failure", "Power Failure"])
@@ -331,6 +340,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(red_block_table_view)
         tab.setLayout(layout)
 
+    #red table update function
     def populate_red_table(self):
         for row in range(len(redBlocks)):
             for col in range(20):
@@ -365,6 +375,7 @@ class MainWindow(QMainWindow):
                 else:
                     item.setBackground(Qt.GlobalColor.darkGray)
 
+    #initialize green line table
     def make_green_table(self, tab):
         self.green_block_table = QStandardItemModel(len(greenBlocks), 20)
         self.green_block_table.setHorizontalHeaderLabels(["Section", "Occupied", "Authority", "Commanded Speed", "Beacon", "Station", "Railroad", "Switch", "Traffic Light", "Next Block", "Previous Block", "Length", "Grade", "Speed Limit", "Elevation", "Cum. Elevation", "Underground", "Broken Track", "Circuit Failure", "Power Failure"])
@@ -377,6 +388,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(green_block_table_view)
         tab.setLayout(layout)
     
+    #green table update function
     def populate_green_table(self):
         for row in range(len(greenBlocks)):
             for col in range(20):
@@ -410,7 +422,8 @@ class MainWindow(QMainWindow):
                         item.setBackground(Qt.GlobalColor.darkGray)
                 else:
                     item.setBackground(Qt.GlobalColor.darkGray)
-                
+
+    #red map update function         
     def update_red_ui(self):
         self.populate_red_table()
         #All "setToolTip" functions are updating the hover information for all objects
@@ -462,6 +475,7 @@ class MainWindow(QMainWindow):
         # self.beacons[0].setToolTip(blueBeacons[0].display_info())
         # self.beacons[1].setToolTip(blueBeacons[1].display_info())
 
+    #green map update function
     def update_green_ui(self):
         self.populate_green_table()
         
@@ -491,14 +505,14 @@ class MainWindow(QMainWindow):
             self.rightGreenSwitches[i].setToolTip(greenSwitches[i].display_info(0))
 
         # #Constantly update traffic light color based on red or green variable
-        # for i in range(2):
-        #     #red is underneath green
-        #     if blueTrafficLights[i].get_RorG():
-        #         self.greenLight[i].show()
-        #     else:
-        #         self.greenLight[i].hide()
-        #     self.greenLight[i].setToolTip(blueTrafficLights[i].display_info(i))
-        #     self.redLight[i].setToolTip(blueTrafficLights[i].display_info(i))
+        for i in range(10):
+            #red is underneath green
+            if greenTrafficLights[i].get_RorG():
+                self.greenLightsTop[i].show()
+            else:
+                self.greenLightsTop[i].hide()
+            self.greenLightsTop[i].setToolTip(greenTrafficLights[i].display_info(i))
+            self.greenLightsBot[i].setToolTip(greenTrafficLights[i].display_info(i))
             
         #Constantly update railroad crossing color based on up or down variable
         for i in range(2):
@@ -522,6 +536,7 @@ class MainWindow(QMainWindow):
         # self.beacons[0].setToolTip(blueBeacons[0].display_info())
         # self.beacons[1].setToolTip(blueBeacons[1].display_info())
 
+    #initialize red test bench
     def make_red_test_bench(self, tab2, x):
         #Column 1 input text
         idStrings = ['Switch ID', 'Crossing Light ID', 'Traffic Light ID', 'Block ID', 'Block ID', 'Block ID']
@@ -584,6 +599,7 @@ class MainWindow(QMainWindow):
         self.varInputs[5].setStyleSheet("background-color: white; color: black;")
         self.varInputs[5].setGeometry(110-x, 60 + 40 * 5, 100, 20)
 
+    #update red test bench
     def send_red_button_click(self, i):
         #test bench button clicked, a specific input must be processed
         #Column 1 (which is always some form of int ID)
@@ -645,6 +661,7 @@ class MainWindow(QMainWindow):
             else:
                 print("Index Error sendButton_click function.")
 
+    #initialize green test bench
     def make_green_test_bench(self, tab4, x):
         #Column 1 input text
         idStrings = ['Switch ID', 'Crossing Light ID', 'Traffic Light ID', 'Block ID', 'Block ID', 'Block ID']
@@ -707,6 +724,7 @@ class MainWindow(QMainWindow):
         self.varInputs[5].setStyleSheet("background-color: white; color: black;")
         self.varInputs[5].setGeometry(110-x, 60 + 40 * 5, 100, 20)
 
+    #update green test bench
     def send_green_button_click(self, i):
         #test bench button clicked, a specific input must be processed
         #Column 1 (which is always some form of int ID)
@@ -768,33 +786,36 @@ class MainWindow(QMainWindow):
             else:
                 print("Index Error sendButton_click function.")
 
-    # def make_failure_buttons(self, tab1):
-    #     self.failureButtons = []
-    #     failureText = ['Broken Track', 'Track Circuit Failure', 'Power Failure']
-    #     for i in range(3):
-    #         self.failureButtons.append(QPushButton(failureText[i], tab1))
-    #         self.failureButtons[i].setStyleSheet("background-color: white; color: black;")
-    #         self.failureButtons[i].clicked.connect(lambda _, index=i: self.send_failure_button_click(index))
-    #         self.failureButtons[i].setGeometry(220, 230 + 30 * i, 120, 25)  
+    #initializes green failure mode buttons
+    def make_green_failure_buttons(self, tab1):
+        self.failureButtons = []
+        failureText = ['Broken Track', 'Track Circuit Failure', 'Power Failure']
+        for i in range(3):
+            self.failureButtons.append(QPushButton(failureText[i], tab1))
+            self.failureButtons[i].setStyleSheet("background-color: white; color: black;")
+            self.failureButtons[i].clicked.connect(lambda _, index=i: self.send_green_failure_button_click(index))
+            self.failureButtons[i].setGeometry(20, 410 + 30 * i, 120, 25)  
 
-    #     self.blockNum = QLineEdit(tab1)
-    #     self.blockNum.setStyleSheet("background-color: white; color: black;")
-    #     self.blockNum.setGeometry(220, 200, 70, 25)
+        self.blockNum = QLineEdit(tab1)
+        self.blockNum.setStyleSheet("background-color: white; color: black;")
+        self.blockNum.setGeometry(20, 380, 70, 25)
 
-    #     self.blockLabel = QLabel('Block Number:', tab1)
-    #     self.blockLabel.setStyleSheet("color: white;")
-    #     self.blockLabel.setGeometry(220, 180, 100, 20)
+        self.blockLabel = QLabel('Block Number:', tab1)
+        self.blockLabel.setStyleSheet("color: white;")
+        self.blockLabel.setGeometry(20, 360, 100, 20)
 
-    # def send_failure_button_click(self, i): 
-    #     num = int(self.blockNum.text()) - 1 
-    #     if num >= 0 and num <= 15:    
-    #         if i == 0:
-    #             blueBlocks[num].change_broken()
-    #         elif i == 1:
-    #             blueBlocks[num].change_circuit()
-    #         elif i == 2:
-    #             blueBlocks[num].change_power()
+    #update green failure modes    
+    def send_green_failure_button_click(self, i): 
+        num = int(self.blockNum.text()) 
+        if num >= 1 and num <= 150:    
+            if i == 0:
+                greenBlocks[num].change_broken()
+            elif i == 1:
+                greenBlocks[num].change_circuit()
+            elif i == 2:
+                greenBlocks[num].change_power()
 
+    #initialize red section map features
     def make_red_sections(self, tab1, x, y):
         #White arrows are behind blue arrows so you can show or hide the blue arrows
         self.underRedArrows = []
@@ -843,6 +864,7 @@ class MainWindow(QMainWindow):
         self.red_timer.timeout.connect(self.update_red_ui)
         self.red_timer.start(100)
 
+    #initialize green section map features
     def make_green_sections(self, tab3, x, y):
         #White arrows are behind blue arrows so you can show or hide the blue arrows
         self.underGreenArrows = []
@@ -963,6 +985,7 @@ class MainWindow(QMainWindow):
         self.green_timer.timeout.connect(self.update_green_ui)
         self.green_timer.start(100)
 
+    #initialize red switch map features
     def make_red_switches(self, tab3, x, y):
         self.leftRedSwitches = []
         self.rightRedSwitches = []
@@ -1030,6 +1053,7 @@ class MainWindow(QMainWindow):
         self.rightRedSwitches[6].setPixmap(resized_pixmap_right_reversed)
         self.rightRedSwitches[6].setGeometry(250+x, 180+y, 80, 125)
 
+    #initialize green switch map features
     def make_green_switches(self, tab3, x, y):
         self.leftGreenSwitches = []
         self.rightGreenSwitches = []
@@ -1090,26 +1114,7 @@ class MainWindow(QMainWindow):
         self.rightGreenSwitches[5].setPixmap(resized_pixmap_right)
         self.rightGreenSwitches[5].setGeometry(680+x, 280+y, 80, 125)
 
-    # def make_lights(self, tab1, x):
-    #     original_pixmap_red = QPixmap("images/RedLight.png")
-    #     resized_pixmap_red = original_pixmap_red.scaled(40,40)
-    #     original_pixmap_green = QPixmap("images/GreenLight.png")
-    #     resized_pixmap_green = original_pixmap_green.scaled(40,40)
-    #     self.redLight = []
-    #     self.greenLight = []
-    #     self.redLight.append(QLabel(tab1))
-    #     self.redLight.append(QLabel(tab1))
-    #     self.redLight[0].setPixmap(resized_pixmap_red)
-    #     self.redLight[1].setPixmap(resized_pixmap_red)
-    #     self.redLight[0].setGeometry(435, 150-x, 40, 40)
-    #     self.redLight[1].setGeometry(435, 340-x, 40, 40)
-    #     self.greenLight.append(QLabel(tab1))
-    #     self.greenLight.append(QLabel(tab1))
-    #     self.greenLight[0].setPixmap(resized_pixmap_green)
-    #     self.greenLight[1].setPixmap(resized_pixmap_green)
-    #     self.greenLight[0].setGeometry(435, 150-x, 40, 40)
-    #     self.greenLight[1].setGeometry(435, 340-x, 40, 40)
-
+    #initialize green crossing map features
     def make_green_crossings(self, tab3, x, y):
         original_pixmap_red = QPixmap(add_TM+"images/RedCrossing.png")
         resized_pixmap_red = original_pixmap_red.scaled(50,50)
@@ -1120,23 +1125,19 @@ class MainWindow(QMainWindow):
 
         self.redCrossings.append(QLabel(tab3))
         self.redCrossings[0].setPixmap(resized_pixmap_red)
-        self.redCrossings[0].setGeometry(450, 145, 50, 50)
+        self.redCrossings[0].setGeometry(490, 145, 50, 50)
         self.greenCrossings.append(QLabel(tab3))
         self.greenCrossings[0].setPixmap(resized_pixmap_green)
-        self.greenCrossings[0].setGeometry(450, 145, 50, 50)
+        self.greenCrossings[0].setGeometry(490, 145, 50, 50)
 
         self.redCrossings.append(QLabel(tab3))
-        self.redCrossings[0].setPixmap(resized_pixmap_red)
-        self.redCrossings[0].setGeometry(450, 150, 50, 50)
+        self.redCrossings[1].setPixmap(resized_pixmap_red)
+        self.redCrossings[1].setGeometry(310, 280, 50, 50)
         self.greenCrossings.append(QLabel(tab3))
-        self.greenCrossings[0].setPixmap(resized_pixmap_green)
-        self.greenCrossings[0].setGeometry(450, 150, 50, 50)
+        self.greenCrossings[1].setPixmap(resized_pixmap_green)
+        self.greenCrossings[1].setGeometry(310, 280, 50, 50)
     
-    def make_train(self, tab3):
-        self.trainLabel = QPushButton("Train Info", tab3)
-        self.trainLabel.setStyleSheet("background-color: white; color: black;")
-        self.trainLabel.setGeometry(50,40, 80, 25)
-
+    #initialize green station map features
     def make_green_stations(self,tab1,x, y):
         original_pixmap_station = QPixmap(add_TM+"images/Station.png")
         resized_pixmap_station = original_pixmap_station.scaled(53,38)
@@ -1149,7 +1150,7 @@ class MainWindow(QMainWindow):
             self.stationsBot[i].setPixmap(resized_pixmap_station_bot)
             self.stations.append(QLabel(tab1))
             self.stations[i].setPixmap(resized_pixmap_station)
-        self.stationsBot[0].setGeometry(680+x, 32+y, 53, 38)
+        self.stationsBot[0].setGeometry(680+x, 197+y, 53, 38)
         self.stationsBot[1].setGeometry(770+x, 100+y, 53, 38)
         self.stationsBot[2].setGeometry(520+x, 75+y, 53, 38)
         self.stationsBot[3].setGeometry(450+x, 75+y, 53, 38)
@@ -1168,7 +1169,7 @@ class MainWindow(QMainWindow):
         self.stationsBot[16].setGeometry(290+x, 230+y, 53, 38)
         self.stationsBot[17].setGeometry(300+x, 135+y, 53, 38)
 
-        self.stations[0].setGeometry(680+x, 32+y, 53, 38)
+        self.stations[0].setGeometry(680+x, 197+y, 53, 38)
         self.stations[1].setGeometry(770+x, 100+y, 53, 38)
         self.stations[2].setGeometry(520+x, 75+y, 53, 38)
         self.stations[3].setGeometry(450+x, 75+y, 53, 38)
@@ -1186,19 +1187,70 @@ class MainWindow(QMainWindow):
         self.stations[15].setGeometry(200+x, 270+y, 53, 38)
         self.stations[16].setGeometry(290+x, 230+y, 53, 38)
         self.stations[17].setGeometry(300+x, 135+y, 53, 38)
-            
 
-    # def make_beacons(self, tab1):
-    #     original_pixmap_beacon = QPixmap("images/Beacon.png")
-    #     resized_pixmap_beacon = original_pixmap_beacon.scaled(40,60)
-    #     self.beacons = []
-    #     self.beacons.append(QLabel(tab1))
-    #     self.beacons[0].setPixmap(resized_pixmap_beacon)
-    #     self.beacons[0].setGeometry(617, 30, 40, 60)
+    #initialize traffic lights 
+    def make_green_lights(self, tab1, x):
+        original_pixmap_red = QPixmap("images/RedLight.png")
+        resized_pixmap_red = original_pixmap_red.scaled(30,30)
+        original_pixmap_green = QPixmap("images/GreenLight.png")
+        resized_pixmap_green = original_pixmap_green.scaled(30,30)
+        self.greenLightsBot = []
+        self.greenLightsTop = []
+        for i in range(10):
+            self.greenLightsBot.append(QLabel(tab1))
+            self.greenLightsTop.append(QLabel(tab1))
+            self.greenLightsBot[i].setPixmap(resized_pixmap_red)
+            self.greenLightsTop[i].setPixmap(resized_pixmap_green)   
+            self.greenLightsBot[i].setGeometry(10+30*i, 10, 30, 30)
+            self.greenLightsTop[i].setGeometry(10+30*i, 10, 30, 30)
+        self.greenLightsBot[0].setGeometry(640, 200, 30, 30)
+        self.greenLightsTop[0].setGeometry(640, 200, 30, 30)
+        self.greenLightsBot[1].setGeometry(550, 150, 30, 30)
+        self.greenLightsTop[1].setGeometry(550, 150, 30, 30)
+        self.greenLightsBot[2].setGeometry(450, 150, 30, 30)
+        self.greenLightsTop[2].setGeometry(450, 150, 30, 30)
+        self.greenLightsBot[3].setGeometry(360, 197, 30, 30)
+        self.greenLightsTop[3].setGeometry(360, 197, 30, 30)
+        self.greenLightsBot[4].setGeometry(130, 35, 30, 30)
+        self.greenLightsTop[4].setGeometry(130, 35, 30, 30)
+        self.greenLightsBot[5].setGeometry(230, 400, 30, 30)
+        self.greenLightsTop[5].setGeometry(230, 400, 30, 30)
+        self.greenLightsBot[6].setGeometry(400, 400, 30, 30)
+        self.greenLightsTop[6].setGeometry(400, 400, 30, 30)
+        self.greenLightsBot[7].setGeometry(550, 345, 30, 30)
+        self.greenLightsTop[7].setGeometry(550, 345, 30, 30)
+        self.greenLightsBot[8].setGeometry(550, 345, 30, 30)
+        self.greenLightsTop[8].setGeometry(550, 345, 30, 30)
+        self.greenLightsBot[9].setGeometry(640, 455, 30, 30)
+        self.greenLightsTop[9].setGeometry(640, 455, 30, 30)
 
-    #     self.beacons.append(QLabel(tab1))
-    #     self.beacons[1].setPixmap(resized_pixmap_beacon)
-    #     self.beacons[1].setGeometry(617, 221, 40, 60)
+    def make_green_temp(self, tab):
+        self.greenTempButton = QPushButton("Set New Temperature", tab)
+        self.greenTempButton.setStyleSheet("background-color: white; color: black;")
+        self.greenTempButton.clicked.connect(self.send_green_temp_button_click)
+        self.greenTempButton.setGeometry(470, 270, 125, 25)  
+
+        self.greenNewTemp = QLineEdit(tab)
+        self.greenNewTemp.setStyleSheet("background-color: white; color: black;")
+        self.greenNewTemp.setGeometry(470, 240, 70, 25)
+
+        self.greenTempLabel = QLabel('Temperature (F°): 70.0°', tab)
+        self.greenTempLabel.setStyleSheet("color: white;")
+        self.greenTempLabel.setGeometry(470, 220, 120, 20)
+
+    def send_green_temp_button_click(self):
+        greenTemp = float(self.greenNewTemp.text())
+        self.greenTempLabel.setText(f'Temperature(F°): {greenTemp}°')
+        if greenTemp <= 32.0:
+            [block.heater_on() for block in greenBlocks[:151]]
+        else:
+            [block.heater_off() for block in greenBlocks[:151]]
+
+    #initialize temp train information label     
+    def make_train(self, tab3):
+        self.trainLabel = QPushButton("Train Info", tab3)
+        self.trainLabel.setStyleSheet("background-color: white; color: black;")
+        self.trainLabel.setGeometry(50,40, 80, 25)
 
 # Main entry to start the application
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-launcher = True
+launcher = False
 import pandas as pd
 if launcher:
     from TrackModel.Block import Block
@@ -121,7 +121,7 @@ def buildTrack(excelFileName):
         else:
             rightDoor = False
 
-        Blocks.append(Block(line, section, number, length, grade, speedLimit, elevation, cumElevation, underground))
+        Blocks.append(Block(line, section, number, length, grade, speedLimit, elevation, cumElevation, underground, speedLimit))
         if row['Beacon Info'] != 0:
             Beacons.append(Beacon(row['Line'], row['Section'], Blocks[index], row['Beacon Info']))
             Blocks[index].set_beacon(Beacons[len(Beacons)-1])

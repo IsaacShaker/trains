@@ -1,21 +1,19 @@
-launcher = True
+launcher = False
 if launcher:
     from TrackModel.Beacon import Beacon
     from TrackModel.RailroadCrossing import RailroadCrossing
     from TrackModel.Station import Station
-    from TrackModel.TrafficLight import TrafficLight
     from TrackModel.Switch import Switch
     from TrackModel.Train import Train
 else:
     from Beacon import Beacon
     from RailroadCrossing import RailroadCrossing
     from Station import Station
-    from TrafficLight import TrafficLight
     from Switch import Switch
     from Train import Train
 
 class Block:
-    def __init__(self, line, section, number, length, grade, speedLimit, elevation, cumElevation, underground):
+    def __init__(self, line, section, number, length, grade, speedLimit, elevation, cumElevation, underground, commandedSpeed):
         self.line = line
         self.section = section
         self.number = number
@@ -32,6 +30,7 @@ class Block:
         self.brokenTrack = False
         self.circuitFailure = False
         self.powerFailure = False
+        self.trackHeater = False
 
         self.occupancy = False
 
@@ -39,11 +38,10 @@ class Block:
         self.station = None
         self.railroad = None
         self.switch = None
-        self.trafficLight = None
         self.train = None
 
         self.authority = None
-        self.commandedSpeed = None
+        self.commandedSpeed = commandedSpeed
 
     def get_table_data(self, index):
         if index == 0:
@@ -108,18 +106,14 @@ class Block:
         elif index == 19:
             return str(self.powerFailure)
         else:
-            return ""
-
-        
+            return ""    
     def display_info(self, index):
         if self.nextBlock == 0:
             return f"Block {index}:\n\tLine: {self.line} \n\tSection: {self.section} \n\tBlock Number: {self.number} \n\tBlock Length: {self.length} \n\tBlock Grade: {self.grade} \n\tSpeed Limit: {self.speedLimit} \n\tElevation: {self.elevation} \n\tCumulative Elevation: {self.cumElevation} \n\tOccupied: {self.occupied}\n\tBroken Track: {self.brokenTrack}\n\tTrack Circuit Failure: {self.circuitFailure}\n\tPower Failure: {self.powerFailure}"
         else:
             return f"Block {index}:\n\tLine: {self.line} \n\tSection: {self.section} \n\tBlock Number: {self.number} \n\tNext Block: {self.nextBlock.display_num()} \n\tBlock Length: {self.length} \n\tBlock Grade: {self.grade} \n\tSpeed Limit: {self.speedLimit} \n\tElevation: {self.elevation} \n\tCumulative Elevation: {self.cumElevation} \n\tOccupied: {self.occupied}\n\tBroken Track: {self.brokenTrack}\n\tTrack Circuit Failure: {self.circuitFailure}\n\tPower Failure: {self.powerFailure}"
-
     def display_num(self):
-        return f"{self.number}"
-    
+        return f"{self.number}"  
     def get_if_train(self):
         if isinstance(self.train, Train):
             return True
@@ -132,26 +126,24 @@ class Block:
                 self.train.set_auth(self.authority)
             if self.commandedSpeed != None and not FOrB and self.train.get_auth() != 0:
                 self.train.set_speed(self.commandedSpeed)
-            if isinstance(self.beacon, Beacon) and not FOrB : #and self.train.fLocOnBlock == self.length
-                self.train.set_staticData(self.beacon.get_staticData())
             if isinstance(self.station, Station) and (self.train.get_fLocOnBlock() < (self.length/2) - 11) and (self.train.get_fLocOnBlock() > (self.length/2) - 9) and self.train.get_speed == 0:
-                self.station.set_trainIn(True)
+                self.station.set_trainIn(True, self.train)
             else:
                 if isinstance(self.station, Station):
-                    self.station.set_trainIn(False)
-            # self.train.dict_arr[self.train.id] = {
-            #     "authority" :  self.authority,
-            #     "commanded_speed" : self.commandedSpeed
-            # }
+                    self.station.set_trainIn(False, self.train)
         else:
             self.train = None
+
+    def train_set_beacon(self, train):
+        if isinstance(self.beacon, Beacon):
+            train.set_staticData(self.beacon.get_staticData())
+
             
     def set_occupancies(self):
         if isinstance(self.train, Train) or self.brokenTrack or self.circuitFailure or self.powerFailure or self.closed:
             self.occupancy = True
         else:
             self.occupancy = False
-
     def set_O(self):
         self.occupied = True
     def set_N(self):
@@ -189,6 +181,8 @@ class Block:
         return self.circuitFailure
     def get_power(self):
         return self.powerFailure
+    def get_heater(self):
+        return self.trackHeater
     def get_previous_block(self):
         return self.previousBlock, self.previousBlock.get_length()
     def get_next_block(self):
@@ -201,15 +195,18 @@ class Block:
             self.brokenTrack = False
         else:
             self.brokenTrack = True
-
     def change_circuit(self):
         if (self.circuitFailure):
             self.circuitFailure = False
         else:
             self.circuitFailure = True
-
     def change_power(self):
         if (self.powerFailure):
             self.powerFailure = False
         else:
             self.powerFailure = True
+    
+    def heater_on(self):
+        self.trackHeater = True
+    def heater_off(self):
+        self.trackHeater = False
