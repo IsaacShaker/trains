@@ -7,11 +7,13 @@ if launcher:
     from TrackModel.TrackModel import buildTrack
     from TrackModel.Section import Section
     from TrackModel.Train import Train
+    from TrackModel.Trains import Trains
     add_TM = "TrackModel/"
 else:
     from TrackModel import buildTrack
     from Section import Section
     from Train import Train
+    from Trains import Trains
     add_TM = ""
 
 redYard = [] 
@@ -29,10 +31,11 @@ greenBeacons = []
 greenStations = []
 greenSections = []
 
-Trains = []
+greenTrains = Trains()
 post_dict = []
 
-occs = [None] * 150
+greenOccs = [None] * 150
+redOccs = [None] * 76
 
 auth = []
 cmd = []
@@ -90,13 +93,13 @@ class TrackUI(QMainWindow):
     def save_text(self):
         global redYard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations, redSections
         global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
-        global Trains
+        global greenTrains
         # Store text entry values in separate variables
         self.input_value1 = self.text_entry1.text()
         self.input_value2 = self.text_entry2.text()
 
         #Red Line initial prep
-        redYard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations = buildTrack(add_TM+self.input_value1)
+        redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations = buildTrack(add_TM+self.input_value1)
 
         redSections = []
         redSections.append(Section('A'))
@@ -132,10 +135,10 @@ class TrackUI(QMainWindow):
             elif i >= 71 and i < 76:
                 redSections[9].add_block(redBlocks[i])
             
-        greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations = buildTrack(add_TM+self.input_value2)
+        greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations = buildTrack(add_TM+self.input_value2)
         for i in range(150):
             greenBlocks[i].set_cmd_speed(70)
-        greenBlocks[80].set_authority(1446.6)
+        greenBlocks[81].set_authority(1446.6)
         
         greenSections = []
         greenSections.append(Section('A'))
@@ -148,32 +151,37 @@ class TrackUI(QMainWindow):
         greenSections.append(Section('H'))
         greenSections.append(Section('I'))
         greenSections.append(Section('J'))
+        greenSections.append(Section('Yard'))
         for i in range(150):
-            if i >= 0 and i < 12:
+            if i == 0:
+                greenSections[10].add_block(greenBlocks[i])
+            elif i >= 1 and i < 13:
                 greenSections[0].add_block(greenBlocks[i])
-            elif i >= 12 and i < 28:
+            elif i >= 13 and i < 29:
                 greenSections[1].add_block(greenBlocks[i])
-            elif i >= 28 and i < 57:
+            elif i >= 29 and i < 58:
                 greenSections[2].add_block(greenBlocks[i])
-            elif i >= 57 and i < 62:
+            elif i >= 58 and i < 63:
                 greenSections[3].add_block(greenBlocks[i])
-            elif i >= 62 and i < 76:
+            elif i >= 63 and i < 77:
                 greenSections[4].add_block(greenBlocks[i])
-            elif i >= 76 and i < 85:
+            elif i >= 77 and i < 86:
                 greenSections[5].add_block(greenBlocks[i])
-            elif i >= 85 and i < 100:
+            elif i >= 86 and i < 101:
                 greenSections[6].add_block(greenBlocks[i])
-            elif i >= 100 and i < 117:
+            elif i >= 101 and i < 118:
                 greenSections[7].add_block(greenBlocks[i])
-            elif i >= 117 and i < 135:        
+            elif i >= 118 and i < 136:        
                 greenSections[8].add_block(greenBlocks[i])
-            elif i >= 135 and i < 150:
+            elif i >= 136 and i < 151:
                 greenSections[9].add_block(greenBlocks[i])   
         
             
         #Train
         temp_dict = {"authority" : None, "commanded_speed" : None, "beacon_info" : ""}
-        Trains.append(Train(10, greenBlocks[80], 20))
+        tempTrain = Train(10, greenBlocks[81], 20)
+        greenTrains.addTrain(tempTrain)
+
         post_dict.append(temp_dict)
 
         self.ui_window = MainWindow()
@@ -199,12 +207,13 @@ class MainWindow(QMainWindow):
         #All updating functions, updated every .1 second
         self.train_timer = QTimer()
         #Does the train movement 
-        self.train_timer.timeout.connect(Trains[0].moveTrain)
+        self.train_timer.timeout.connect(greenTrains.moveTrains)
         self.train_timer.start(1)#10
 
 
     def get_occupancies(self):
-        occ_data = {"occupancies" : occs}
+        occ_data = {"Green" : greenOccs,
+                    "Red" : redOccs}
         return occ_data
 
     def get_track_to_train(self):
@@ -214,6 +223,26 @@ class MainWindow(QMainWindow):
         data = { "authority" : auth, 
                  "commandedSpeed" : cmd}
         return data
+    
+    def set_signals(self, data):
+        for switch in data['Green']['switches']:
+            switch_id = switch['id']
+            if switch['toggled'] == 0:
+                greenSwitches[switch_id].set_L()
+            else:
+                greenSwitches[switch_id].set_R()
+        for traffic in data['Green']['traffic_lights']:
+            traffic_id = traffic['id']
+            if traffic['toggled'] == 0:
+                greenSwitches[traffic_id].set_R()
+            else:
+                greenSwitches[traffic_id].set_G()
+        for crossing in data['Green']['crossings']:   
+            crossing_id = crossing['id']
+            if traffic['toggled'] == 0:
+                greenRailroadCrossings[crossing_id].set_R()
+            else:
+                greenRailroadCrossings[crossing_id].set_G()
 
     def get_post_dict(self):
         return {"data": post_dict}
@@ -439,10 +468,10 @@ class MainWindow(QMainWindow):
         
         for i in range(150):
             greenBlocks[i].set_occupancies()
-            occs[i] = greenBlocks[i].occupancy
+            greenOccs[i] = greenBlocks[i].occupancy
         #All "setToolTip" functions are updating the hover information for all objects
         #Constantly update block color based on occupied variable
-        for i in range(10):
+        for i in range(11):
             #if occupied hide blue arrow, white is underneath
             greenSections[i].check_occupied()
             if greenSections[i].get_occupied():
@@ -481,7 +510,7 @@ class MainWindow(QMainWindow):
             self.greenCrossings[i].setToolTip(greenRailroadCrossings[i].display_info(0))
             self.redCrossings[i].setToolTip(greenRailroadCrossings[i].display_info(0))
 
-        self.trainLabel.setToolTip(Trains[0].display_info(0))
+        self.trainLabel.setToolTip(greenTrains.trainList[0].display_info(0))
 
         for i in range(18):
             if greenStations[i].get_trainIn():
@@ -611,9 +640,9 @@ class MainWindow(QMainWindow):
         elif i == 5:
             if id <= 76 and id >= 1:
                 if var == "Occupied":
-                    redBlocks[id-1].set_O()
+                    redBlocks[id].set_O()
                 else:
-                    redBlocks[id-1].set_N()
+                    redBlocks[id].set_N()
             else:
                 print("Index Error sendButton_click function.")
 
@@ -721,22 +750,22 @@ class MainWindow(QMainWindow):
         # #if row 4 input authority for specific block changes
         elif i == 3:
             if id <= 150 and id >= 1:
-                greenBlocks[id-1].set_authority(float(var))
+                greenBlocks[id].set_authority(float(var))
             else:
                 print("Index Error")
         #if row 5 input commanded speed for specific block changes
         elif i == 4:
             if id <= 150 and id >= 1:
-                greenBlocks[id-1].set_cmd_speed(float(var))
+                greenBlocks[id].set_cmd_speed(float(var))
             else:
                 print("Index Error sendButton_click function.")
         #if row 6 input change a blocks occupancy
         elif i == 5:
             if id <= 150 and id >= 1:
                 if var == "Occupied":
-                    greenBlocks[id-1].set_O()
+                    greenBlocks[id].set_O()
                 else:
-                    greenBlocks[id-1].set_N()
+                    greenBlocks[id].set_N()
             else:
                 print("Index Error sendButton_click function.")
 
@@ -864,7 +893,11 @@ class MainWindow(QMainWindow):
         section9_top = section9_top.scaled(103,30)
         section9_bot = QPixmap(add_TM+"images/GreenSection9Bot.png")
         section9_bot = section9_bot.scaled(103,30)
-        for i in range(10):
+        yard_top = QPixmap(add_TM+"images/YardTop.png")
+        yard_top = yard_top.scaled(100,40)
+        yard_bot = QPixmap(add_TM+"images/YardBot.png")
+        yard_bot = yard_bot.scaled(100,40)
+        for i in range(11):
             self.underGreenArrows.append(QLabel(tab3))
             self.underGreenArrows[i].setPixmap(resized_pixmap_white)
             
@@ -920,6 +953,11 @@ class MainWindow(QMainWindow):
         self.underGreenArrows[9].setPixmap(section9_bot)  
         self.underGreenArrows[9].setGeometry(360+x, 120+y, 103, 30)
         self.greenArrows[9].setGeometry(360+x, 120+y, 103, 30)
+
+        self.greenArrows[10].setPixmap(yard_top)
+        self.underGreenArrows[10].setPixmap(yard_bot)  
+        self.underGreenArrows[10].setGeometry(120+x, 200+y, 100, 40)
+        self.greenArrows[10].setGeometry(120+x, 200+y, 100, 40)
 
         #this is the timer that constantly updates the states for all of the components 
         self.green_timer = QTimer()

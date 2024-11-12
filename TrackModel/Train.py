@@ -28,7 +28,7 @@ class Train:
         string = f"Train {index}: \n\tFront Location: {self.fLocOnBlock} \n\tFront Block: {self.fBlock.display_num()} \n\tPrevious Front Block: {self.fBlockPrevious.display_num()} \n\tBack Location: {self.bLocOnBlock} \n\tBack Block: {self.bBlock.display_num()}\n\tLength: {self.length} \n\tSpeed: {self.speed} \n\tAuthority: {self.authority} \n\tStatic Data: {self.staticData}"
         return string
     
-    def moveTrain(self): #dict_arr
+    def moveTrain(self, speed): #dict_arr
         #self.dict_arr = dict_arr
         if self.fBlock.get_num() == 85 and self.fBlockPrevious.get_num() == 100:
             self.fBackwards = True 

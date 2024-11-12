@@ -89,9 +89,6 @@ def buildBlueTrack():
     return Yard, blueBlocks, blueSwitch, blueRailroadCrossing, blueTrafficLights, blueBeacons, blueTrain, blueStations
 
 def buildTrack(excelFileName):
-    #Yard 
-    Yard = Block('Red', 'Yard', 0, 50, 0, 100, 0, 0, False)
-    Yard.set_next_block(Yard)
     #Create All Class arrays
     Blocks = []
     Stations = []
@@ -139,35 +136,35 @@ def buildTrack(excelFileName):
     for index, row in df.iterrows():   
         if ', ' in str(row['Previous Block']):
             dests = row['Previous Block'].split(", ")
-            tempSwitch = Switch(row['Line'], row['Section'], Blocks[index], Blocks[int(dests[0])-1], Blocks[int(dests[1])-1], row['VtoL'], row['VtoR'], row['LorR'], row['IorO'])
+            tempSwitch = Switch(row['Line'], row['Section'], Blocks[index], Blocks[int(dests[0])], Blocks[int(dests[1])], row['VtoL'], row['VtoR'], row['LorR'], row['IorO'])
             if row['LorR']:
-                Blocks[index].set_previous_block(Blocks[int(dests[1])-1])
+                Blocks[index].set_previous_block(Blocks[int(dests[1])])
             else:
-                Blocks[index].set_previous_block(Blocks[int(dests[0])-1])
+                Blocks[index].set_previous_block(Blocks[int(dests[0])])
             Switches.append(tempSwitch)
             Blocks[index].set_switch(tempSwitch)
         else:
             if row['Previous Block'] == "Non":
                 Blocks[index].set_previous_block(None)
             else:
-                Blocks[index].set_previous_block(Blocks[int(row['Previous Block'])-1])
+                Blocks[index].set_previous_block(Blocks[int(row['Previous Block'])])
     
         if ', ' in str(row['Next Block']):
             dests = row['Next Block'].split(", ")
-            tempSwitch = Switch(row['Line'], row['Section'], Blocks[index], Blocks[int(dests[0])-1], Blocks[int(dests[1])-1], row['VtoL'], row['VtoR'], row['LorR'], row['IorO'])
+            tempSwitch = Switch(row['Line'], row['Section'], Blocks[index], Blocks[int(dests[0])], Blocks[int(dests[1])], row['VtoL'], row['VtoR'], row['LorR'], row['IorO'])
             if row['LorR']:
-                Blocks[index].set_next_block(Blocks[int(dests[1])-1])
+                Blocks[index].set_next_block(Blocks[int(dests[1])])
             else:
-                Blocks[index].set_next_block(Blocks[int(dests[0])-1])
+                Blocks[index].set_next_block(Blocks[int(dests[0])])
             Switches.append(tempSwitch)
             Blocks[index].set_switch(tempSwitch)
         else:
             if str(row['Next Block']) == "Non":
                 Blocks[index].set_next_block(None)
             else:
-                Blocks[index].set_next_block(Blocks[int(row['Next Block'])-1])
+                Blocks[index].set_next_block(Blocks[int(row['Next Block'])])
 
-    return Yard, Blocks, Switches, RailroadCrossings, Beacons, Stations
+    return Blocks, Switches, RailroadCrossings, Beacons, Stations
 
 #if __name__ == "__main__":
 #    Yard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, blueTrain, redStations = buildRedTrack()
