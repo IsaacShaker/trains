@@ -179,7 +179,7 @@ def receive_brakes():
     
     
 ###################################
-# Train Controller API Endpoints  #
+# Track Controller API Endpoints  #
 ###################################
 
 @app.route('/track-controller-sw/get-data/block_data', methods=['GET'])
