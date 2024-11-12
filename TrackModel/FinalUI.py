@@ -1,4 +1,4 @@
-launcher = False
+launcher = True
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QTabWidget, QWidget, QLineEdit, QComboBox, QLabel, QTableView, QVBoxLayout
 from PyQt6.QtCore import QTimer, Qt
@@ -34,8 +34,8 @@ greenSections = []
 greenTrains = Trains()
 post_dict = []
 
-greenOccs = [None] * 150
-redOccs = [None] * 76
+greenOccs = [False] * 151
+redOccs = [False] * 77
 
 auth = []
 cmd = []
@@ -186,31 +186,8 @@ class TrackUI(QMainWindow):
 
         self.ui_window = MainWindow()
         self.ui_window = self.ui_window.show()    
-        self.close() 
-        
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        global redYard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations, redSections
-        global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
-        
-        #Make a PyQt Window
-        self.setWindowTitle("Track Model UI")
-        self.setGeometry(100,100,850,550)
-        self.setStyleSheet("background-color: grey")
-
-        #Makes tabs for the windows
-        self.tab_widget = QTabWidget()
-        self.setCentralWidget(self.tab_widget)
-        self.create_tabs()
-
-        #All updating functions, updated every .1 second
-        self.train_timer = QTimer()
-        #Does the train movement 
-        self.train_timer.timeout.connect(greenTrains.moveTrains)
-        self.train_timer.start(1)#10
-
-
+        self.close()
+    
     def get_occupancies(self):
         occ_data = {"Green" : greenOccs,
                     "Red" : redOccs}
@@ -246,6 +223,28 @@ class MainWindow(QMainWindow):
 
     def get_post_dict(self):
         return {"data": post_dict}
+        
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        global redYard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations, redSections
+        global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
+        
+        #Make a PyQt Window
+        self.setWindowTitle("Track Model UI")
+        self.setGeometry(100,100,850,550)
+        self.setStyleSheet("background-color: grey")
+
+        #Makes tabs for the windows
+        self.tab_widget = QTabWidget()
+        self.setCentralWidget(self.tab_widget)
+        self.create_tabs()
+
+        #All updating functions, updated every .1 second
+        self.train_timer = QTimer()
+        #Does the train movement 
+        self.train_timer.timeout.connect(greenTrains.moveTrains)
+        self.train_timer.start(1)#10
 
     def create_tabs(self):
         #Tab 3 for green line
