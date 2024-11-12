@@ -310,7 +310,12 @@ def get_data_train_model_current_speed():
 @app.route('/track-model/recieve-signals', methods=['POST'])
 def recieve_signals():
     data = request.get_json()
-    app.qt_app_instance.track_model.set_signals(data)
+    if hasattr(app.qt_app_instance, 'track_model'):
+        app.qt_app_instance.track_model.set_signals(data)
+        return "Success", 200
+    else:
+        return "Fail", 400
+
 
 #Track Model to Track Controller
 @app.route('/track-model/get-data/occupancies', methods=['GET'])

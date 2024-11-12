@@ -26,8 +26,8 @@ class SwitchButton(QPushButton):
         new_text = self.data["name_2"] if self.data["toggled"] else self.data["name_1"]
         self.setText(new_text)
 
-        # new_style = "background-color: yellow; color: black;" if self.data["toggled"] else "background-color: purple; color: black;"
-        # self.setStyleSheet(new_style)  # Set yellow background for active
+        new_style = "background-color: yellow; color: black;" if self.data["toggled"] else "background-color: purple; color: black;"
+        self.setStyleSheet(new_style)  # Set yellow background for active
 
     def set_editable(self, editable):
         self.setEnabled(editable)  # Enable or disable the button based on mode

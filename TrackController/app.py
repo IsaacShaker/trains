@@ -32,11 +32,24 @@ class MyApp(QWidget):
         super().__init__()
 
         # Initial properties of the UI
-        self.line = "Blue"
+        self.line = "Green"
         self.mode = "SW"
         self.auto = True
         self.data_main = copy.deepcopy(data)
         self.data_test = copy.deepcopy(data)
+
+        self.sw_signal_data = {
+            "Green": {
+                "switches": self.data_main["Green"]["SW"]["switches"],
+                "traffic_lights": self.data_main["Green"]["SW"]["traffic_lights"],
+                "crossings": self.data_main["Green"]["SW"]["crossings"]
+            },
+            "Red": {
+                "switches": self.data_main["Red"]["SW"]["switches"],
+                "traffic_lights": self.data_main["Red"]["SW"]["traffic_lights"],
+                "crossings": self.data_main["Red"]["SW"]["crossings"]
+            }
+        }
 
         self.maintence_list = []
         self.authority_list = []
@@ -70,9 +83,13 @@ class MyApp(QWidget):
         # Start the timer to call update_content every 500 milliseconds
         self.update_ui_timer.start(500)
 
-        self.request_block_occupancies_timer = QTimer(self)
-        self.request_block_occupancies_timer.timeout.connect(self.request_block_occupancies)
-        self.request_block_occupancies_timer.start(1000)
+        self.api_call_timer = QTimer(self)
+        self.api_call_timer.timeout.connect(self.call_apis)
+        self.api_call_timer.start(1000)
+
+    def call_apis(self):
+        self.request_block_occupancies()
+        self.give_signals()
 
     def request_block_occupancies(self):
         response = requests.get("http://127.0.0.1:5000/track-model/get-data/occupancies")
@@ -84,27 +101,21 @@ class MyApp(QWidget):
             print("Failed to retrieve data:", response.text)
             return
         
-        # Blue
-        # for block in self.data_main["Blue"]["HW"]["blocks"]:
-        #     block["toggled"] = data_dict['Blue'][block["block"]]
-        # for block in self.data_main["Blue"]["SW"]["blocks"]:
-        #     block["toggled"] = data_dict['Blue'][block["block"]]
-        
         # print("Updating block occupancies")
         # Green
-        for i, block in enumerate(self.data_main["Green"]["HW"]["blocks"]):
-            self.data_main["Green"]["HW"]["blocks"][i]["occupied"] = data_dict['Green'][block["block"]]
-        for i, block in enumerate(self.data_main["Green"]["SW"]["blocks"]):
-            self.data_main["Green"]["SW"]["blocks"][i]["occupied"] = data_dict['Green'][block["block"]]
+        for block in self.data_main["Green"]["HW"]["blocks"]:
+            block["occupied"] = data_dict['Green'][block["block"]]
+        for block in self.data_main["Green"]["SW"]["blocks"]:
+            block["occupied"] = data_dict['Green'][block["block"]]
 
         # Red
         # for block in self.data_main["Red"]["HW"]["blocks"]:
         #     block["toggled"] = data_dict['Red'][block["block"]]
         # for block in self.data_main["Red"]["SW"]["blocks"]:
         #     block["toggled"] = data_dict['Red'][block["block"]]
-        
-        
-        
+    
+    def give_signals(self):
+        response = requests.post("http://127.0.0.1:5000/track-model/recieve-signals", json=self.sw_signal_data)
 
     def get_block_data(self):
         data = {
