@@ -703,7 +703,7 @@ class MyWindow(QMainWindow, Clock, Train):
             self.maintenance_blocks_dict["block"] = block
             self.maintenance_blocks_dict["status"] = 1
             while(1):
-                response = requests.post(URL + "/", json=self.maintenance_blocks_dict)
+                response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
                 if response.status_code == 200:
                     break
 
@@ -795,7 +795,7 @@ class MyWindow(QMainWindow, Clock, Train):
         self.maintenance_blocks_dict["block"] = block
         self.maintenance_blocks_dict["status"] = 0
         while(1):
-            response = requests.post(URL + "/", json=self.maintenance_blocks_dict)
+            response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
             if response.status_code == 200:
                 break
 
