@@ -17,7 +17,7 @@ def receive_authority():
     if float_value is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
-    app.qt_app_instance.train_controller_sw.train_list[index].set_authority(float_value)
+    app.qt_app_instance.train_controller_sw.train_list[index].set_received_authority(float_value)
     #app.qt_app_instance.Train_Controller_HW_UI.set_authority(float_value)
     return jsonify("Success"), 200
 

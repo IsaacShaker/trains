@@ -1308,6 +1308,11 @@ class Train_Controller_SW_UI(QMainWindow):
     
     #function that calculates power and does all other timed function
     def calculate_power(self):
+        
+        #if received authority is negative, then that means we are supposed to receive new authority
+        if self.train_list[self.current_train].get_received_authority() > 0 and self.train_list[self.current_train].get_can_get_authority():
+            self.train_list[self.current_train].set_authority(self.train_list[self.current_train].get_received_authority())
+            self.train_list[self.current_train].set_can_get_authority(False)                                                    #COMMENT THIS OUT TO TEST WITHOUT THIS FUNCTION
 
         #updates UI info
         self.authority_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Authority: </span> <span style="color: white;">{self.meters_to_feet(self.train_list[self.current_train].get_authority())} ft</span>')
@@ -1352,6 +1357,9 @@ class Train_Controller_SW_UI(QMainWindow):
         #calculate power
         self.train_list[self.current_train].calculate_commanded_power()
 
+        #update authority
+        self.train_list[self.current_train].update_authority()
+
         #update power in test bench
         self.commanded_power_output.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{self.train_list[self.current_train].get_commanded_power():.2f} Watts</span>')
 
@@ -1359,7 +1367,7 @@ class Train_Controller_SW_UI(QMainWindow):
         #print(str(self.train_list[self.current_train].get_authority()))
         #check if doors have to open if train has stopped, auhority is 0, and doors haven't opened
 
-        if self.train_list[self.current_train].get_authority() == 0.0 and self.train_list[self.current_train].get_actual_velocity() == 0.0 and self.train_list[self.current_train].get_doors_can_open():
+        if self.train_list[self.current_train].get_authority() <= 0.0 and self.train_list[self.current_train].get_actual_velocity() == 0.0 and self.train_list[self.current_train].get_doors_can_open():
             
             #checks which doors to open
             doors = self.train_list[self.current_train].get_doors_to_open()

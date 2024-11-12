@@ -27,6 +27,7 @@ class Train_Controller:
         self.failure_signal = False
         self.station_reached = False
         self.doors_can_open = False
+        self.can_get_authority = True
 
         #Floats
         self.k_p = 0.0
@@ -40,6 +41,7 @@ class Train_Controller:
         self.uk_1 = 0.0
 
         #Ints
+        self.received_authority = 0
         self.authority = 0
         self.actual_velocity = 0
         self.commanded_velocity = 0
@@ -157,6 +159,9 @@ class Train_Controller:
     def set_authority(self, distance):
         self.authority = distance
 
+    def set_received_authority(self, distance):
+        self.received_authority = distance
+
     #set velocities
     def set_actual_velocity(self, v):
         self.actual_velocity = v
@@ -189,6 +194,9 @@ class Train_Controller:
 
     def set_failure_signal(self, truth):
         self.failure_signal = truth
+
+    def set_can_get_authority(self, truth):
+        self.can_get_authority = truth
 
     def set_train_id(self, number):
         self.train_id = number
@@ -233,6 +241,9 @@ class Train_Controller:
     #get authority
     def get_authority(self):
         return self.authority
+    
+    def get_received_authority(self):
+        return self.received_authority
 
     #set velocities
     def get_actual_velocity(self):
@@ -277,6 +288,9 @@ class Train_Controller:
     
     def get_doors_to_open(self):
         return self.doors_to_open
+    
+    def get_can_get_authority(self):
+        return self.can_get_authority
     
 
     #checks if authority is at distance where braking should occur in auto mode
@@ -342,7 +356,7 @@ class Train_Controller:
     def calculate_commanded_power(self):
 
         #check setpoint speed first or if any brakes are being pressed
-        if self.setpoint_velocity <= self.actual_velocity or self.s_brake or self.e_brake:
+        if self.setpoint_velocity <= self.actual_velocity or self.s_brake or self.e_brake or self.authority <= 0:
             self.commanded_power = 0
             self.ek = 0
             self.ek_1 = 0
@@ -368,6 +382,10 @@ class Train_Controller:
         self.set_commanded_power(self.k_p*self.ek + self.k_i*self.uk)
 
         response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
+
+    #this function updates authority
+    def update_authority(self):
+        self.authority -= self.actual_velocity*self.T
 
 
 
