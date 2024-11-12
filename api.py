@@ -63,7 +63,7 @@ def receive_actual_velocity():
     return jsonify("Success"), 200
 
 
-@app.route('/train-controller/receive-failure_modes', methods=['POST'])
+@app.route('/train-controller/receive-failure-modes', methods=['POST'])
 def receive_failure_modes():
     data = request.get_json()
 
