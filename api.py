@@ -261,7 +261,7 @@ def get_data3():
             return jsonify({"error": "Data not in correct format. Make sure 'line', 'index' and 'authority' are included in data."}), 500
 
     if hasattr(app.qt_app_instance, 'track_controller'):
-        data = app.qt_app_instance.track_controller.add_maintenance(data)
+        data = app.qt_app_instance.track_controller.add_authority(data)
         return jsonify(data), 200
     
 @app.route('/track-controller-sw/give-data/speed', methods=['POST'])

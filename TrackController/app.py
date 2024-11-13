@@ -120,8 +120,8 @@ class MyApp(QWidget):
     def get_block_data(self):
         data = {
             # "Blue": self.data_test["Blue"]["SW"]["blocks"],
-            "Green": self.data_main["Green"]["SW"]["blocks"],
-            "Red": self.data_main["Red"]["SW"]["blocks"]
+            "Green": self.data_test["Green"]["SW"]["blocks"],
+            "Red": self.data_test["Red"]["SW"]["blocks"]
         }
 
         return data
@@ -333,6 +333,17 @@ class MyApp(QWidget):
         command_speed_save_button.clicked.connect(lambda: self.save_value(block_id_input.text(),command_speed_input_field.text(), 3))
         input_layout_in_frame.addWidget(command_speed_save_button)
 
+         # Create input field
+        command_speed_input_field = QLineEdit()
+        command_speed_input_field.setPlaceholderText("Enter Speed Hazard (bool)...")
+        command_speed_input_field.setFixedHeight(30)  # Adjusted input field height
+        command_speed_input_field.setMinimumWidth(150)  # Ensure input field has a minimum width
+        input_layout_in_frame.addWidget(command_speed_input_field)
+        command_speed_save_button = QPushButton("Save Speed Hazard")
+        command_speed_save_button.setFixedHeight(30)  # Ensure save button doesn't overlap
+        command_speed_save_button.clicked.connect(lambda: self.save_value(block_id_input.text(),command_speed_input_field.text(), 4))
+        input_layout_in_frame.addWidget(command_speed_save_button)
+
         # Add the input layout to the test layout
         test_layout.addLayout(input_layout_in_frame)
 
@@ -520,6 +531,20 @@ class MyApp(QWidget):
                 if switch["from"] == block_id:
                     switch["suggested_toggle"] = bool(int(text))
                     break
+        elif index == 4:
+            print("Updating Speed Hazard Internally: {Block_id: " + str(block_id) + ", state: " + text + "}")
+            if text == "True" or text == "true":
+                for block in self.data_test[self.line][self.mode]["blocks"]:
+                    if block["block"] == block_id:
+                        block["speed_hazard"] = True
+                        print("set speed hazard to True")
+                        break
+            if text == "False" or text == "false":
+                for block in self.data_test[self.line][self.mode]["blocks"]:
+                    if block["block"] == block_id:
+                        block["speed_hazard"] = False
+                        print("set speed hazard to False")
+                        break
 
 
 # if __name__ == '__main__':

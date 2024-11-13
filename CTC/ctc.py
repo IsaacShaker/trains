@@ -33,6 +33,9 @@ class MyWindow(QMainWindow, Clock, Train, Station):
         # Create the recently opened block set
         self.recently_opened = set()
 
+        # Create a set for recent speed_hazards
+        self.recent_speed_hazards = set()
+
         # Create the trains list
         self.trains = []
 
@@ -135,8 +138,9 @@ class MyWindow(QMainWindow, Clock, Train, Station):
 
         # Suggested Speed
         self.suggested_speed_dict = {
+            "line": self.line_for_wayside,
             "index": self.block_for_wayside,
-            "block_speed": self.speed_for_wayside
+            "speed": self.speed_for_wayside
         }
 
         # Wayside Vision
@@ -708,6 +712,7 @@ class MyWindow(QMainWindow, Clock, Train, Station):
             self.maintenance_blocks_dict["index"] = block
             self.maintenance_blocks_dict["maintenance"] = True
             while(1):
+                print('closure')
                 response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
                 if response.status_code == 200:
                     break
@@ -801,6 +806,7 @@ class MyWindow(QMainWindow, Clock, Train, Station):
         self.maintenance_blocks_dict["index"] = block_number
         self.maintenance_blocks_dict["maintenance"] = False
         while(1):
+            print('opening')
             response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
             if response.status_code == 200:
                 break
@@ -1115,11 +1121,6 @@ class MyWindow(QMainWindow, Clock, Train, Station):
                     else:
                         station.add_authority(-1)
 
-            for station in self.green_stations:
-                auth = station.pop_authority()
-                print(station.get_name())
-                print('Authority in station =', auth)
-
             if len(self.trains) == 0: # If we are adding the first train, delete the label
                 # Remove the current QLabel
                 self.train_data_big_layout.removeWidget(self.train_label)
@@ -1214,22 +1215,47 @@ class MyWindow(QMainWindow, Clock, Train, Station):
                 else:
                     self.recently_opened.add(new_block)
 
-        for block in self.occupied_blocks:
-            for station in self.green_stations:
-                if block[1] == station.get_location() and station.get_popped() == False:
-                    # Send authority to wayside
-                    self.authority_dict["line"] = block[0]
-                    self.authority_dict["index"] = block[1]
-                    self.authority_dict["authority"] = station.pop_authority()
-                    station.toggle_popped()
-                    while(1):
-                        response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
-                        if response.status_code == 200:
-                            break
-                elif block[1] != station.get_location():
-                    station.toggle_popped()
-                else:
-                    pass
+        for station in self.green_stations:
+            station_id = station.get_location()
+            if ('Green', station_id) in self.occupied_blocks and station.get_popped() == False:
+                # Send authority to wayside since just entered station block
+                self.authority_dict["line"] = "Green"
+                self.authority_dict["index"] = station_id
+                self.authority_dict["authority"] = station.pop_authority()
+                station.set_popped(True)
+                while(1):
+                    response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                    if response.status_code == 200:
+                        break
+
+        for station in self.green_stations:
+            station_id = station.get_location()
+            if ('Green', station_id) in self.recently_opened:
+                station.set_popped(False)
+
+
+        # Speed Stuff 
+        for block in data_dict["Green"]:
+            if block["speed_hazard"] == True and ("Green", block["block"]) not in self.recent_speed_hazards: # Add to speed hazard set
+                self.recent_speed_hazards.add(("Green", block["block"]))
+                self.suggested_speed_dict["line"] = "Green"
+                self.suggested_speed_dict["index"] = block["block"]
+                self.suggested_speed_dict["speed"] = 0
+                # Change speed to zero
+                while(1):
+                    response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
+                    if response.status_code == 200:
+                        break
+            elif block["speed_hazard"] == False and ("Green", block["block"]) in self.recent_speed_hazards:
+                self.recent_speed_hazards.remove(("Green", block["block"]))
+                self.suggested_speed_dict["line"] = "Green"
+                self.suggested_speed_dict["index"] = block["block"]
+                self.suggested_speed_dict["speed"] = 30
+                # Change speed to actual
+                while(1):
+                    response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
+                    if response.status_code == 200:
+                        break
 
         self.update_label_background()
 
@@ -1239,6 +1265,7 @@ class MyWindow(QMainWindow, Clock, Train, Station):
     # Update the wayside vision dictionary
     def update_wayside_vision(self):
         pass
+        
 
     # API function for wayside vision
     def get_wayside_vision(self):

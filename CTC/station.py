@@ -15,6 +15,9 @@ class Station():
     
     def get_popped(self):
         return self.popped
+    
+    def set_popped(self, status):
+        self.popped = status
 
     def add_authority(self, auth):
         self.authorities.append(auth)
@@ -24,5 +27,5 @@ class Station():
             print('Popping authority')
             return self.authorities.popleft()
         else:
-            print("No authority left in station!")
+            print('No authority left in', self.name)
     
