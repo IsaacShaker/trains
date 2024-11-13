@@ -1,5 +1,5 @@
 import pandas as pd
-from CTC.train import Train
+from train import Train
 
 class ScheduleReader(Train):
 

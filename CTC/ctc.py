@@ -2,10 +2,10 @@ import sys
 import time
 import pandas as pd
 import requests
-from CTC.train import Train
-from CTC.clock import Clock
-from CTC.scheduleReader import ScheduleReader
-from CTC.station import Station
+from train import Train
+from clock import Clock
+from scheduleReader import ScheduleReader
+from station import Station
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem
 from PyQt6.QtCore import Qt, QTimer
 
@@ -14,7 +14,7 @@ myClock = Clock()
 
 URL = 'http://127.0.0.1:5000'
 
-class MyWindow(QMainWindow, Clock, Train):
+class MyWindow(QMainWindow, Clock, Train, Station):
     def __init__(self):
         super().__init__()
 
@@ -121,8 +121,9 @@ class MyWindow(QMainWindow, Clock, Train):
         #                   Dictionaries                  #
         # Maintenance Blocks
         self.maintenance_blocks_dict = {
-            "block": self.block_for_wayside,
-            "status": self.status_for_wayside
+            "line": self.line_for_wayside,
+            "index": self.block_for_wayside,
+            "maintenance": self.status_for_wayside
         }
 
         # Authority
@@ -703,10 +704,11 @@ class MyWindow(QMainWindow, Clock, Train):
             self.update_label_background()
 
             # Send maintenance block to wayside
-            self.maintenance_blocks_dict["block"] = block
-            self.maintenance_blocks_dict["status"] = 1
+            self.maintenance_blocks_dict["line"] = line
+            self.maintenance_blocks_dict["index"] = block
+            self.maintenance_blocks_dict["maintenance"] = True
             while(1):
-                response = requests.post(URL + "/", json=self.maintenance_blocks_dict)
+                response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
                 if response.status_code == 200:
                     break
 
@@ -795,10 +797,11 @@ class MyWindow(QMainWindow, Clock, Train):
         self.update_label_background()
 
         # Send maintenance block to wayside
-        self.maintenance_blocks_dict["block"] = block
-        self.maintenance_blocks_dict["status"] = 0
+        self.maintenance_blocks_dict["line"] = block_line
+        self.maintenance_blocks_dict["index"] = block_number
+        self.maintenance_blocks_dict["maintenance"] = False
         while(1):
-            response = requests.post(URL + "/", json=self.maintenance_blocks_dict)
+            response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
             if response.status_code == 200:
                 break
 
@@ -1104,6 +1107,18 @@ class MyWindow(QMainWindow, Clock, Train):
             
             new_train.add_stop(self.station_select_combo_box.currentText())
             new_train.get_authority_from_map()
+
+            for stop in new_train.station_stops:
+                for station in self.green_stations:
+                    if station.name == stop:
+                        station.add_authority(new_train.route_authorities[0])
+                    else:
+                        station.add_authority(-1)
+
+            for station in self.green_stations:
+                auth = station.pop_authority()
+                print(station.get_name())
+                print('Authority in station =', auth)
 
             if len(self.trains) == 0: # If we are adding the first train, delete the label
                 # Remove the current QLabel
