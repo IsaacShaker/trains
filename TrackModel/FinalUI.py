@@ -42,6 +42,7 @@ redOccs = [False] * 77
 #Initialize global variables for trains to recieve
 auth = []
 cmd = []
+blockGrade = []
 
 class TrackUI(QMainWindow):
     def __init__(self):
@@ -377,7 +378,7 @@ class MainWindow(QMainWindow):
 
     #initialize green line table
     def make_green_table(self, tab):
-        self.green_block_table = QStandardItemModel(len(greenBlocks), 20)
+        self.green_block_table = QStandardItemModel(len(greenBlocks), 19)
         self.green_block_table.setHorizontalHeaderLabels(["Section", "Occupied", "Authority", "Commanded Speed", "Beacon", "Station", "Railroad", "Switch", "Traffic Light", "Next Block", "Previous Block", "Length", "Grade", "Speed Limit", "Elevation", "Cum. Elevation", "Underground", "Broken Track", "Circuit Failure", "Power Failure"])
         self.populate_green_table()
 
@@ -391,7 +392,7 @@ class MainWindow(QMainWindow):
     #green table update function
     def populate_green_table(self):
         for row in range(len(greenBlocks)):
-            for col in range(20):
+            for col in range(19):
                 value = greenBlocks[row].get_table_data(col)
                 item = QStandardItem(value)
                 self.green_block_table.setItem(row, col, item)

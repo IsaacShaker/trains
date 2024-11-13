@@ -73,37 +73,32 @@ class Block:
             else:
                 return ""
         elif index == 8:
-            if isinstance(self.trafficLight, TrafficLight):
-                return str(self.trafficLight.get_status())
-            else:
-                return ""
-        elif index == 9:
             if isinstance(self.nextBlock, Block):
                 return str(self.nextBlock.get_num())
             else:
                 return "None"
-        elif index == 10:
+        elif index == 9:
             if isinstance(self.previousBlock, Block):
                 return str(self.previousBlock.get_num())
             else:
                 return "None"
-        elif index == 11:
+        elif index == 10:
             return str(self.length)
-        elif index == 12:
+        elif index == 11:
             return str(self.grade)
-        elif index == 13:
+        elif index == 12:
             return str(self.speedLimit)
-        elif index == 14:
+        elif index == 13:
             return str(self.elevation)
-        elif index == 15:
+        elif index == 14:
             return str(self.cumElevation)
-        elif index == 16:
+        elif index == 15:
             return str(self.underground)
-        elif index == 17:
+        elif index == 16:
             return str(self.brokenTrack)
-        elif index == 18:
+        elif index == 17:
             return str(self.circuitFailure)
-        elif index == 19:
+        elif index == 18:
             return str(self.powerFailure)
         else:
             return ""    
