@@ -129,13 +129,13 @@ class MyWindow(QMainWindow, Clock, Train, Station):
         # Authority
         self.authority_dict = {
             "line": self.line_for_wayside,
-            "block": self.block_for_wayside,
+            "index": self.block_for_wayside,
             "authority": self.authority_for_wayside
         }
 
         # Suggested Speed
         self.suggested_speed_dict = {
-            "block": self.block_for_wayside,
+            "index": self.block_for_wayside,
             "block_speed": self.speed_for_wayside
         }
 
@@ -1189,7 +1189,7 @@ class MyWindow(QMainWindow, Clock, Train, Station):
 
         self.recently_opened.clear()
         
-
+    # Function for receicing block occupancies from wayside
     def receive_block_occupancies(self):
         response = requests.get(URL + "/track-controller-sw/get-data/block_data")
 
@@ -1210,8 +1210,26 @@ class MyWindow(QMainWindow, Clock, Train, Station):
             else:
                 if (block["occupied"] == True):
                     self.occupied_blocks.add(new_block)
+                    
                 else:
                     self.recently_opened.add(new_block)
+
+        for block in self.occupied_blocks:
+            for station in self.green_stations:
+                if block[1] == station.get_location() and station.get_popped() == False:
+                    # Send authority to wayside
+                    self.authority_dict["line"] = block[0]
+                    self.authority_dict["index"] = block[1]
+                    self.authority_dict["authority"] = station.pop_authority()
+                    station.toggle_popped()
+                    while(1):
+                        response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                        if response.status_code == 200:
+                            break
+                elif block[1] != station.get_location():
+                    station.toggle_popped()
+                else:
+                    pass
 
         self.update_label_background()
 
