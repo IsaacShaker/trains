@@ -52,7 +52,20 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
                 # trailing 4 blocks so other trains don't get too close
                 for j in range(1, 5):
                     speed_hazard[i-j] = True
-       
+        
+        # Sections O - Q
+        for i in range(86, 101):
+            if block_occupancies[i]:
+                # trailing 4 blocks so other trains don't get too close
+                for j in range(1, 5):
+                    speed_hazard[i-j] = True
+
+        # Sections S -  U
+        for i in range(105, 117):
+            if block_occupancies[i]:
+                # trailing 4 blocks so other trains don't get too close
+                for j in range(1, 5):
+                    speed_hazard[i-j] = True
         
         if N_occupied() == False:
             switches[4] = False
