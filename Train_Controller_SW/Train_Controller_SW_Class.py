@@ -363,15 +363,16 @@ class Train_Controller:
                 if self.station_reached:
                     self.doors_can_open = True
 
-            #check which doors open
-            self.doors_to_open = values[1]
+                    #check which doors open
+                    self.doors_to_open = values[1]
 
-            #set pa announcement string
-            self.pa_announcement = values[2]
-            self.pa_announcement_dict["pa_announcement"] = self.pa_announcement
+                    #set pa announcement string
+                    self.station_name = values[2]
+                    self.pa_announcement = "Arriving at " + self.station_name
+                    self.pa_announcement_dict["pa_announcement"] = self.pa_announcement
 
-            #send pa announcement to train model
-            response = requests.post(URL + "/train-model/receive-announcement", json=self.pa_announcement_dict)
+                    #send pa announcement to train model
+                    response = requests.post(URL + "/train-model/receive-announcement", json=self.pa_announcement_dict)
 
     #this function will return the commanded Power and will be called every 50 ms
     def calculate_commanded_power(self):
