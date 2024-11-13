@@ -218,15 +218,15 @@ class TrackUI(QMainWindow):
         for traffic in data['Green']['traffic_lights']:
             traffic_id = traffic['id']
             if traffic['toggled'] == 0:
-                greenSwitches[traffic_id].set_R()
+                traffic[traffic_id].set_R()
             else:
-                greenSwitches[traffic_id].set_G()
+                traffic[traffic_id].set_G()
         for crossing in data['Green']['crossings']:   
             crossing_id = crossing['id']
             if traffic['toggled'] == 0:
-                greenRailroadCrossings[crossing_id].set_R()
+                crossing[crossing_id].set_R()
             else:
-                greenRailroadCrossings[crossing_id].set_G()
+                crossing[crossing_id].set_G()
 
 #Main UI with maps, tables, test benches      
 class MainWindow(QMainWindow):
