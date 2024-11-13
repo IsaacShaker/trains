@@ -14,11 +14,14 @@ class Section:
         tcf_nums = ''
         pf_nums = ''
         bh_nums = ''
+        mc_nums = ''
         for i, block in enumerate(self.blocks):  # Use enumerate for both index and item
             tempNum = str(block.get_num())  # block is the object
             nums += (tempNum + " ")
             if block.get_if_train():
                 occ_nums += (tempNum + " ")
+            if block.get_closed():
+                mc_nums += (mc_nums + " ")
             if block.get_broken():
                 btf_nums += (tempNum + " ")
             if block.get_circuit():
@@ -27,7 +30,7 @@ class Section:
                 pf_nums += (tempNum + " ")
             if block.get_heater():
                 bh_nums += (tempNum + " ")
-        return "Blocks: " + nums + "\nOccupied Blocks: " + occ_nums + "\nBroken Track: " + btf_nums + "\nTrack Circuit Failure: " + tcf_nums + "\nPower Failure: " + pf_nums + "\nBlock Heaters: " + bh_nums
+        return "Blocks: " + nums + "\nOccupied Blocks: " + occ_nums + "\Closed: " + mc_nums+ "\nBroken Track: " + btf_nums + "\nTrack Circuit Failure: " + tcf_nums + "\nPower Failure: " + pf_nums + "\nBlock Heaters: " + bh_nums
     
     def check_occupied(self):
         self.occupied = any(block.get_if_train() for block in self.blocks)

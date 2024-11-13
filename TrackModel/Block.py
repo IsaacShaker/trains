@@ -1,4 +1,4 @@
-launcher = False
+launcher = True
 if launcher:
     from TrackModel.Beacon import Beacon
     from TrackModel.RailroadCrossing import RailroadCrossing
@@ -132,7 +132,6 @@ class Block:
     def train_set_beacon(self, train):
         if isinstance(self.beacon, Beacon):
             train.set_staticData(self.beacon.get_staticData())
-
             
     def set_occupancies(self):
         if isinstance(self.train, Train) or self.brokenTrack or self.circuitFailure or self.powerFailure or self.closed:
@@ -163,6 +162,8 @@ class Block:
         self.switch = switch
     def set_traffic(self, traffic):
         self.trafficLight = traffic
+    def set_closed(self, x):
+        self.closed = x
 
     def get_num(self):
         return self.number
@@ -174,6 +175,8 @@ class Block:
         return self.brokenTrack
     def get_circuit(self):
         return self.circuitFailure
+    def get_closed(self):
+        return self.closed
     def get_power(self):
         return self.powerFailure
     def get_heater(self):

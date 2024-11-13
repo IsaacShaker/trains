@@ -233,14 +233,14 @@ def get_data1():
 def get_data2():
     data = request.get_json()
 
-#     # check that the data is in the right format
-#     for attribute in ["line", "index", "maintenance"]:
-#         if attribute not in data:
-#             return jsonify({"error": "Data not in correct format. Make sure 'line', 'index' and 'maintenance' are included in data."}), 500
+    # check that the data is in the right format
+    for attribute in ["line", "index", "maintenance"]:
+        if attribute not in data:
+            return jsonify({"error": "Data not in correct format. Make sure 'line', 'index' and 'maintenance' are included in data."}), 500
 
-#     if hasattr(app.qt_app_instance, 'track_controller'):
-#         data = app.qt_app_instance.track_controller.add_maintenance(data)
-#         return jsonify(data), 200
+    if hasattr(app.qt_app_instance, 'track_controller'):
+        data = app.qt_app_instance.track_controller.add_maintenance(data)
+        return jsonify(data), 200
     
 @app.route('/track-controller-sw/give-data/authority', methods=['POST'])
 def get_data3():
@@ -326,6 +326,18 @@ def get_data_track_model_occupancies():
         return jsonify(data), 200
     else:
         return jsonify({"error": "Data not available"}), 500
+    
+#Track Model to Track Controller
+@app.route('/track-model/set-maintenance', methods=['POST'])
+def set_maintenance():
+    data = request.get_json()
+
+    # Access the data_main attribute from the MyApp instance
+    if hasattr(app.qt_app_instance, 'track_model'):
+        data = app.qt_app_instance.track_model.set_maintenance()
+        return "Success", 200
+    else:
+        return "Fail", 400
 
 
 @app.route('/shutdown', methods=['GET'])

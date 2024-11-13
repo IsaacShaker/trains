@@ -633,6 +633,7 @@
       ],
       "crossings": [
         {
+          "id": 0,
           "name_1": "Block 19 - UP",
           "name_2": "Block 19 - DOWN",
           "toggled": false
@@ -1050,8 +1051,8 @@
       "switches": [
         {
           "id": 2,
-          "name_1": "change this",
-          "name_2": "change this",
+          "name_1": "57 to 58",
+          "name_2": "57 to YARD",
           "from": 57,
           "to": [58, "Yard"],
           "suggested_toggle": false,
@@ -1059,8 +1060,8 @@
         },
         {
           "id": 3,
-          "name_1": "change this",
-          "name_2": "change this",
+          "name_1": "63 to YARD",
+          "name_2": "63 to 62",
           "from": 63,
           "to": ["Yard", 62],
           "suggested_toggle": false,
@@ -1125,6 +1126,7 @@
       ],
       "crossings": [
         {
+          "id": 1,
           "name_1": "Block 108 - UP",
           "name_2": "Block 108 - DOWN",
           "toggled": false

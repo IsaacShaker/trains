@@ -1,4 +1,4 @@
-launcher = False
+launcher = True
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QTabWidget, QWidget, QLineEdit, QComboBox, QLabel, QTableView, QVBoxLayout
 from PyQt6.QtCore import QTimer, Qt
@@ -44,6 +44,8 @@ auth = []
 cmd = []
 blockGrade = []
 
+initialized = False
+
 class TrackUI(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -86,6 +88,8 @@ class TrackUI(QMainWindow):
         self.button.clicked.connect(self.initialize_track)
 
     def initialize_track(self):
+        global initialized 
+        initialized = True
         global redYard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations, redSections
         global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
         global greenTrains
@@ -209,6 +213,9 @@ class TrackUI(QMainWindow):
     
     #From Wayside
     def set_signals(self, data):
+        if initialized == False:
+            return
+        
         for switch in data['Green']['switches']:
             switch_id = switch['id']
             if switch['toggled'] == 0:
@@ -218,15 +225,19 @@ class TrackUI(QMainWindow):
         for traffic in data['Green']['traffic_lights']:
             traffic_id = traffic['id']
             if traffic['toggled'] == 0:
-                traffic[traffic_id].set_R()
+                greenTrafficLights[traffic_id].set_R()
             else:
-                traffic[traffic_id].set_G()
+                greenTrafficLights[traffic_id].set_G()
         for crossing in data['Green']['crossings']:   
             crossing_id = crossing['id']
-            if traffic['toggled'] == 0:
-                crossing[crossing_id].set_R()
+            if crossing['toggled'] == 0:
+                greenRailroadCrossings[crossing_id].set_U()
             else:
-                crossing[crossing_id].set_G()
+                greenRailroadCrossings[crossing_id].set_D()
+
+    def set_maintenance(self, data):
+        if data['Line'] == 'Green':
+            greenBlocks[data['index']].set_closed(data['maintenance'])
 
 #Main UI with maps, tables, test benches      
 class MainWindow(QMainWindow):
@@ -1191,9 +1202,9 @@ class MainWindow(QMainWindow):
 
     #initialize traffic lights 
     def make_green_lights(self, tab1, x):
-        original_pixmap_red = QPixmap("images/RedLight.png")
+        original_pixmap_red = QPixmap(add_TM+"images/RedLight.png")
         resized_pixmap_red = original_pixmap_red.scaled(30,30)
-        original_pixmap_green = QPixmap("images/GreenLight.png")
+        original_pixmap_green = QPixmap(add_TM+"images/GreenLight.png")
         resized_pixmap_green = original_pixmap_green.scaled(30,30)
         self.greenLightsBot = []
         self.greenLightsTop = []
@@ -1220,10 +1231,10 @@ class MainWindow(QMainWindow):
         self.greenLightsTop[6].setGeometry(400, 400, 30, 30)
         self.greenLightsBot[7].setGeometry(550, 345, 30, 30)
         self.greenLightsTop[7].setGeometry(550, 345, 30, 30)
-        self.greenLightsBot[8].setGeometry(550, 345, 30, 30)
-        self.greenLightsTop[8].setGeometry(550, 345, 30, 30)
-        self.greenLightsBot[9].setGeometry(640, 455, 30, 30)
-        self.greenLightsTop[9].setGeometry(640, 455, 30, 30)
+        self.greenLightsBot[8].setGeometry(640, 455, 30, 30)
+        self.greenLightsTop[8].setGeometry(640, 455, 30, 30)
+        self.greenLightsBot[9].setGeometry(515, 345, 30, 30)
+        self.greenLightsTop[9].setGeometry(515, 345, 30, 30)
 
     def make_green_temp(self, tab):
         self.greenTempButton = QPushButton("Set New Temperature", tab)

@@ -1,4 +1,4 @@
-launcher = False
+launcher = True
 import requests
 if launcher:
     from TrackModel.Station import Station

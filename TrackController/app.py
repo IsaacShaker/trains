@@ -127,10 +127,9 @@ class MyApp(QWidget):
         return data
 
     def add_maintenance(self, maintenance):
-        self.maintence_list.append(maintenance)
-
-        # TODO:
-        # send the maintenance to the Track Model
+        # self.maintence_list.append(maintenance)
+        response = requests.post("http://127.0.0.1:5000/track-model/set-maintenance", json=maintenance)
+        
     
     def add_authority(self, authority):
         self.authority_list.append(authority)
