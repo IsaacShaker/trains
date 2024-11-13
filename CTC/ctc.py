@@ -132,13 +132,6 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                 new_block = Block(line_color, block_number, speed_limit)
                 self.blocks[line_color].append(new_block)
 
-        # for block in self.blocks["Green"]:
-        #     print(block.get_block_number(), 'has speed', block.get_block_speed())
-        print(self.blocks["Green"])
-        print(len(self.blocks["Green"]))
-        print(len(self.blocks["Red"]))
-
-
         ###################################################
         #               Integration Stuff                 #
         ###################################################
