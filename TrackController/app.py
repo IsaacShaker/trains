@@ -132,22 +132,28 @@ class MyApp(QWidget):
         
     
     def add_authority(self, authority):
-        self.authority_list.append(authority)
+        # self.authority_list.append(authority)
         
         # TODO:
         # send the authority to the Track Model
+        print("Got em")
+        print(authority)
 
     def add_speed(self, speed):
-        self.speed_list.append(speed)
+        # self.speed_list.append(speed)
         
         # TODO:
         # send the speed to the Track Model
+        print("Got em")
+        print(speed)
 
     def add_wayside_vision(self, vision):
         self.wayside_vision.append(vision)
 
         # TODO:
         # parse and give it to the waysides
+        print("Got em")
+        print(vision)
 
     def closeEvent(self, event):
         """Override the close event to stop the timer before closing."""
