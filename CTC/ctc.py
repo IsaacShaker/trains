@@ -2,10 +2,10 @@ import sys
 import time
 import pandas as pd
 import requests
-from train import Train
-from clock import Clock
-from scheduleReader import ScheduleReader
-from station import Station
+from CTC.train import Train
+from CTC.clock import Clock
+from CTC.scheduleReader import ScheduleReader
+from CTC.station import Station
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem
 from PyQt6.QtCore import Qt, QTimer
 

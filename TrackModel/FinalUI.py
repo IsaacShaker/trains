@@ -236,7 +236,8 @@ class TrackUI(QMainWindow):
                 greenRailroadCrossings[crossing_id].set_D()
 
     def set_maintenance(self, data):
-        if data['Line'] == 'Green':
+        print(data)
+        if data['line'] == 'Green':
             greenBlocks[data['index']].set_closed(data['maintenance'])
 
 #Main UI with maps, tables, test benches      

@@ -334,7 +334,7 @@ def set_maintenance():
 
     # Access the data_main attribute from the MyApp instance
     if hasattr(app.qt_app_instance, 'track_model'):
-        data = app.qt_app_instance.track_model.set_maintenance()
+        app.qt_app_instance.track_model.set_maintenance(data)
         return "Success", 200
     else:
         return "Fail", 400
