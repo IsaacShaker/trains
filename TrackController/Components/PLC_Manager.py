@@ -5,7 +5,7 @@ import importlib.util
 import os
 
 class PLCManager(QObject):
-    def __init__(self, data, line, mode, auto):
+    def __init__(self, data, line, mode, auto, plc_num):
         super().__init__()
         self.plc_thread = None
         self.stop_event = Event()  # Event to signal when to stop the PLC thread
@@ -14,6 +14,7 @@ class PLCManager(QObject):
 
         self.track_data = data[line][mode]
         self.auto = auto
+        self.plc_num = plc_num
 
         # create the inputs that are going into PLC
         self.num_blocks = 0
@@ -81,13 +82,16 @@ class PLCManager(QObject):
             block["speed_hazard"] = self.speed_hazard[block["block"]]
 
         for switch in self.track_data["switches"]:
-            switch["toggled"] = self.switches[switch["id"]]
+            if switch["plc_num"] == self.plc_num:
+                switch["toggled"] = self.switches[switch["id"]]
 
         for crossing in self.track_data["crossings"]:
-            crossing["toggled"] = self.crossings[crossing["id"]]
+            if crossing["plc_num"] == self.plc_num:
+                crossing["toggled"] = self.crossings[crossing["id"]]
 
         for light in self.track_data["traffic_lights"]:
-            light["toggled"] = self.traffic_lights[light["id"]]
+            if light["plc_num"] == self.plc_num:
+                light["toggled"] = self.traffic_lights[light["id"]]
     
     def run_plc(self, plc_module):
         """Run the PLC logic in a thread."""
