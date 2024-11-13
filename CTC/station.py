@@ -16,7 +16,8 @@ class Station():
         self.authorities.append(auth)
 
     def pop_authority(self):
-        if (self.authorities.count() > 0):
+        if (len(self.authorities) > 0):
+            print('Popping authority')
             return self.authorities.popleft()
         else:
             print("No authority left in station!")

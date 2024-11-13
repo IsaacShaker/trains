@@ -1,11 +1,11 @@
 import sys
 from threading import Thread
-#from TrackController.app import MyApp
+from TrackController.app import MyApp
 import requests
 from api import start_api
-#from CTC.ctc import MyWindow
-from TrainModel.TrainModel_UI import Train_UI
-from Train_Controller_SW.User_Interface import Train_Controller_SW_UI
+from CTC.ctc import MyWindow
+#from TrainModel.TrainModel_UI import Train_UI
+#from Train_Controller_SW.User_Interface import Train_Controller_SW_UI
 from TrackModel.FinalUI import TrackUI
 #from Train_Controller_HW.TrainControllerHW import Train_Controller_HW_UI
 from PyQt6.QtWidgets import QApplication

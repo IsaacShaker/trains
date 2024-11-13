@@ -1,5 +1,5 @@
 from collections import deque
-from CTC.mapReader import MapReader
+from mapReader import MapReader
 
 class Train:
 
@@ -80,6 +80,9 @@ class Train:
         station = "STATION; "+station
         self.station_stops.append(station)
         print(self.station_stops)
+
+    def get_station_stops(self):
+        return self.station_stops
 
     def find_current_block(self, occupied_blocks):
         pass
