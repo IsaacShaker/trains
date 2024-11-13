@@ -1,5 +1,5 @@
 from collections import deque
-from CTC.mapReader import MapReader
+from mapReader import MapReader
 
 class Train:
 
