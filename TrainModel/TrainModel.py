@@ -296,25 +296,18 @@ class TrainModel(QObject):
             self.currForce = max_force
 
     def limit_accel(self):
-        failure_mode_active= self.signalPickupFailure or self.engineFailure or self.signalPickupFailure
         if (self.currAccel > self.ACCELERATION_LIMIT and not self.serviceBrake and not self.emergencyBrake):
             # If all brakes are OFF and self.currAccel is above the limit
             self.currAccel = self.ACCELERATION_LIMIT
-        elif (self.serviceBrake and not self.emergencyBrake and not failure_mode_active): # self.currAccel < self.DECELERATION_LIMIT_SERVICE and
+        elif (self.serviceBrake and not self.emergencyBrake and not self.brakeFailure): # self.currAccel < self.DECELERATION_LIMIT_SERVICE and
             # If the service brake is ON and self.currAccel is below the limit
             self.currAccel = self.S_BRAKE_ACC
-        elif (not self.serviceBrake and (self.emergencyBrake or failure_mode_active)): # self.currAccel < self.DECELERATION_LIMIT_EMERGENCY and
+        elif (self.emergencyBrake): # self.currAccel < self.DECELERATION_LIMIT_EMERGENCY and
             # If the emergency brake is ON and self.currAccel is below the limit
             if(self.currentVelocity !=0):
                 self.currAccel = self.E_BRAKE_ACC
             else:
                 self.currAccel = 0
-        elif (self.serviceBrake and (self.emergencyBrake or failure_mode_active)): # Edge case if both emergency brake and service brake are turned on
-            if(self.currentVelocity !=0):
-                self.currAccel = self.E_BRAKE_ACC
-            else:
-                self.currAccel = 0
-        #print(f"Current Acceleration: {self.currAccel}")
 
     def update_passengers(self):
         # If the doors are open and the train was not at a station in the previous loop
@@ -352,13 +345,11 @@ class TrainModel(QObject):
         if self.currentVelocity != 0:
             self.currForce = self.currPower / self.currentVelocity
         else:
-            self.currForce = 0  # Set force to zero if velocity is zero
-        #print(f"Force: {self.currForce}")
+             #Force to 0 if velocity is 0 to avoid divide by zero error
+            self.currForce = 0
         self.limit_force()
 
-        #print(f"Force: {self.currForce}")
-
-            # ACCELERATION
+        #Acceleration calc
         if self.totalMass != 0:
             self.currAccel = self.currForce / (self.tons_to_kg(self.totalMass))  # Ensure totalMass is not zero
         else:
@@ -366,23 +357,17 @@ class TrainModel(QObject):
 
         self.limit_accel()
 
-        #print(f"Acceleration: {self.currAccel}")
-
-        # VELOCITY
-        velocityNew = self.currentVelocity + ( (self.samplePeriod / 2) * (self.currAccel + previousAcceleration) ) # Velocity Limit: 19.4444 m/s
+        #Velocity acceleration
+        velocityNew = self.currentVelocity + ((self.samplePeriod / 2) * (self.currAccel + previousAcceleration))
         if(velocityNew >= self.VELOCITY_LIMIT):
-            # If the velocity is GREATER than max train speed
+            # If the velocity is greater than max speed
             velocityNew = self.VELOCITY_LIMIT # m/s
         if(velocityNew <= 0):
-            # If the velocity is LESS than 0
+            # If the velocity is negative
             velocityNew = 0
 
+        #Set and send velocity
         self.set_currentVelocity(velocityNew)
-
-        #print(f"Velocity: {self.currentVelocity}")
-
-        
-        self.power_changed.emit()
 
         self.lastVel=self.currentVelocity
 
