@@ -1,5 +1,8 @@
 from PyQt6.QtWidgets import QVBoxLayout, QWidget
-from TrackController.Components.Switches.switch_button import SwitchButton
+try:
+    from TrackController.Components.Switches.switch_button import SwitchButton
+except ImportError:
+    from Components.Switches.switch_button import SwitchButton
 
 class Switches(QWidget):
     def __init__(self, data, line, mode, editable=False):

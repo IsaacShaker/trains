@@ -1,5 +1,8 @@
 from PyQt6.QtWidgets import QVBoxLayout, QWidget
-from TrackController.Components.Traffic_Lights.traffic_light_buttons import TrafficLightButton
+try:
+    from TrackController.Components.Traffic_Lights.traffic_light_buttons import TrafficLightButton
+except ImportError:
+    from Components.Traffic_Lights.traffic_light_buttons import TrafficLightButton
 
 class TrafficLights(QWidget):
     def __init__(self, data, line, mode, editable=False):

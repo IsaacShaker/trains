@@ -1,5 +1,8 @@
 from PyQt6.QtWidgets import QVBoxLayout, QWidget
-from TrackController.Components.Crossings.crossing_button import CrossingButton
+try:
+    from TrackController.Components.Crossings.crossing_button import CrossingButton
+except ImportError:
+    from Components.Crossings.crossing_button import CrossingButton
 
 class Crossings(QWidget):
     def __init__(self, data, line, mode, editable=False):

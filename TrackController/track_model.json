@@ -80,6 +80,7 @@
       ],
       "switches": [
         {
+          "id": 0,
           "name_1": "5 to 6",
           "name_2": "5 to 11",
           "from": 5,
@@ -90,11 +91,13 @@
       ],
       "traffic_lights": [
         {
+          "id": 0,
           "name_1": "Block 6 - Red",
           "name_2": "Block 6 - Green",
           "toggled": false
         },
         {
+          "id": 1,
           "name_1": "Block 11 - Red",
           "name_2": "Block 11 - Green",
           "toggled": false
@@ -102,6 +105,7 @@
       ],
       "crossings": [
         {
+          "id": 0,
           "name_1": "Block 3 - UP",
           "name_2": "Block 3 - DOWN",
           "toggled": false
@@ -188,6 +192,7 @@
       ],
       "switches": [
         {
+          "id": 0,
           "name_1": "5 to 6",
           "name_2": "5 to 11",
           "from": 5,
@@ -198,23 +203,21 @@
       ],
       "traffic_lights": [
         {
+          "id": 0,
           "name_1": "Block 6 - Red",
           "name_2": "Block 6 - Green",
           "toggled": false
         },
         {
+          "id": 1,
           "name_1": "Block 11 - Red",
           "name_2": "Block 11 - Green",
-          "toggled": false
-        },
-        {
-          "name_1": "New Light",
-          "name_2": "something",
           "toggled": false
         }
       ],
       "crossings": [
         {
+          "id": 0,
           "name_1": "Block 3 - UP",
           "name_2": "Block 3 - DOWN",
           "toggled": false
@@ -642,6 +645,12 @@
     },
     "SW": {
       "blocks": [
+        {
+          "comment": "THIS DA YARD: train should go from block 0 (YARD) to 63",
+          "block": 1,
+          "occupied": false,
+          "speed_hazard": false
+        },
         {
           "block": 36,
           "occupied": false,
