@@ -105,11 +105,24 @@ class Train_Controller:
 
     #set doors
     def set_l_door(self, left):
+
+        #if doors are closing, then we should now be able to get authority
+        if left == False and self.authority <= 0:
+            self.can_get_authority = True
+            self.set_pa_announcement("Leaving " + self.station_name)    #announce leaving station
+
         self.l_door = left
         self.doors_dict["l_door"] = self.l_door
         response = requests.post(URL + "/train-model/receive-doors", json=self.doors_dict)
 
     def set_r_door(self, right):
+
+        #if doors are closing, then we should now be able to get authority
+        if right == False and self.authority <= 0:
+            self.can_get_authority = True
+            self.set_pa_announcement("Leaving " + self.station_name)    #announce leaving station
+
+
         self.r_door = right
         self.doors_dict["r_door"] = self.r_door
         response = requests.post(URL + "/train-model/receive-doors", json=self.doors_dict)
@@ -154,6 +167,11 @@ class Train_Controller:
         self.e_brake = status
         self.brakes_dict["e_brake"] = self.e_brake
         response = requests.post(URL + "/train-model/receive-brakes", json=self.brakes_dict)
+
+    def set_pa_announcement(self, announcement):
+        self.pa_announcement = announcement
+        self.pa_announcement_dict["pa_announcement"] = self.pa_announcement
+        response = requests.post(URL + "/train-model/receive-announcement", json=self.pa_announcement_dict)
 
     #set authority
     def set_authority(self, distance):
@@ -363,15 +381,12 @@ class Train_Controller:
                 if self.station_reached:
                     self.doors_can_open = True
 
-            #check which doors open
-            self.doors_to_open = values[1]
+                    #check which doors open
+                    self.doors_to_open = values[1]
 
-            #set pa announcement string
-            self.pa_announcement = values[2]
-            self.pa_announcement_dict["pa_announcement"] = self.pa_announcement
-
-            #send pa announcement to train model
-            response = requests.post(URL + "/train-model/receive-announcement", json=self.pa_announcement_dict)
+                    #set pa announcement string
+                    self.station_name = values[2]
+                    self.set_pa_announcement("Arriving at " + self.station_name)
 
     #this function will return the commanded Power and will be called every 50 ms
     def calculate_commanded_power(self):
