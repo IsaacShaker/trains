@@ -53,6 +53,7 @@ class Train_Controller:
 
         #Strings
         self.pa_announcement = ""
+        self.station_name = ""
 
         #output dictionaries
         self.commanded_power_dict = {
