@@ -2,19 +2,21 @@ import sys
 import time
 import pandas as pd
 import requests
-from CTC.train import Train
-from CTC.clock import Clock
-from CTC.scheduleReader import ScheduleReader
-from CTC.station import Station
+from train import Train
+from clock import Clock
+from scheduleReader import ScheduleReader
+from station import Station
+from block import Block
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem
 from PyQt6.QtCore import Qt, QTimer
+from collections import defaultdict
 
 # Create an object from Clock class
 myClock = Clock()
 
 URL = 'http://127.0.0.1:5000'
 
-class MyWindow(QMainWindow, Clock, Train, Station):
+class MyWindow(QMainWindow, Clock, Train, Station, Block):
     def __init__(self):
         super().__init__()
 
@@ -112,6 +114,31 @@ class MyWindow(QMainWindow, Clock, Train, Station):
         self.start_time = time.time()
         self.timer.start(1000)  # Update every second
 
+        ##################################################
+        #     Create the blocks from the Track Layout    #
+        ##################################################
+        file_path = 'C:/Trains C/trains/CTC/Blocks.xlsx'
+        self.blocks = defaultdict(list)
+        for line_color in ['Green', 'Red']:
+            excel_sheet = line_color+" Line"
+            blocks_df = pd.read_excel(file_path, sheet_name=excel_sheet)            
+            
+            # Loop through each row and create a Block instance
+            for _, row in blocks_df.iterrows():
+                block_number = row['Block Number']
+                speed_limit = row['Speed Limit (Km/Hr)']
+                
+                # Create a new Block instance and store it in the nested dictionary
+                new_block = Block(line_color, block_number, speed_limit)
+                self.blocks[line_color].append(new_block)
+
+        # for block in self.blocks["Green"]:
+        #     print(block.get_block_number(), 'has speed', block.get_block_speed())
+        print(self.blocks["Green"])
+        print(len(self.blocks["Green"]))
+        print(len(self.blocks["Red"]))
+
+
         ###################################################
         #               Integration Stuff                 #
         ###################################################
@@ -150,9 +177,9 @@ class MyWindow(QMainWindow, Clock, Train, Station):
         }
 
         #               Timer Stuff                 #
-        self.request_block_occupancies_timer = QTimer(self)
-        self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
-        self.request_block_occupancies_timer.start(1000)
+        # self.request_block_occupancies_timer = QTimer(self)
+        # self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
+        # self.request_block_occupancies_timer.start(1000)
 
     # Create the Home and Test Bench tab for the window
     def create_tabs(self):
@@ -1250,7 +1277,8 @@ class MyWindow(QMainWindow, Clock, Train, Station):
                 self.recent_speed_hazards.remove(("Green", block["block"]))
                 self.suggested_speed_dict["line"] = "Green"
                 self.suggested_speed_dict["index"] = block["block"]
-                self.suggested_speed_dict["speed"] = 30
+                blk = self.blocks["Green"][block["block"]]
+                self.suggested_speed_dict["speed"] = blk.get_block_speed()
                 # Change speed to actual
                 while(1):
                     response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
