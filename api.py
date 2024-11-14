@@ -66,8 +66,6 @@ def receive_actual_velocity():
     #app.qt_app_instance.Train_Controller_HW_UI.set_actual_velocity(float_value)
     return jsonify("Success"), 200
 
-
-@app.route('/train-controller/receive-failure-modes', methods=['POST'])
 @app.route('/train-controller/receive-failure-modes', methods=['POST'])
 def receive_failure_modes():
     data = request.get_json()
@@ -296,31 +294,95 @@ def shutdown_server():
         func()
     print("Flask server shutting down...")
 
-#Track Model 
-#Authority and commanded speed
-@app.route('/track-model/get-data/all', methods=['GET'])
-def get_data_track_model_all():
-    # Access the data_main attribute from the MyApp instance
-    if hasattr(app.qt_app_instance, 'track_model'):
-        data = app.qt_app_instance.track_model.get_post_dict()
-        return jsonify(data), 200
-    else:
-        return jsonify({"error": "Data not available"}), 500
 
-@app.route('/train-model/get-data/current-speed', methods=['GET'])
+
+@app.route('/track-model/get-data/current-speed', methods=['POST'])
 def get_data_train_model_current_speed():
     # Check if train_model is available in the MyApp instance
-    if hasattr(app.qt_app_instance, 'train_model'):
-        # Access the train list within train_model
-        train_list = app.qt_app_instance.train_list
+    if hasattr(app.qt_app_instance, 'track_model'):
+        track_model = app.qt_app_instance.track_model
 
-        # Create a dictionary of current speeds for each train
-        current_speeds = {train.ID: train.currentVelocity for train in train_list}
+        data = request.get_json()
 
-        # Return the dictionary as JSON
-        return jsonify({"current_speeds": current_speeds}), 200
+        # Get the speed data from the request
+        speed = data.get("actual_velocity", None)
+        index = data.get("train_id", None)
+        
+        if speed is not None and index is not None:
+            track_model.set_indexed_train_speed(index,speed)
+            return jsonify("OK"), 200
+        else:
+            return jsonify({"error": "No speed data provided"}), 400
     else:
         return jsonify({"error": "Data not available"}), 500
+
+@app.route('/train-model/get-data/authority-cmd-speed', methods=['POST'])
+def get_data_track_model_authority_cmd_speed():
+    # Check if train_model is available in the MyApp instance
+    if hasattr(app.qt_app_instance, 'train_model'):
+        train_model = app.qt_app_instance.train_model
+
+        data = request.get_json()
+
+        # Get the speed data from the request
+        authorities = data.get("authorities", None)
+        commandedSpeeds = data.get("commandedSpeeds", None)
+        
+        if authorities is not None and commandedSpeeds is not None:
+            
+            for train in train_model.train_list:
+                # Access each train's authority and commanded speed values
+                train.set_authority(authorities[train.ID])  # authorities should map each train object to its authority
+                train.set_commandedSpeed(commandedSpeeds[train.ID])  # commandedSpeeds should map each train object to its speed
+            return jsonify("OK"), 200
+        else:
+            return jsonify({"error": "No speed data provided"}), 400
+    else:
+        return jsonify({"error": "Data not available"}), 500
+
+
+@app.route('/train-model/get-data/beacon-info', methods=['POST'])
+def get_data_track_model_beacon_info():
+    # Check if train_model is available in the MyApp instance
+    if hasattr(app.qt_app_instance, 'train_model'):
+        train_model = app.qt_app_instance.train_model
+
+        data = request.get_json()
+
+        # Get the speed data from the request
+        beacon_info = data.get("beacon_info", None)
+        train_id = data.get("id", None)
+        
+        if beacon_info is not None and train_id is not None:
+            #replace with assign beacon data
+            train_model.train_list[train_id].set_beaconInfo(beacon_info)
+            return jsonify("OK"), 200
+        else:
+            return jsonify({"error": "No speed data provided"}), 400
+    else:
+        return jsonify({"error": "Data not available"}), 500
+
+@app.route('/train-model/get-data/grade-info', methods=['POST'])
+def get_data_track_model_grade_info():
+    # Check if train_model is available in the MyApp instance
+    if hasattr(app.qt_app_instance, 'train_model'):
+        train_model = app.qt_app_instance.train_model
+
+        data = request.get_json()
+
+        # Get the speed data from the request
+        grade_info = data.get("grade_info", None)
+        train_id = data.get("id", None)
+        
+        if grade_info is not None and train_id is not None:
+            #replace with a set grade info
+            train_model.train_list[train_id].set_grade(grade_info)
+            return jsonify("OK"), 200
+        else:
+            return jsonify({"error": "No speed data provided"}), 400
+    else:
+        return jsonify({"error": "Data not available"}), 500
+
 
     
 #Track Controller to Track Model
