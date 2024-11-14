@@ -577,12 +577,23 @@ class Train_UI(QMainWindow):
         temperature_button.clicked.connect(self.send_temperature)
         temperature_layout.addWidget(temperature_button)
 
+        #Beacon info
+        beacon_layout = QHBoxLayout()
+        beacon_layout.addWidget(QLabel("Beacon info (string):"))
+        self.beacon_input = QLineEdit()
+        beacon_layout.addWidget(self.beacon_input)
+        beacon_button = QPushButton("Send")
+        beacon_button.setStyleSheet("background-color: #772ce8; color: white;")
+        beacon_button.clicked.connect(self.send_beacon_info)
+        beacon_layout.addWidget(beacon_button)
+
         # Add all input layouts to the main layout
         layout.addLayout(authority_layout)
         layout.addLayout(speed_layout)
         layout.addLayout(power_layout)
         layout.addLayout(announcement_layout)
         layout.addLayout(temperature_layout)
+        layout.addLayout(beacon_layout)
 
         # Doors Control (Left) and Lights Control (Right)
         doors_lights_layout = QHBoxLayout()
@@ -668,8 +679,9 @@ class Train_UI(QMainWindow):
 
     #Function to send our beacon info
     def send_beacon_info(self):
-        print("SEND BEACON")
-        self.selected_train.set_beaconInfo("b1,2,lebron")
+        beacon = self.beacon_input.text()
+        self.selected_train.set_beaconInfo(beacon)
+        self.beacon_input.clear()
 
     def update_beacon_label(self):
         self.passenger_count_label.setText(f"{self.selected_train.passCount}")  # Update the UI label with new temperature
