@@ -437,6 +437,28 @@ def set_maintenance():
         return "Success", 200
     else:
         return "Fail", 400
+    
+@app.route('/track-model/set-authority', methods=['POST'])
+def set_auth():
+    data = request.get_json()
+
+    # Access the data_main attribute from the MyApp instance
+    if hasattr(app.qt_app_instance, 'track_model'):
+        app.qt_app_instance.track_model.set_block_authority(data)
+        return "Success", 200
+    else:
+        return "Fail", 400
+    
+@app.route('/track-model/set-commanded-speed', methods=['POST'])
+def set_speed_tm():
+    data = request.get_json()
+
+    # Access the data_main attribute from the MyApp instance
+    if hasattr(app.qt_app_instance, 'track_model'):
+        app.qt_app_instance.track_model.set_block_cmdSpeed(data)
+        return "Success", 200
+    else:
+        return "Fail", 400
 
 
 @app.route('/shutdown', methods=['GET'])

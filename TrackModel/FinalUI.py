@@ -276,7 +276,7 @@ class TrackUI(QMainWindow):
 
     def set_block_cmdSpeed(self, data):
         if data['line'] == 'Green':
-            greenBlocks[data['index']].set_authority(data['speed'])
+            greenBlocks[data['index']].set_cmd_speed(data['speed'])
 
 
     # def set_train_speed(self, data):

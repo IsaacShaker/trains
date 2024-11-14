@@ -143,24 +143,20 @@ class MyApp(QWidget):
         
     
     def add_authority(self, authority):
-        # TODO:
-        # send the authority to the Track Model
         print("Got em")
         print(authority)
 
-        # response = requests.post("http://127.0.0.1:5000/track-model/set-authority", json=authority)
-        # if response.status_code != 200:
-        #     print("Failed to give authority to Track Model")
+        response = requests.post("http://127.0.0.1:5000/track-model/set-authority", json=authority)
+        if response.status_code != 200:
+            print("Failed to give authority to Track Model")
 
     def add_speed(self, speed):
-        # TODO:
-        # send the speed to the Track Model
         print("Got em")
         print(speed)
 
-        # response = requests.post("http://127.0.0.1:5000/track-model/set-speed", json=speed)
-        # if response.status_code != 200:
-        #     print("Failed to give speed to Track Model")
+        response = requests.post("http://127.0.0.1:5000/track-model/set-commanded-speed", json=speed)
+        if response.status_code != 200:
+            print("Failed to give speed to Track Model")
 
     def add_wayside_vision(self, vision):
         print("Got em")
