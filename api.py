@@ -7,6 +7,19 @@ app.qt_app_instance = None
 #Train Contoller Input Functions
 ###################################
 
+@app.route('/train-controller/receive-sim-speed', methods=['POST'])
+def recieve_sim_speed():
+    data = request.get_json()
+
+    speed_int = data.get("sim_speed", None)
+
+    if speed_int is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.train_controller_sw.change_timer(speed_int)
+    #kevin's
+    return jsonify("Success"), 200
+
 @app.route('/train-controller/receive-authority', methods=['POST'])
 def receive_authority():
     data = request.get_json()
