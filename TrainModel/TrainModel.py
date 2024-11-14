@@ -250,6 +250,7 @@ class TrainModel(QObject):
 
     def kmh_to_ms(self,speed):
         speed=(((speed*1000)/60)/60)
+        return speed
 
     def start_adjusting_temperature(self):
         self.adjust_timer.start(100)  # Update every 100 ms
