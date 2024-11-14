@@ -275,17 +275,17 @@ def get_data4():
         data = app.qt_app_instance.track_controller.add_speed(data)
         return jsonify(data), 200
     
-@app.route('/track-controller-sw/give-data/wayside-vsion', methods=['POST'])
+@app.route('/track-controller-sw/give-data/wayside-vision', methods=['POST'])
 def get_data5():
     data = request.get_json()
 
     # check that the data is in the right format
-    for attribute in ["line", "id", "vision"]:
+    for attribute in ["line", "index", "output_block"]:
         if attribute not in data:
             return jsonify({"error": "Data not in correct format. Make sure 'line', 'id' and 'vision' are included in data."}), 500
 
     if hasattr(app.qt_app_instance, 'track_controller'):
-        data = app.qt_app_instance.track_controller.wayside_vision(data)
+        data = app.qt_app_instance.track_controller.add_wayside_vision(data)
         return jsonify(data), 200
     
 def shutdown_server():
