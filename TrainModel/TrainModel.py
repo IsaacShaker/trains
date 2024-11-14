@@ -70,7 +70,7 @@ class TrainModel(QObject):
         #Calculations
         self.currForce = 0.0
         self.currPower = 0.0
-        self.samplePeriod = 0.05
+        self.samplePeriod = 0.09
         self.lastVel=0.0
 
         #Constants
@@ -245,12 +245,16 @@ class TrainModel(QObject):
         return num
 
     def tons_to_kg(self, mass):
-        mass=mass*907.18474
+        mass=mass*1000
         return mass
 
     def kmh_to_ms(self,speed):
         speed=(((speed*1000)/60)/60)
         return speed
+    
+    def tons_to_N(self,mass):
+        mass=mass*1000*9.80665
+        return mass
 
     def start_adjusting_temperature(self):
         self.adjust_timer.start(100)  # Update every 100 ms
@@ -269,7 +273,7 @@ class TrainModel(QObject):
     def calc_total_mass(self):
     
         # Convert train weight to pounds
-        car_weight_pounds = self.CAR_MASS * 2000
+        car_weight_pounds = self.CAR_MASS * 2204.623
 
         train_weight_pounds=car_weight_pounds*self.numberOfCars
         
@@ -280,7 +284,7 @@ class TrainModel(QObject):
         total_weight_pounds = train_weight_pounds + total_people_weight
         
         # Convert total weight to tons
-        total_weight_tons = total_weight_pounds / 2000  # Convert back to tons
+        total_weight_tons = total_weight_pounds / 2204.623  # Convert back to tons
 
         print (total_weight_tons)
 
@@ -299,7 +303,7 @@ class TrainModel(QObject):
         if self.currForce > max_force:
             self.currForce = max_force
         #If the power is at 0 and we are not moving or the emergency brake is pulled
-        elif (self.currPower == 0 and self.lastVel == 0) or self.emergencyBrake or self.signalPickupFailure or self.engineFailure or self.brakeFailure:
+        elif (self.currPower == 0 and self.lastVel == 0 and not self.brakeFailure) or self.emergencyBrake or self.engineFailure:
             self.currForce = 0
         #If the train is not moving, add limiter so the force is not infinite
         elif self.lastVel == 0:
@@ -358,13 +362,12 @@ class TrainModel(QObject):
              #Force to 0 if velocity is 0 to avoid divide by zero error
             self.currForce = 0
         self.limit_force()
-
         #Acceleration calc
         if self.totalMass != 0:
-            self.currAccel = self.currForce / (self.tons_to_kg(self.totalMass))  # Ensure totalMass is not zero
+            self.currAccel = self.currForce / (self.tons_to_kg(self.totalMass)) 
+        # Ensure totalMass is not zero
         else:
             self.currAccel = 0
-
         self.limit_accel()
 
         #Velocity acceleration

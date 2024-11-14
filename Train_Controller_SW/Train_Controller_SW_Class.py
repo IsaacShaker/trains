@@ -36,7 +36,7 @@ class Train_Controller:
         self.commanded_power = 0.0
         self.ek = 0.0
         self.ek_1 = 0.0
-        self.T = 0.05 #time samples of 50 ms
+        self.T = 0.09 #time samples of 50 ms
         self.uk = 0.0
         self.uk_1 = 0.0
         self.auth_diff = 0.0
@@ -228,6 +228,9 @@ class Train_Controller:
 
     #set commanded power
     def set_commanded_power(self, power):
+        if power > 120000:
+            power = 120000
+            
         self.commanded_power = power
 
         self.commanded_power_dict["commanded_power"] = self.commanded_power

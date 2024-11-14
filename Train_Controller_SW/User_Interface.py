@@ -66,23 +66,23 @@ class Train_Controller_SW_UI(QMainWindow):
         self.train_list =[]
 
         self.add_train()
-        self.add_train()
-        self.add_train()
+        #self.add_train()
+        # self.add_train()
         self.train_list[0].authority = 0
-        self.train_list[1].authority = 250
-        self.train_list[2].authority = 100
+        # self.train_list[1].authority = 250
+        # self.train_list[2].authority = 100
 
         self.train_list[0].actual_velocity = 0
-        self.train_list[0].commanded_velocity = 18
-        self.train_list[0].setpoint_velocity = 14
+        self.train_list[0].commanded_velocity = 0
+        self.train_list[0].setpoint_velocity = 0
 
-        self.train_list[1].actual_velocity = 11
-        self.train_list[1].commanded_velocity = 7
-        self.train_list[1].setpoint_velocity = 7
+        # self.train_list[1].actual_velocity = 11
+        # self.train_list[1].commanded_velocity = 7
+        # self.train_list[1].setpoint_velocity = 7
 
-        self.train_list[2].actual_velocity = 8
-        self.train_list[2].commanded_velocity = 12
-        self.train_list[2].setpoint_velocity = 12
+        # self.train_list[2].actual_velocity = 8
+        # self.train_list[2].commanded_velocity = 12
+        # self.train_list[2].setpoint_velocity = 12
 
         #set a fixed window size
         self.setFixedSize(800, 550)
@@ -137,7 +137,7 @@ class Train_Controller_SW_UI(QMainWindow):
 
         #create dropdown menu with 3 trains in it already
         self.train_selection = QComboBox(self)
-        self.train_selection.addItems(["Train 0", "Train 1", "Train 2"])
+        self.train_selection.addItems(["Train 0"])
 
         # Sends the current index (position) of the selected item.
         self.train_selection.currentIndexChanged.connect( self.index_changed )
@@ -710,7 +710,7 @@ class Train_Controller_SW_UI(QMainWindow):
         # Create a QTimer for computing power
         self.power_timer = QTimer(self)
         self.power_timer.timeout.connect(self.calculate_power)  # Connect the timer to your function
-        self.power_timer.start(50)  # 50 milliseconds interval
+        self.power_timer.start(90)  # 50 milliseconds interval
 
 
 
@@ -1391,6 +1391,9 @@ class Train_Controller_SW_UI(QMainWindow):
 
     def add_train(self):
         new_train = Train_Controller(self.next_train_id)
+
+        # if self.next_train_id > 0:
+        #     self.train_selection.addItems(["Train " + str(self.next_train_id)])
         self.next_train_id += 1
         self.train_list.append(new_train)
 
