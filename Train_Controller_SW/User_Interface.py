@@ -789,44 +789,64 @@ class Train_Controller_SW_UI(QMainWindow):
     #called when authority input is confirmed
     def confirm_authority(self):
         # Get the text from the input field and update the label
-        input_value = self.input_authority.text()
+        try:
+            input_value = self.input_authority.text()
 
-        #update label  
-        self.input_authority.setPlaceholderText(input_value)
-        self.input_authority.setText("")
+            #set authority in train list
+            self.train_list[self.current_train].set_authority(self.feet_to_meters(float(input_value)))
 
-        #set authority in train list
-        self.train_list[self.current_train].set_authority(self.feet_to_meters(float(input_value)))
+            #update label  
+            self.input_authority.setPlaceholderText(input_value)
+            self.input_authority.setText("")
 
-        print(f"authority: {self.train_list[self.current_train].get_authority()} meters")
+
+            print(f"authority: {self.train_list[self.current_train].get_authority()} meters")
+
+        except ValueError:
+            # Print a message or update a label in the UI to inform the user of invalid input
+            print("Please enter a valid authority.")
+            self.input_authority.setText("")
 
     #called when actual velocity input is confirmed
     def confirm_actual_velocity(self):
-        # Get the text from the input field and update the label
-        input_value = self.input_actual_velocity.text()
+        try:
+            # Get the text from the input field and update the label
+            input_value = self.input_actual_velocity.text()
+            
+            #set actual velocity in train list as metric
+            self.train_list[self.current_train].set_actual_velocity(self.mph_to_mps(float(input_value)))
 
-        #update label  
-        self.input_actual_velocity.setPlaceholderText(input_value)
-        self.input_actual_velocity.setText("")
+            #update label  
+            self.input_actual_velocity.setPlaceholderText(input_value)
+            self.input_actual_velocity.setText("")
 
-        #set actual velocity in train list as metric
-        self.train_list[self.current_train].set_actual_velocity(self.mph_to_mps(float(input_value)))
+            print(f"actual velocity: {self.train_list[self.current_train].get_actual_velocity()} m/s")
 
-        print(f"actual velocity: {self.train_list[self.current_train].get_actual_velocity()} m/s")
+        except ValueError:
+            # Print a message or update a label in the UI to inform the user of invalid input
+            print("Please enter a valid actual velocity.")
+            self.input_actual_velocity.setText("")
+        
 
     #called when commanded velocity input is confirmed
     def confirm_commanded_velocity(self):
-        # Get the text from the input field and update the label
-        input_value = self.input_commanded_velocity.text()
+        try:
+            # Get the text from the input field and update the label
+            input_value = self.input_commanded_velocity.text()
 
-        #update label  
-        self.input_commanded_velocity.setPlaceholderText(input_value)
-        self.input_commanded_velocity.setText("")
+            #set commanded in train list
+            self.train_list[self.current_train].set_commanded_velocity(self.mph_to_mps(float(input_value)))
 
-        #set commanded in train list
-        self.train_list[self.current_train].set_commanded_velocity(self.mph_to_mps(float(input_value)))
+            #update label  
+            self.input_commanded_velocity.setPlaceholderText(input_value)
+            self.input_commanded_velocity.setText("")
 
-        print(f"commanded velocity: {self.train_list[self.current_train].get_commanded_velocity()} m/s")
+            print(f"commanded velocity: {self.train_list[self.current_train].get_commanded_velocity()} m/s")
+
+        except ValueError:
+            # Print a message or update a label in the UI to inform the user of invalid input
+            print("Please enter a valid commanded velocity.")
+            self.input_commanded_velocity.setText("")
 
     #called when beacon info input is confirmed
     def confirm_beacon_info(self):
@@ -971,18 +991,23 @@ class Train_Controller_SW_UI(QMainWindow):
 
     #function is called when setpoint velocity is put in
     def confirm_setpoint_velocity(self):
-        # Get the text from the input field and update the label
-        input_value = self.mph_to_mps(float(self.input_setpoint_velocity.text()))
+        try:
+            # Get the text from the input field and update the label
+            input_value = self.mph_to_mps(float(self.input_setpoint_velocity.text()))
 
-        #checks if input value is less allowed by commanded velocity
-        if input_value <= self.train_list[self.current_train].get_commanded_velocity() and input_value >= 0 :
-            self.train_list[self.current_train].set_setpoint_velocity(input_value)
-        #if value is greater than commanded, then we set it automatically to commanded velocity
-        elif input_value > self.train_list[self.current_train].get_commanded_velocity() :
-            self.train_list[self.current_train].set_setpoint_velocity(self.train_list[self.current_train].get_commanded_velocity())
+            #checks if input value is less allowed by commanded velocity
+            if input_value <= self.train_list[self.current_train].get_commanded_velocity() and input_value >= 0 :
+                self.train_list[self.current_train].set_setpoint_velocity(input_value)
+            #if value is greater than commanded, then we set it automatically to commanded velocity
+            elif input_value > self.train_list[self.current_train].get_commanded_velocity() :
+                self.train_list[self.current_train].set_setpoint_velocity(self.train_list[self.current_train].get_commanded_velocity())
 
-        #update label
-        self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{int(self.mps_to_mph(self.train_list[self.current_train].get_setpoint_velocity()))} MPH</span>')
+            #update label
+            self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{int(self.mps_to_mph(self.train_list[self.current_train].get_setpoint_velocity()))} MPH</span>')
+        except ValueError:
+            print("Please enter a valid setpoint velocity.")
+            self.input_setpoint_velocity.setText("")
+
 
 
     #this function will be called whenever the temperature is changed
@@ -1216,26 +1241,33 @@ class Train_Controller_SW_UI(QMainWindow):
         #call the brake function to slow down train
 
     def confirm_kp(self):
-        # Get the text from the input field and update the label
-        input_value = float(self.input_kp.text())
+        try:
+            # Get the text from the input field and update the label
+            input_value = float(self.input_kp.text())
+            #update label  
+            self.input_kp.setPlaceholderText(str(input_value))
+            self.input_kp.setText("")
 
-        #update label  
-        self.input_kp.setPlaceholderText(str(input_value))
-        self.input_kp.setText("")
-
-        #set kp in train list
-        self.train_list[self.current_train].set_k_p(input_value)
+            #set kp in train list
+            self.train_list[self.current_train].set_k_p(input_value)
+        except ValueError:
+            print("Please enter a valid kp.")
+            self.input_kp.setText("")  # Clear the input field if invalid
 
     def confirm_ki(self):
-        # Get the text from the input field and update the label
-        input_value = float(self.input_ki.text())
+        try:
+            # Get the text from the input field and update the label
+            input_value = float(self.input_ki.text())
 
-        #update label  
-        self.input_ki.setPlaceholderText(str(input_value))
-        self.input_ki.setText("")
+            #update label  
+            self.input_ki.setPlaceholderText(str(input_value))
+            self.input_ki.setText("")
 
-        #set kp in train list
-        self.train_list[self.current_train].set_k_i(input_value)
+            #set kp in train list
+            self.train_list[self.current_train].set_k_i(input_value)
+        except ValueError:
+            print("Please enter a valid ki.")
+            self.input_ki.setText("")  # Clear the input field if invalid
 
     #switches to test bench screen
     def to_test_bench(self):
