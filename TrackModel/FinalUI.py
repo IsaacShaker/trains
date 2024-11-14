@@ -1,5 +1,7 @@
 launcher = True
 import sys
+import requests
+URL = 'http://127.0.0.1:5000'
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QTabWidget, QWidget, QLineEdit, QComboBox, QLabel, QTableView, QVBoxLayout
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QPixmap, QStandardItemModel, QStandardItem, QFont
@@ -46,7 +48,12 @@ blockGrade = []
 
 initialized = False
 
-class TrackUI(QMainWindow):
+authAndSpeed = {
+        'authorities' : None,
+        'commandedSpeeds' : None
+    }
+
+class Bluh(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Track Model UI")
@@ -87,6 +94,36 @@ class TrackUI(QMainWindow):
         self.button.setGeometry(365, 240, 120, 50)
         self.button.clicked.connect(self.initialize_track)
 
+    
+    
+
+#Main UI with maps, tables, test benches      
+class TrackUI(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        global redYard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations, redSections
+        global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
+        self.initialize_track()
+        
+        #Make a PyQt Window
+        self.setWindowTitle("Track Model UI")
+        self.setGeometry(100,100,850,550)
+        self.setStyleSheet("background-color: grey")
+
+        #Makes tabs for the windows
+        self.tab_widget = QTabWidget()
+        self.setCentralWidget(self.tab_widget)
+        self.create_tabs()
+
+        #Train movement function, called every ms
+        self.train_timer = QTimer()
+        self.train_timer.timeout.connect(greenTrains.moveTrains)
+        self.train_timer.start(50)
+
+        self.send_timer = QTimer()
+        self.send_timer.timeout.connect(self.post_auth_and_cmd_speed)
+        self.send_timer.start(1000)
+
     def initialize_track(self):
         global initialized 
         initialized = True
@@ -94,8 +131,8 @@ class TrackUI(QMainWindow):
         global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
         global greenTrains
         # Store text entry values in separate variables
-        self.input_value1 = self.text_entry1.text()
-        self.input_value2 = self.text_entry2.text()
+        self.input_value1 = "trackData/RedLine.xlsx"
+        self.input_value2 = "trackData/GreenLine.xlsx"
 
         #Red Line initial prep
         redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations = buildTrack(add_TM+self.input_value1)
@@ -182,19 +219,18 @@ class TrackUI(QMainWindow):
         
             
         #Train (temporary until we figure out how to initialize a train)
-        tempTrain = Train(10, greenBlocks[85], 20)
+        tempTrain = Train(10, greenBlocks[81], 20, 0)
         greenTrains.addTrain(tempTrain)
         auth.append(0.0)
         cmd.append(0.0)
-        tempTrain = Train(10, greenBlocks[10], 20)
+        tempTrain = Train(10, greenBlocks[10], 20, 1)
         greenTrains.addTrain(tempTrain)
         auth.append(0.0)
         cmd.append(0.0)
-
-        #Start the window
-        self.ui_window = MainWindow()
-        self.ui_window = self.ui_window.show()    
-        self.close()
+        tempTrain = Train(10, greenBlocks[50], 20, 2)
+        greenTrains.addTrain(tempTrain)
+        auth.append(0.0)
+        cmd.append(0.0)
     
     #For Wayside
     def get_occupancies(self):
@@ -240,27 +276,19 @@ class TrackUI(QMainWindow):
         if data['line'] == 'Green':
             greenBlocks[data['index']].set_closed(data['maintenance'])
 
-#Main UI with maps, tables, test benches      
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        global redYard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations, redSections
-        global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
-        
-        #Make a PyQt Window
-        self.setWindowTitle("Track Model UI")
-        self.setGeometry(100,100,850,550)
-        self.setStyleSheet("background-color: grey")
+    # def set_train_speed(self, data):
+    #     for i in range(len(data)):
+    #         greenTrains[].set_train_speed(data[''])
 
-        #Makes tabs for the windows
-        self.tab_widget = QTabWidget()
-        self.setCentralWidget(self.tab_widget)
-        self.create_tabs()
+    def set_indexed_train_speed(self,speed,index):
+        if initialized == False:
+            return
+        greenTrains.set_indexed_speed(index, speed)
 
-        #Train movement function, called every ms
-        self.train_timer = QTimer()
-        self.train_timer.timeout.connect(greenTrains.moveTrains)
-        self.train_timer.start(1)
+    def post_auth_and_cmd_speed(self):
+        authAndSpeed["authorities"]=greenTrains.authorities
+        authAndSpeed["commandedSpeeds"]=greenTrains.commandedSpeeds
+        response = requests.post(URL + "/train-model/get-data/authority-cmd-speed", json=authAndSpeed)
 
     #initializes all maps, tables, test benches
     def create_tabs(self):
