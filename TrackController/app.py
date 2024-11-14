@@ -222,7 +222,7 @@ class MyApp(QWidget):
 
         # Create a drop-down (combo box) with values 0 and 1
         plc_dropdown = QComboBox()
-        plc_dropdown.addItems(["0", "1"])  # Add options "0" and "1"
+        plc_dropdown.addItems(["0", "1", "2"])  # Add options "0" and "1"
         plc_dropdown.setCurrentText(str(self.plc_num))
         plc_dropdown.setFixedSize(50, 40)  # Adjust size to match the button's height
         horizontal_layout.addWidget(plc_dropdown)
