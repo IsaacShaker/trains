@@ -1,5 +1,7 @@
 launcher = True
 import sys
+import requests
+URL = 'http://127.0.0.1:5000'
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QTabWidget, QWidget, QLineEdit, QComboBox, QLabel, QTableView, QVBoxLayout
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QPixmap, QStandardItemModel, QStandardItem, QFont
@@ -45,6 +47,11 @@ cmd = []
 blockGrade = []
 
 initialized = False
+
+authAndSpeed = {
+        'authorities' : None,
+        'commandedSpeeds' : None
+    }
 
 class TrackUI(QMainWindow):
     def __init__(self):
@@ -182,11 +189,15 @@ class TrackUI(QMainWindow):
         
             
         #Train (temporary until we figure out how to initialize a train)
-        tempTrain = Train(10, greenBlocks[85], 20)
+        tempTrain = Train(10, greenBlocks[81], 20, 0)
         greenTrains.addTrain(tempTrain)
         auth.append(0.0)
         cmd.append(0.0)
-        tempTrain = Train(10, greenBlocks[10], 20)
+        tempTrain = Train(10, greenBlocks[10], 20, 1)
+        greenTrains.addTrain(tempTrain)
+        auth.append(0.0)
+        cmd.append(0.0)
+        tempTrain = Train(10, greenBlocks[50], 20, 2)
         greenTrains.addTrain(tempTrain)
         auth.append(0.0)
         cmd.append(0.0)
@@ -240,6 +251,17 @@ class TrackUI(QMainWindow):
         if data['line'] == 'Green':
             greenBlocks[data['index']].set_closed(data['maintenance'])
 
+    # def set_train_speed(self, data):
+    #     for i in range(len(data)):
+    #         greenTrains[].set_train_speed(data[''])
+
+    def set_indexed_train_speed(self,speed,index):
+        if initialized == False:
+            return
+        greenTrains.set_indexed_speed(index, speed)
+
+    
+
 #Main UI with maps, tables, test benches      
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -260,7 +282,16 @@ class MainWindow(QMainWindow):
         #Train movement function, called every ms
         self.train_timer = QTimer()
         self.train_timer.timeout.connect(greenTrains.moveTrains)
-        self.train_timer.start(1)
+        self.train_timer.start(50)
+
+        self.send_timer = QTimer()
+        self.send_timer.timeout.connect(self.post_auth_and_cmd_speed)
+        self.send_timer.start(1000)
+
+    def post_auth_and_cmd_speed(self):
+        authAndSpeed["authorities"]=greenTrains.authorities
+        authAndSpeed["commandedSpeeds"]=greenTrains.commandedSpeeds
+        response = requests.post(URL + "/train-model/get-data/authority-cmd-speed", json=authAndSpeed)
 
     #initializes all maps, tables, test benches
     def create_tabs(self):
