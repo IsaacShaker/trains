@@ -7,17 +7,8 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
             speed_hazard[i] = truth_val
         
     while not stop_event.is_set():
-        # Pull into the YARD
-        if switch_suggestions[2] == False and block_occupancies[58] == False:
-            switches[2] = False
-            traffic_lights[4] = True
-        else:
-            switches[2] = True
-            traffic_lights[4] = False
-        
-
         # We want to pull out of the YARD
-        if switch_suggestions[3] == True and block_occupancies[63] == False:
+        if switch_suggestions[3] == True and block_occupancies[62] == False and block_occupancies[61] == False and block_occupancies[60] == False:
             switches[3] = True
             speed_hazard[0] = False
             set_J_hazard(True)

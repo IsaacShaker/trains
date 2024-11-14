@@ -131,8 +131,8 @@ class MyApp(QWidget):
 
     def get_block_data(self):
         data = {
-            "Green": self.data_test["Green"]["SW"]["blocks"],
-            "Red": self.data_test["Red"]["SW"]["blocks"]
+            "Green": self.data_main["Green"]["SW"]["blocks"],
+            "Red": self.data_main["Red"]["SW"]["blocks"]
         }
         return data
 

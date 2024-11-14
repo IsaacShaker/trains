@@ -1077,7 +1077,7 @@
         },
         {
           "id": 3,
-          "plc_num": 1,
+          "plc_num": 2,
           "name_1": "63 to 62",
           "name_2": "63 to YARD",
           "from": 63,
@@ -1116,7 +1116,7 @@
         },
         {
           "id": 5,
-          "plc_num": 1,
+          "plc_num": 2,
           "name_1": "Block 63 - Red",
           "name_2": "Block 63 - Green",
           "toggled": false
