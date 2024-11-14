@@ -710,7 +710,7 @@ class Train_Controller_SW_UI(QMainWindow):
         # Create a QTimer for computing power
         self.power_timer = QTimer(self)
         self.power_timer.timeout.connect(self.calculate_power)  # Connect the timer to your function
-        self.power_timer.start(50)  # 50 milliseconds interval
+        self.power_timer.start(90)  # 50 milliseconds interval
 
 
 
