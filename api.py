@@ -3,9 +3,27 @@ from flask import Flask, render_template_string, jsonify, request
 app = Flask(__name__)
 app.qt_app_instance = None
 
+is_micah = True
+
 ###################################
 #Train Contoller Input Functions
 ###################################
+
+@app.route('/train-controller/receive-sim-speed', methods=['POST'])
+def recieve_sim_speed():
+    data = request.get_json()
+
+    speed_int = data.get("sim_speed", None)
+
+    if speed_int is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    if is_micah:
+        app.qt_app_instance.train_controller_sw.change_timer(speed_int)
+    else:
+        app.qt_app_instance.train_controller_hw.change_timer(speed_int)
+    #kevin's
+    return jsonify("Success"), 200
 
 @app.route('/train-controller/receive-authority', methods=['POST'])
 def receive_authority():
@@ -17,8 +35,10 @@ def receive_authority():
     if float_value is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
-    app.qt_app_instance.train_controller_sw.train_list[index].set_received_authority(float_value)
-    #app.qt_app_instance.Train_Controller_HW_UI.set_authority(float_value)
+    if is_micah:
+        app.qt_app_instance.train_controller_sw.train_list[index].set_received_authority(float_value)
+    else:
+        app.qt_app_instance.train_controller_hw.set_authority(float_value)
     return jsonify("Success"), 200
 
 
@@ -32,8 +52,10 @@ def receive_beacon_info():
     if string_value is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
-    app.qt_app_instance.train_controller_sw.train_list[index].set_beacon_info(string_value)
-    #app.qt_app_instance.Train_Controller_HW_UI.set_beacon_information(string_value)
+    if is_micah: 
+        app.qt_app_instance.train_controller_sw.train_list[index].set_beacon_info(string_value)
+    else:
+        app.qt_app_instance.train_controller_hw.set_beacon_information(string_value)
     return jsonify("Success"), 200
 
 
@@ -47,8 +69,10 @@ def receive_commanded_velocity():
     if float_value is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
-    app.qt_app_instance.train_controller_sw.train_list[index].set_commanded_velocity(float_value)
-    #app.qt_app_instance.Train_Controller_HW_UI.set_commanded_velocity(float_value)
+    if is_micah:
+        app.qt_app_instance.train_controller_sw.train_list[index].set_commanded_velocity(float_value)
+    else:
+        app.qt_app_instance.train_controller_hw.set_commanded_velocity(float_value)
     return jsonify("Success"), 200
 
 
@@ -62,8 +86,10 @@ def receive_actual_velocity():
     if float_value is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
-    app.qt_app_instance.train_controller_sw.train_list[index].set_actual_velocity(float_value)
-    #app.qt_app_instance.Train_Controller_HW_UI.set_actual_velocity(float_value)
+    if is_micah:
+        app.qt_app_instance.train_controller_sw.train_list[index].set_actual_velocity(float_value)
+    else:
+        app.qt_app_instance.train_controller_hw.set_actual_velocity(float_value)
     return jsonify("Success"), 200
 
 @app.route('/train-controller/receive-failure-modes', methods=['POST'])
@@ -78,12 +104,14 @@ def receive_failure_modes():
     if engine_string is None or brake_string is None or signal_string is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
-    app.qt_app_instance.train_controller_sw.train_list[index].set_failure_engine(engine_string)
-    app.qt_app_instance.train_controller_sw.train_list[index].set_failure_brake(brake_string)
-    app.qt_app_instance.train_controller_sw.train_list[index].set_failure_signal(signal_string)
-    #app.qt_app_instance.Train_Controller_HW_UI.set_engine_failure(engine_string)
-    #app.qt_app_instance.Train_Controller_HW_UI.set_brake_failure(brake_string)
-    #app.qt_app_instance.Train_Controller_HW_UI.set_signal_failure(signal_string)
+    if is_micah:
+        app.qt_app_instance.train_controller_sw.train_list[index].set_failure_engine(engine_string)
+        app.qt_app_instance.train_controller_sw.train_list[index].set_failure_brake(brake_string)
+        app.qt_app_instance.train_controller_sw.train_list[index].set_failure_signal(signal_string)
+    else:
+        app.qt_app_instance.train_controller_hw.set_engine_failure(engine_string)
+        app.qt_app_instance.train_controller_hw.set_brake_failure(brake_string)
+        app.qt_app_instance.train_controller_hw.set_signal_failure(signal_string)
     return jsonify("Success"), 200
 
 
@@ -275,17 +303,17 @@ def get_data4():
         data = app.qt_app_instance.track_controller.add_speed(data)
         return jsonify(data), 200
     
-@app.route('/track-controller-sw/give-data/wayside-vsion', methods=['POST'])
+@app.route('/track-controller-sw/give-data/wayside-vision', methods=['POST'])
 def get_data5():
     data = request.get_json()
 
     # check that the data is in the right format
-    for attribute in ["line", "id", "vision"]:
+    for attribute in ["line", "index", "output_block"]:
         if attribute not in data:
             return jsonify({"error": "Data not in correct format. Make sure 'line', 'id' and 'vision' are included in data."}), 500
 
     if hasattr(app.qt_app_instance, 'track_controller'):
-        data = app.qt_app_instance.track_controller.wayside_vision(data)
+        data = app.qt_app_instance.track_controller.add_wayside_vision(data)
         return jsonify(data), 200
     
 def shutdown_server():
