@@ -163,10 +163,19 @@ class MyApp(QWidget):
         #     print("Failed to give speed to Track Model")
 
     def add_wayside_vision(self, vision):
-        # TODO:
-        # parse and give it to the waysides
         print("Got em")
         print(vision)
+
+        if vision["index"] == 1:
+            if vision["output_block"] == 58:
+                self.data_main["Green"]["SW"]["switches"][0]["suggested_toggle"] = True
+            elif vision["output_block"] == 0:
+                self.data_main["Green"]["SW"]["switches"][0]["suggested_toggle"] = False
+        elif vision["index"] == 2:
+            if vision["output_block"] == 0:
+                self.data_main["Green"]["SW"]["switches"][1]["suggested_toggle"] = True
+            elif vision["output_block"] == 62:
+                self.data_main["Green"]["SW"]["switches"][1]["suggested_toggle"] = False
 
 
     def closeEvent(self, event):
