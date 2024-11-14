@@ -2,14 +2,15 @@ import sys
 import time
 import pandas as pd
 import requests
-from CTC.train import Train
-from CTC.clock import Clock
-from CTC.scheduleReader import ScheduleReader
-from CTC.station import Station
-from CTC.block import Block
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem
-from PyQt6.QtCore import Qt, QTimer
-from collections import defaultdict
+from train import Train
+from clock import Clock
+from scheduleReader import ScheduleReader
+from station import Station
+from block import Block
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem, QMessageBox
+from PyQt6.QtCore import Qt, QTimer, QRegularExpression
+from PyQt6.QtGui import QRegularExpressionValidator
+from collections import defaultdict, deque
 
 # Create an object from Clock class
 myClock = Clock()
@@ -41,33 +42,33 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         # Create the trains list
         self.trains = []
 
-        # Create a Track Controller
-        # self.wayside = TrackController()
         # Create the stations and add them to a list
         self.green_stations = []
-        self.glenbury = Station("STATION; GLENBURY", 65)
+        self.yard = Station("STATION; YARD", [0])
+        self.green_stations.append(self.yard)
+        self.glenbury = Station("STATION; GLENBURY", [65,114])
         self.green_stations.append(self.glenbury)
-        self.dormont = Station("STATION; DORMONT", 73)
+        self.dormont = Station("STATION; DORMONT", [73,105])
         self.green_stations.append(self.dormont)
-        self.mt_lebanon = Station("STATION; MT LEBANON", 77)
+        self.mt_lebanon = Station("STATION; MT LEBANON", [77])
         self.green_stations.append(self.mt_lebanon)
-        self.poplar = Station("STATION; POPLAR", 88)
+        self.poplar = Station("STATION; POPLAR", [88])
         self.green_stations.append(self.poplar)
-        self.castle_shannon = Station("STATION; CASTLE SHANNON", 96)
+        self.castle_shannon = Station("STATION; CASTLE SHANNON", [96])
         self.green_stations.append(self.castle_shannon)
-        self.overbrook = Station("STATION; OVERBROOK", 123)
+        self.overbrook = Station("STATION; OVERBROOK", [123, 57])
         self.green_stations.append(self.overbrook)
-        self.inglewood = Station("STATION; INGLEWOOD", 132)
+        self.inglewood = Station("STATION; INGLEWOOD", [132, 48])
         self.green_stations.append(self.inglewood)
-        self.central = Station("STATION; CENTRAL", 141)
+        self.central = Station("STATION; CENTRAL", [141, 39])
         self.green_stations.append(self.central)
-        self.whited = Station("STATION; WHITED", 22)
+        self.whited = Station("STATION; WHITED", [22])
         self.green_stations.append(self.whited)
-        self.edgebrook = Station("STATION; EDGEBROOK", 9)
+        self.edgebrook = Station("STATION; EDGEBROOK", [9])
         self.green_stations.append(self.edgebrook)
-        self.pioneer = Station("STATION; PIONEER", 2)
+        self.pioneer = Station("STATION; PIONEER", [2])
         self.green_stations.append(self.pioneer)
-        self.south_bank = Station("STATION; SOUTH_BANK", 31)
+        self.south_bank = Station("STATION; SOUTH BANK", [31])
         self.green_stations.append(self.south_bank)
 
 
@@ -170,9 +171,9 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         }
 
         #               Timer Stuff                 #
-        self.request_block_occupancies_timer = QTimer(self)
-        self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
-        self.request_block_occupancies_timer.start(1000)
+        # self.request_block_occupancies_timer = QTimer(self)
+        # self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
+        # self.request_block_occupancies_timer.start(1000)
 
     # Create the Home and Test Bench tab for the window
     def create_tabs(self):
@@ -1068,6 +1069,9 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
 
             # Add time entrance
             self.time_select_edit = QLineEdit()
+            time_regex = QRegularExpression(r"^(2[0-3]|[01]\d):([0-5]\d):([0-5]\d)$")
+            validator = QRegularExpressionValidator(time_regex)
+            self.time_select_edit.setValidator(validator)
             self.time_select_edit.setPlaceholderText("Arrival Time")
             self.station_and_time_layout.addWidget(self.time_select_edit)
 
@@ -1127,19 +1131,48 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
 
             new_train = Train(new_train, 'Green')
             print(new_train.name, 'on the Green line will arrive at', self.station_select_combo_box.currentText() ,'at', self.time_select_edit.text())
-            rate_string = str(len(self.trains) + 1)+' Trains/hr'
+            rate_string = str(len(self.trains) + 1) +' Trains/hr'
             self.rate_label.setText(rate_string)
             self.schedule_train_combo_box.addItem(new_train.name)
             
             new_train.add_stop(self.station_select_combo_box.currentText())
             new_train.get_authority_from_map()
 
+            # Set time to release train from yard
+            time = self.time_select_edit.text()
+            # Split the time string into hours, minutes, and seconds
+            hours, minutes, seconds = map(int, time.split(":"))
+            time_in_seconds = hours * 3600 + minutes * 60 + seconds
+            hours = time_in_seconds // 3600
+            minutes = (time_in_seconds % 3600) //60
+            seconds = time_in_seconds % 60
+            print('arrival time =', hours, minutes, seconds)
+            new_train.set_first_arrival_time(time_in_seconds)
+            hours = new_train.dispatch_time // 3600
+            minutes = (new_train.dispatch_time % 3600) //60
+            seconds = new_train.dispatch_time % 60
+            print('dispatch time =', hours, minutes, seconds)
+
+            # Convert authorities to tuples for a list
+            auth_list = []
+            for authority in new_train.route_authorities:
+                auth_list.append([new_train.name, authority])
+            
+            # Populate the stations
+            self.yard.add_authority(auth_list[0])
+            new_train.route_authorities.popleft()
+
             for stop in new_train.station_stops:
                 for station in self.green_stations:
                     if station.name == stop:
-                        station.add_authority(new_train.route_authorities[0])
+                        station.add_authority(auth_list[0])
+                    elif station.name in ('STATION; POPLAR', 'STATION; CASTLE SHANNON', 'STATION; EDGEBROOK', 'STATION; PIONEER', 'STATION; SOUTH BANK'):
+                        station.add_authority([new_train.name, -1])
+                    elif station.name == 'STATION; YARD':
+                        pass
                     else:
-                        station.add_authority(-1)
+                        station.add_authority([new_train.name, -1])
+                        station.add_authority([new_train.name, -1])
 
             if len(self.trains) == 0: # If we are adding the first train, delete the label
                 # Remove the current QLabel
@@ -1237,16 +1270,22 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
 
         for station in self.green_stations:
             station_id = station.get_location()
-            if ('Green', station_id) in self.occupied_blocks and station.get_popped() == False:
-                # Send authority to wayside since just entered station block
-                self.authority_dict["line"] = "Green"
-                self.authority_dict["index"] = station_id
-                self.authority_dict["authority"] = station.pop_authority()
-                station.set_popped(True)
-                while(1):
-                    response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
-                    if response.status_code == 200:
-                        break
+            for id in station_id:
+                if ('Green', id) in self.occupied_blocks and station.get_popped() == False:
+                    # Send authority to wayside since just entered station block
+                    self.authority_dict["line"] = "Green"
+                    self.authority_dict["index"] = id
+                    popped_auth = station.pop_authority()
+                    self.authority_dict["authority"] = popped_auth[1]
+                    for train in self.trains:
+                        if train.name == popped_auth[0]:
+                            train.set_current_authority(popped_auth[1])
+                    station.set_popped(True)
+                    
+                    while(1):
+                        response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                        if response.status_code == 200:
+                            break
 
         for station in self.green_stations:
             station_id = station.get_location()
@@ -1257,22 +1296,26 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         # Speed Stuff 
         for block in data_dict["Green"]:
             if block["speed_hazard"] == True and ("Green", block["block"]) not in self.recent_speed_hazards: # Add to speed hazard set
+                # Change speed to zero
                 self.recent_speed_hazards.add(("Green", block["block"]))
                 self.suggested_speed_dict["line"] = "Green"
                 self.suggested_speed_dict["index"] = block["block"]
                 self.suggested_speed_dict["speed"] = 0
-                # Change speed to zero
+                for train in self.trains:
+                    train.set_suggested_speed(0)
                 while(1):
                     response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
                     if response.status_code == 200:
                         break
             elif block["speed_hazard"] == False and ("Green", block["block"]) in self.recent_speed_hazards:
+                # Change speed to actual
                 self.recent_speed_hazards.remove(("Green", block["block"]))
                 self.suggested_speed_dict["line"] = "Green"
                 self.suggested_speed_dict["index"] = block["block"]
                 blk = self.blocks["Green"][block["block"]]
                 self.suggested_speed_dict["speed"] = blk.get_block_speed()
-                # Change speed to actual
+                for train in self.trains:
+                    train.set_suggested_speed(blk.get_block_speed())
                 while(1):
                     response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
                     if response.status_code == 200:

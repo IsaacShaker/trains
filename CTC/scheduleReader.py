@@ -1,5 +1,5 @@
 import pandas as pd
-from CTC.train import Train
+from train import Train
 
 class ScheduleReader(Train):
 
@@ -25,7 +25,6 @@ class ScheduleReader(Train):
                 else:
                     if "STATION" in rows["Infrastructure"]:
                         if  pd.isna(rows[greenTrains[i].name]):
-                            # Insert -1 authority so we dont stop
                             greenTrains[i].add_authority(-1)
                         else:
                             # Get Authority for section
