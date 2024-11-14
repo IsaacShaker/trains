@@ -296,8 +296,28 @@ def shutdown_server():
 
 
 
-@app.route('/track-model/get-data/current-speed', methods=['POST'])
-def get_data_train_model_current_speed():
+# @app.route('/track-model/get-data/current-speed', methods=['POST'])
+# def get_data_train_model_current_speed():
+#     # Check if train_model is available in the MyApp instance
+#     if hasattr(app.qt_app_instance, 'track_model'):
+#         track_model = app.qt_app_instance.track_model
+
+#         data = request.get_json()
+
+#         # Get the speed data from the request
+#         speed = data.get("actual_velocity", None)
+#         index = data.get("train_id", None)
+        
+#         if speed is not None and index is not None:
+#             track_model.set_indexed_train_speed(index,speed)
+#             return jsonify("OK"), 200
+#         else:
+#             return jsonify({"error": "No speed data provided"}), 400
+#     else:
+#         return jsonify({"error": "Data not available"}), 500
+    
+@app.route('/track-model/get-data/auth_difference', methods=['POST'])
+def get_data_track_model_auth_diff():
     # Check if train_model is available in the MyApp instance
     if hasattr(app.qt_app_instance, 'track_model'):
         track_model = app.qt_app_instance.track_model
@@ -305,11 +325,11 @@ def get_data_train_model_current_speed():
         data = request.get_json()
 
         # Get the speed data from the request
-        speed = data.get("actual_velocity", None)
+        diff = data.get("auth_diff", None)
         index = data.get("train_id", None)
         
-        if speed is not None and index is not None:
-            track_model.set_indexed_train_speed(index,speed)
+        if diff is not None and index is not None:
+            track_model.set_indexed_train_auth_diff(index,diff)
             return jsonify("OK"), 200
         else:
             return jsonify({"error": "No speed data provided"}), 400

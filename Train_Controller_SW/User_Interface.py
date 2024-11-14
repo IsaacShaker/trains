@@ -61,7 +61,7 @@ class Train_Controller_SW_UI(QMainWindow):
     def __init__(self):
         super(Train_Controller_SW_UI, self).__init__()
 
-
+        self.auth_counter = 0
         self.next_train_id = 0
         self.train_list =[]
 
@@ -1357,8 +1357,14 @@ class Train_Controller_SW_UI(QMainWindow):
         #calculate power
         self.train_list[self.current_train].calculate_commanded_power()
 
+        self.auth_counter +=1
+
+        if self.auth_counter == 40:
+            self.auth_counter = 0
+            self.train_list[self.current_train].send_auth_diff()
+
         #update authority
-        self.train_list[self.current_train].update_authority()
+        #self.train_list[self.current_train].update_authority()
 
         #update power in test bench
         self.commanded_power_output.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{self.train_list[self.current_train].get_commanded_power():.2f} Watts</span>')

@@ -30,8 +30,7 @@ class Train:
         string = f"Train {index}: \n\tFront Location: {self.fLocOnBlock} \n\tFront Block: {self.fBlock.display_num()} \n\tPrevious Front Block: {self.fBlockPrevious.display_num()} \n\tBack Location: {self.bLocOnBlock} \n\tBack Block: {self.bBlock.display_num()}\n\tLength: {self.length} \n\tSpeed: {self.speed} \n\tAuthority: {self.authority} \n\tStatic Data: {self.staticData}"
         return string
     
-    def moveTrain(self, speed):
-        self.speed = speed
+    def moveTrain(self, diff):
         if self.fBlock.get_num() == 85 and self.fBlockPrevious.get_num() == 100:
             self.fBackwards = True 
         elif self.fBlock.get_num() == 101 and self.fBlockPrevious.get_num() == 77:
@@ -41,15 +40,14 @@ class Train:
         elif self.fBlock.get_num() == 1 and self.fBlockPrevious.get_num() == 13:
             self.fBackwards = False
 
-        if speed == None:
-            speed = 0
-        msSpeed = speed*.05
-        self.moveFront(msSpeed)
+        if diff == None:
+            diff = 0
+        self.moveFront(diff)
         self.syncBack()
 
-    def moveFront(self, msSpeed):
+    def moveFront(self, authDiff):
         if self.fLocOnBlock > 0:
-            self.fLocOnBlock = self.fLocOnBlock - msSpeed
+            self.fLocOnBlock -= authDiff
             self.fBlock.set_train(self, False)
         else:
             self.fBlock.train_set_beacon(self)
@@ -59,16 +57,19 @@ class Train:
                 self.fBlockPrevious = self.fBlock
                 self.fBlock, self.fLocOnBlock = self.fBlock.get_previous_block()
                 self.fLocOnBlock += remainingDistance
+                self.fLocOnBlock -= authDiff
                 self.fBlock.set_train(self, False)
             else:
                 self.fBlock.set_train(None, False)
                 self.fBlockPrevious = self.fBlock
                 self.fBlock, self.fLocOnBlock = self.fBlock.get_next_block()
                 self.fLocOnBlock += remainingDistance
+                self.fLocOnBlock -= authDiff
                 self.fBlock.set_train(self, False)
         self.grade_info["id"]=self.id
         self.grade_info["grade_info"]=self.fBlock.get_grade()
         response = requests.post(URL + "/train-model/get-data/grade-info", json=self.grade_info)
+        print(f"LocOnBLock: {self.fLocOnBlock}")
             
 
     def syncBack(self):
@@ -105,4 +106,6 @@ class Train:
         return self.authority
     def get_speed(self):
         return self.speed
+    def get_id(self):
+        return self.id
     

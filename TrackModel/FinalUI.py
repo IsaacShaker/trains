@@ -117,8 +117,8 @@ class TrackUI(QMainWindow):
 
         #Train movement function, called every ms
         self.train_timer = QTimer()
-        self.train_timer.timeout.connect(greenTrains.moveTrains)
-        self.train_timer.start(50)
+        self.train_timer.timeout.connect(greenTrains.get_info)
+        self.train_timer.start(10)
 
         self.send_timer = QTimer()
         self.send_timer.timeout.connect(self.post_auth_and_cmd_speed)
@@ -178,8 +178,7 @@ class TrackUI(QMainWindow):
         #override for sake of spawn simulation
         for i in range(150):
             greenBlocks[i].set_cmd_speed(70)
-        greenBlocks[81].set_authority(1446.6)
-        greenBlocks[10].set_authority(1446.6)
+        greenBlocks[85].set_authority(262.7)
         
         greenSections = [] # make green sections
         greenSections.append(Section('A'))
@@ -219,15 +218,10 @@ class TrackUI(QMainWindow):
         
             
         #Train (temporary until we figure out how to initialize a train)
-        tempTrain = Train(10, greenBlocks[81], 20, 0)
-        greenTrains.addTrain(tempTrain)
-        auth.append(0.0)
-        cmd.append(0.0)
-        tempTrain = Train(10, greenBlocks[10], 20, 1)
-        greenTrains.addTrain(tempTrain)
-        auth.append(0.0)
-        cmd.append(0.0)
-        tempTrain = Train(10, greenBlocks[50], 20, 2)
+        
+
+
+        tempTrain = Train(10, greenBlocks[85], 32.2, 0)
         greenTrains.addTrain(tempTrain)
         auth.append(0.0)
         cmd.append(0.0)
@@ -276,14 +270,29 @@ class TrackUI(QMainWindow):
         if data['line'] == 'Green':
             greenBlocks[data['index']].set_closed(data['maintenance'])
 
+    def set_block_authority(self, data):
+        if data['line'] == 'Green':
+            greenBlocks[data['index']].set_authority(data['authority'])
+
+    def set_block_cmdSpeed(self, data):
+        if data['line'] == 'Green':
+            greenBlocks[data['index']].set_authority(data['speed'])
+
+
     # def set_train_speed(self, data):
     #     for i in range(len(data)):
     #         greenTrains[].set_train_speed(data[''])
 
-    def set_indexed_train_speed(self,speed,index):
+    # def set_indexed_train_speed(self,index,speed):
+    #     if initialized == False:
+    #         return
+    #     greenTrains.set_indexed_speed(index, speed)
+
+    def set_indexed_train_auth_diff(self,index,diff):
         if initialized == False:
             return
-        greenTrains.set_indexed_speed(index, speed)
+        greenTrains.trainList[index].moveTrain(diff)
+        #greenTrains.set_indexed_speed(index, diff)
 
     def post_auth_and_cmd_speed(self):
         authAndSpeed["authorities"]=greenTrains.authorities

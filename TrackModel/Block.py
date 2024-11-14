@@ -1,3 +1,5 @@
+import requests
+URL = 'http://127.0.0.1:5000'
 launcher = True
 if launcher:
     from TrackModel.Beacon import Beacon
@@ -122,14 +124,19 @@ class Block:
 
     def set_train(self, train, FOrB):
         if isinstance(train, Train):
+            
             self.train = train
             if self.authority != None and not FOrB:
                 self.train.set_auth(self.authority)
             if self.commandedSpeed != None and not FOrB and self.train.get_auth() != 0:
                 self.train.set_speed(self.commandedSpeed)
-            if isinstance(self.station, Station) and (self.train.get_fLocOnBlock() < (self.length/2) - 11) and (self.train.get_fLocOnBlock() > (self.length/2) - 9) and self.train.get_speed == 0:
+            if isinstance(self.station, Station) and (self.train.get_fLocOnBlock() > (self.length/2) - 17.1) and (self.train.get_fLocOnBlock() < (self.length/2) - 15.1):
                 self.station.set_trainIn(True, self.train)
             else:
+                print("Hello")
+                print("Forward: " + str((self.length/2) - 17.1))
+                print("Backward: " + str((self.length/2) - 15.1))
+                print("Location: " + str(self.train.get_fLocOnBlock()))
                 if isinstance(self.station, Station):
                     self.station.set_trainIn(False, self.train)
         else:
@@ -140,6 +147,7 @@ class Block:
             self.beacon_data["id"]=train.get_id()
             self.beacon_data["beacon_info"]=self.beacon.get_staticData()
             train.set_staticData(self.beacon.get_staticData())
+            print("beacon info:" + self.beacon.get_staticData())
             response = requests.post(URL + '/train-model/get-data/beacon-info', json=self.beacon_data)
 
             
