@@ -64,7 +64,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.auth_counter = 0
         self.next_train_id = 0
         self.train_list =[]
-        self.var_from_mitch = 1
+        self.var_from_mitch = 5
 
         self.add_train()
         #self.add_train()
@@ -713,7 +713,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.power_timer.timeout.connect(self.calculate_power)  # Connect the timer to your function
         self.power_timer.start(90)  # 90 milliseconds interval
 
-        self.change_timer(10)
+        self.change_timer(self.var_from_mitch)
 
         
 
