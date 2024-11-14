@@ -164,9 +164,9 @@ class MyApp(QWidget):
 
         if vision["index"] == 1:
             if vision["output_block"] == 58:
-                self.data_main["Green"]["SW"]["switches"][0]["suggested_toggle"] = True
-            elif vision["output_block"] == 0:
                 self.data_main["Green"]["SW"]["switches"][0]["suggested_toggle"] = False
+            elif vision["output_block"] == 0:
+                self.data_main["Green"]["SW"]["switches"][0]["suggested_toggle"] = True
         elif vision["index"] == 2:
             if vision["output_block"] == 0:
                 self.data_main["Green"]["SW"]["switches"][1]["suggested_toggle"] = True
