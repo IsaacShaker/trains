@@ -43,7 +43,7 @@ class MapReader():
                     print('END =', end)
                     # Sum the block lengths from start to end
                     authority = df.loc[start:end - 1, 'Block Length (m)'].sum()
-                    authority += df.loc[end, 'Block Length (m)']/2 + 13
+                    authority += df.loc[end, 'Block Length (m)']/2 + 13 + 10
                     self.route_authorities_list.append(float(authority))
                 else:
                     print('adding authority to pioneer')

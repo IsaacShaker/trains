@@ -9,7 +9,8 @@ from CTC.scheduleReader import ScheduleReader
 from CTC.station import Station
 from CTC.block import Block
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, QRegularExpression
+from PyQt6.QtGui import QRegularExpressionValidator
 from collections import defaultdict
 
 base_path = os.path.dirname(os.path.abspath(__file__))  # Full path of the current file's directory
@@ -175,6 +176,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         self.output_block = 0
         # Wayside Vision
         self.wayside_vision_dict = {
+            "line": self.line_for_wayside,
             "index" : self.index,
             "output_block": self.output_block
         }
@@ -1246,6 +1248,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                         if train.name == popped_auth[0]:
                             train.set_current_authority(popped_auth[1])
                             if len(train.station_stops):
+                                self.wayside_vision_dict["line"] = "Green"
                                 self.wayside_vision_dict["index"] = 1
                                 self.wayside_vision_dict["output_block"] = 0
                                 while(1):
@@ -1253,6 +1256,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                                     if response.status_code == 200:
                                         break
                             else:
+                                self.wayside_vision_dict["line"] = "Green"
                                 self.wayside_vision_dict["index"] = 1
                                 self.wayside_vision_dict["output_block"] = 58
                                 while(1):
@@ -1261,6 +1265,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                                         break
                     station.set_popped(True)
                     # Send Wayside Vision
+                    self.wayside_vision_dict["line"] = "Green"
                     self.wayside_vision_dict["index"] = 2
                     self.wayside_vision_dict["output_block"] = 0
                     while(1):
@@ -1269,9 +1274,11 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                             break
 
         for station in self.green_stations:
-            station_id = station.get_location()
-            if ('Green', station_id) in self.recently_opened:
+            station_id = 0
+            new_block = ("Green", 0)
+            if new_block in self.recently_opened:
                 station.set_popped(False)
+                self.wayside_vision_dict["line"] = "Green"
                 self.wayside_vision_dict["index"] = 2
                 self.wayside_vision_dict["output_block"] = 62
                 while(1):
@@ -1315,6 +1322,9 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         for train in self.trains:
             if self.system_time >= train.dispatch_time and train.on_track == False:
                 print('dispatching a train')
+                # Tell train controller to exist
+
+                # Put authority on the YARD block
                 self.authority_dict["line"] = "Green"
                 self.authority_dict["index"] = 0
                 popped_auth = self.yard.pop_authority()
@@ -1323,6 +1333,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                         response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
                         if response.status_code == 200:
                             break
+                self.wayside_vision_dict["line"] = "Green"
                 self.wayside_vision_dict["index"] = 2
                 self.wayside_vision_dict["output_block"] = 0
                 while(1):
@@ -1332,6 +1343,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                 train.on_track = True
 
 if __name__ == "__main__":    
+
     app = QApplication(sys.argv)
 
     # Create an object from the ScheduleReader class
