@@ -228,6 +228,9 @@ class Train_Controller:
 
     #set commanded power
     def set_commanded_power(self, power):
+        if power > 120000:
+            power = 120000
+            
         self.commanded_power = power
 
         self.commanded_power_dict["commanded_power"] = self.commanded_power
