@@ -164,10 +164,12 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             "speed": self.speed_for_wayside
         }
 
+        self.index
+        self.output_block
         # Wayside Vision
-        self.output_blocks = []  # Index will say which wayside its intended for
         self.wayside_vision_dict = {
-            "output_blocks": self.output_blocks
+            "index" : self.index,
+            "output_block": self.output_block
         }
 
         #               Timer Stuff                 #
@@ -1280,8 +1282,24 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                     for train in self.trains:
                         if train.name == popped_auth[0]:
                             train.set_current_authority(popped_auth[1])
+                            if len(train.station_stops):
+                                self.wayside_vision_dict["index"] = 1
+                                self.wayside_vision_dict["output_block"] = 0
+                                while(1):
+                                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vsion", json=self.wayside_vision_dict)
+                                    if response.status_code == 200:
+                                        break
+                            else:
+                                self.wayside_vision_dict["index"] = 1
+                                self.wayside_vision_dict["output_block"] = 58
+                                while(1):
+                                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vsion", json=self.wayside_vision_dict)
+                                    if response.status_code == 200:
+                                        break
                     station.set_popped(True)
-                    
+                    # Send Wayside Vision
+                    self.wayside_vision_dict["index"] = 2
+                    self.wayside_vision_dict["output_block"] = 0
                     while(1):
                         response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
                         if response.status_code == 200:
@@ -1291,6 +1309,12 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             station_id = station.get_location()
             if ('Green', station_id) in self.recently_opened:
                 station.set_popped(False)
+                self.wayside_vision_dict["index"] = 2
+                self.wayside_vision_dict["output_block"] = 62
+                while(1):
+                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vsion", json=self.wayside_vision_dict)
+                    if response.status_code == 200:
+                        break
 
 
         # Speed Stuff 
@@ -1323,8 +1347,8 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
 
         self.update_label_background()
 
-        # for block in data_dict["Red"]:
-        #     pass
+        # Wayside Vision stuff
+
 
     # Update the wayside vision dictionary
     def update_wayside_vision(self):
