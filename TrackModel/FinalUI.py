@@ -53,7 +53,7 @@ authAndSpeed = {
         'commandedSpeeds' : None
     }
 
-class TrackUI(QMainWindow):
+class Bluh(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Track Model UI")
@@ -94,6 +94,36 @@ class TrackUI(QMainWindow):
         self.button.setGeometry(365, 240, 120, 50)
         self.button.clicked.connect(self.initialize_track)
 
+    
+    
+
+#Main UI with maps, tables, test benches      
+class TrackUI(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        global redYard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations, redSections
+        global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
+        self.initialize_track()
+        
+        #Make a PyQt Window
+        self.setWindowTitle("Track Model UI")
+        self.setGeometry(100,100,850,550)
+        self.setStyleSheet("background-color: grey")
+
+        #Makes tabs for the windows
+        self.tab_widget = QTabWidget()
+        self.setCentralWidget(self.tab_widget)
+        self.create_tabs()
+
+        #Train movement function, called every ms
+        self.train_timer = QTimer()
+        self.train_timer.timeout.connect(greenTrains.moveTrains)
+        self.train_timer.start(50)
+
+        self.send_timer = QTimer()
+        self.send_timer.timeout.connect(self.post_auth_and_cmd_speed)
+        self.send_timer.start(1000)
+
     def initialize_track(self):
         global initialized 
         initialized = True
@@ -101,8 +131,8 @@ class TrackUI(QMainWindow):
         global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
         global greenTrains
         # Store text entry values in separate variables
-        self.input_value1 = self.text_entry1.text()
-        self.input_value2 = self.text_entry2.text()
+        self.input_value1 = "trackData/RedLine.xlsx"
+        self.input_value2 = "trackData/GreenLine.xlsx"
 
         #Red Line initial prep
         redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations = buildTrack(add_TM+self.input_value1)
@@ -201,11 +231,6 @@ class TrackUI(QMainWindow):
         greenTrains.addTrain(tempTrain)
         auth.append(0.0)
         cmd.append(0.0)
-
-        #Start the window
-        self.ui_window = MainWindow()
-        self.ui_window = self.ui_window.show()    
-        self.close()
     
     #For Wayside
     def get_occupancies(self):
@@ -259,34 +284,6 @@ class TrackUI(QMainWindow):
         if initialized == False:
             return
         greenTrains.set_indexed_speed(index, speed)
-
-    
-
-#Main UI with maps, tables, test benches      
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        global redYard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations, redSections
-        global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
-        
-        #Make a PyQt Window
-        self.setWindowTitle("Track Model UI")
-        self.setGeometry(100,100,850,550)
-        self.setStyleSheet("background-color: grey")
-
-        #Makes tabs for the windows
-        self.tab_widget = QTabWidget()
-        self.setCentralWidget(self.tab_widget)
-        self.create_tabs()
-
-        #Train movement function, called every ms
-        self.train_timer = QTimer()
-        self.train_timer.timeout.connect(greenTrains.moveTrains)
-        self.train_timer.start(50)
-
-        self.send_timer = QTimer()
-        self.send_timer.timeout.connect(self.post_auth_and_cmd_speed)
-        self.send_timer.start(1000)
 
     def post_auth_and_cmd_speed(self):
         authAndSpeed["authorities"]=greenTrains.authorities

@@ -72,7 +72,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.train_list[1].authority = 250
         self.train_list[2].authority = 100
 
-        self.train_list[0].actual_velocity = 10
+        self.train_list[0].actual_velocity = 0
         self.train_list[0].commanded_velocity = 18
         self.train_list[0].setpoint_velocity = 14
 
