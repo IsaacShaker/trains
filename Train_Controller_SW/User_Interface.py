@@ -58,7 +58,7 @@ from PyQt6.QtWidgets import (
 
 class Train_Controller_SW_UI(QMainWindow):
 
-    def __init__(self,):
+    def __init__(self):
         super(Train_Controller_SW_UI, self).__init__()
 
         self.auth_counter = 0
@@ -713,7 +713,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.power_timer.timeout.connect(self.calculate_power)  # Connect the timer to your function
         self.power_timer.start(90)  # 90 milliseconds interval
 
-        self.change_timer(self.var_from_mitch)
+        self.change_timer(10)
 
         
 
@@ -1374,7 +1374,7 @@ class Train_Controller_SW_UI(QMainWindow):
                 self.s_brake_pressed()
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
-            else:
+            else: 
                 self.s_brake_released()
                 self.s_brake_button.setChecked(False)
                 self.s_brake_button.setCheckable(False)
