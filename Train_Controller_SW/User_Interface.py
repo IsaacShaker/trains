@@ -58,7 +58,7 @@ from PyQt6.QtWidgets import (
 
 class Train_Controller_SW_UI(QMainWindow):
 
-    def __init__(self):
+    def __init__(self,):
         super(Train_Controller_SW_UI, self).__init__()
 
         self.auth_counter = 0
@@ -1435,6 +1435,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.train_list.append(new_train)
 
     def change_timer(self, sim_speed):
+        self.var_from_mitch = sim_speed
         #change timer
         self.power_timer.setInterval(int(90/sim_speed))
         self.train_list[self.current_train].set_T(sim_speed)
