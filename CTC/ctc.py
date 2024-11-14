@@ -438,7 +438,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         self.speed_combo_box = QComboBox()
         self.speed_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.speed_combo_box.setStyleSheet("color: white; background-color: #772CE8;")
-        self.speed_combo_box.addItems(["1x", "10x", "50x"])  # Example speed options
+        self.speed_combo_box.addItems(["1x", "2x", "5x", "7x", "10x", "50x"])  # Example speed options
         self.speed_combo_box.currentTextChanged.connect(self.sim_speed_selected)
         simOptions_layout.addWidget(self.speed_combo_box)
 
