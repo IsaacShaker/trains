@@ -303,7 +303,7 @@ class TrainModel(QObject):
         if self.currForce > max_force:
             self.currForce = max_force
         #If the power is at 0 and we are not moving or the emergency brake is pulled
-        elif (self.currPower == 0 and self.lastVel == 0 and not self.brakeFailure) or self.emergencyBrake or self.engineFailure:
+        elif (self.currPower == 0 and self.lastVel == 0) or self.emergencyBrake or self.engineFailure:
             self.currForce = 0
         #If the train is not moving, add limiter so the force is not infinite
         elif self.lastVel == 0:
@@ -361,14 +361,18 @@ class TrainModel(QObject):
         else:
              #Force to 0 if velocity is 0 to avoid divide by zero error
             self.currForce = 0
+        print(self.currForce)
         self.limit_force()
+        print(self.currForce)
         #Acceleration calc
         if self.totalMass != 0:
             self.currAccel = self.currForce / (self.tons_to_kg(self.totalMass)) 
         # Ensure totalMass is not zero
         else:
             self.currAccel = 0
+        print(self.currAccel)
         self.limit_accel()
+        print(self.currAccel)
 
         #Velocity acceleration
         velocityNew = self.currentVelocity + ((self.samplePeriod / 2) * (self.currAccel + previousAcceleration))
