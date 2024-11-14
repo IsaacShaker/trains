@@ -1,12 +1,13 @@
 launcher = True
 import requests
+URL = 'http://127.0.0.1:5000'
 if launcher:
     from TrackModel.Station import Station
 else:
     from Station import Station
 class Train:
-    def __init__(self, fLocOnBlock, fBlock, length):
-        self.id = 0
+    def __init__(self, fLocOnBlock, fBlock, length, id):
+        self.id = id
         self.fLocOnBlock = fLocOnBlock
         self.fBlock = fBlock
         self.fBlockPrevious = fBlock
@@ -16,20 +17,21 @@ class Train:
         self.length = length
         self.fBackwards = False
         self.bBackwards = False
-        self.speed = 200
-        self.authority = 10000
         self.staticData = "No Data"
-        self.dict_arr = None
-
-        self.trainAuth = None
-        self.trainCmd = None
+        self.speed = 0
+        self.authority = None
+        self.commandedSpeed = None
+        self.grade_info = {
+            'id' : None,
+            'grade' : None
+        }
         
     def display_info(self,index):
         string = f"Train {index}: \n\tFront Location: {self.fLocOnBlock} \n\tFront Block: {self.fBlock.display_num()} \n\tPrevious Front Block: {self.fBlockPrevious.display_num()} \n\tBack Location: {self.bLocOnBlock} \n\tBack Block: {self.bBlock.display_num()}\n\tLength: {self.length} \n\tSpeed: {self.speed} \n\tAuthority: {self.authority} \n\tStatic Data: {self.staticData}"
         return string
     
-    def moveTrain(self, speed): #dict_arr
-        #self.dict_arr = dict_arr
+    def moveTrain(self, speed):
+        self.speed = speed
         if self.fBlock.get_num() == 85 and self.fBlockPrevious.get_num() == 100:
             self.fBackwards = True 
         elif self.fBlock.get_num() == 101 and self.fBlockPrevious.get_num() == 77:
@@ -39,33 +41,17 @@ class Train:
         elif self.fBlock.get_num() == 1 and self.fBlockPrevious.get_num() == 13:
             self.fBackwards = False
 
-        # data_dict = None
-        # response = requests.get('http://127.0.0.1:5000/train-model/get-data/current-speed')
-        # if response.status_code == 200:
-        #     data_dict = response.json()  # This converts the JSON response to a Python dictionary
-        #     print("Received dictionary:", data_dict)
-        # else:
-        #     print("Failed to retrieve data:", response.text)
+        if speed == None:
+            speed = 0
+        msSpeed = speed*.05
+        self.moveFront(msSpeed)
+        self.syncBack()
 
-        if self.authority <= 0:
-            self.authority = 0
-            self.speed = 0
-            self.fBlock.set_train(self, False)
-            self.bBlock.set_train(self, True)
-        else:
-            mpsSpeed = (self.speed*1000)/60/60/1000
-            self.authority = self.authority - mpsSpeed
-            self.moveFront(mpsSpeed)
-            self.syncBack()
-        self.trainAuth = self.fBlock.authority
-        self.trainCmd = self.fBlock.commandedSpeed
-
-    def moveFront(self, mpsSpeed):
+    def moveFront(self, msSpeed):
         if self.fLocOnBlock > 0:
-            self.fLocOnBlock = self.fLocOnBlock - mpsSpeed
+            self.fLocOnBlock = self.fLocOnBlock - msSpeed
             self.fBlock.set_train(self, False)
         else:
-            
             self.fBlock.train_set_beacon(self)
             remainingDistance = self.fLocOnBlock
             if self.fBackwards:
@@ -80,6 +66,10 @@ class Train:
                 self.fBlock, self.fLocOnBlock = self.fBlock.get_next_block()
                 self.fLocOnBlock += remainingDistance
                 self.fBlock.set_train(self, False)
+        self.grade_info["id"]=self.id
+        self.grade_info["grade_info"]=self.fBlock.get_grade()
+        response = requests.post(URL + "/train-model/get-data/grade-info", json=self.grade_info)
+            
 
     def syncBack(self):
         self.bLocOnBlock = self.fLocOnBlock + self.length

@@ -43,6 +43,11 @@ class Block:
         self.authority = None
         self.commandedSpeed = commandedSpeed
 
+        self.beacon_data = {
+            'id' : None,
+            'beacon_info' : None
+        }
+
     def get_table_data(self, index):
         if index == 0:
             return str(self.section)
@@ -132,7 +137,11 @@ class Block:
 
     def train_set_beacon(self, train):
         if isinstance(self.beacon, Beacon):
+            self.beacon_data["id"]=train.get_id()
+            self.beacon_data["beacon_info"]=self.beacon.get_staticData()
             train.set_staticData(self.beacon.get_staticData())
+            response = requests.post(URL + '/train-model/get-data/beacon-info', json=self.beacon_data)
+
             
     def set_occupancies(self):
         if isinstance(self.train, Train) or self.brokenTrack or self.circuitFailure or self.powerFailure or self.closed:
@@ -188,6 +197,8 @@ class Block:
         return self.nextBlock, self.nextBlock.get_length()
     def get_station(self):
         return self.station
+    def get_grade(self):
+        return self.grade
 
     def change_broken(self):
         if (self.brokenTrack):

@@ -541,7 +541,7 @@ class Train_UI(QMainWindow):
         authority_layout.addWidget(authority_button)
 
         speed_layout = QHBoxLayout()
-        speed_layout.addWidget(QLabel("Commanded Speed (mph):"))
+        speed_layout.addWidget(QLabel("Commanded Speed (km/hr):"))
         self.speed_input = QLineEdit()
         speed_layout.addWidget(self.speed_input)
         speed_button = QPushButton("Send")

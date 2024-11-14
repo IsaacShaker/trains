@@ -1393,8 +1393,8 @@ class Train_Controller_SW_UI(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     
-    window = Train_Controller_SW_UI()
-    window.show()
+    window_2 = Train_Controller_SW_UI()
+    window_2.show()
 
     sys.exit(app.exec())
 
