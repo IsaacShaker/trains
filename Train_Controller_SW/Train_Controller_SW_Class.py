@@ -259,13 +259,15 @@ class Train_Controller:
     def set_train_id(self, number):
         self.train_id = number
 
-    def get_train_id(self):
-        return self.train_id
-
+    def set_T(self, speed):
+        self.T = .09/speed
 
     ############################
     #  Get Functions 
     ############################
+
+    def get_train_id(self):
+        return self.train_id
 
     #get manual mode
     def get_manual_mode(self):
@@ -368,8 +370,8 @@ class Train_Controller:
         
     #this function updates authority in real time in order to have an accurate reading for the driver
     def update_authority(self):
-        self.authority -= self.actual_velocity*self.T   #multiple time interval by actual velocity
-        self.add_auth_diff(self.actual_velocity*self.T)
+        self.authority -= self.actual_velocity*.09   #multiple time interval by actual velocity
+        self.add_auth_diff(self.actual_velocity*.09)
 
 
     #this function will return the setpoint velocity based on the commaned velocity and user inputed set point velocity
