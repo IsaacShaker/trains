@@ -12,6 +12,7 @@ class Train:
         self.current_block = 0
         self.first_arrival = 0
         self.dispatch_time = 0
+        self.on_track = False
         self.route_authorities = deque()
         self.station_stops = []
         self.myReader = MapReader()
@@ -53,6 +54,9 @@ class Train:
 
     def set_current_block(self, new_block):
         self.current_block = new_block
+
+    def dispatched(self):
+        self.on_track = True
 
     def get_authority(self):
         return self.current_authority
@@ -103,7 +107,6 @@ class Train:
     def add_stop(self, station):
         station = "STATION; "+station
         self.station_stops.append(station)
-        print(self.station_stops)
 
     def get_station_stops(self):
         return self.station_stops
