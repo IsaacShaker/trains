@@ -26,3 +26,4 @@ class Clock:
 
             # Update oldTime to the newTime for the next call
             self.old_time = self.new_time
+        return self.old_time

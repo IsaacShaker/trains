@@ -887,13 +887,12 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         # Only update the clock if the simulation is running
         if myClock.simulation_running:
             # Update the clock for everybody 
-            myClock.update_clock()
+            self.system_time = myClock.update_clock()
 
             # Update the label in UI
             self.clock_label.setText(myClock.current_time)
-
-            self.system_time = myClock.elapsed_time
-
+            print('system time =', self.system_time)
+            print('dispatch time =', self.trains[0].dispatch_time)
             self.dispatch_train()
 
     # What happens when the user presses Current Mode button
@@ -1327,6 +1326,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                     response = requests.post(URL + "/track-controller-sw/give-data/wayside-vsion", json=self.wayside_vision_dict)
                     if response.status_code == 200:
                         break
+                train.on_track = True
 
 if __name__ == "__main__":    
     app = QApplication(sys.argv)
