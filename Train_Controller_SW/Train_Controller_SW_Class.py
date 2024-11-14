@@ -434,7 +434,7 @@ class Train_Controller:
     def calculate_commanded_power(self):
 
         #check setpoint speed first or if any brakes are being pressed
-        if self.setpoint_velocity <= self.actual_velocity or self.s_brake or self.e_brake or self.authority <= 0:
+        if self.setpoint_velocity <= self.actual_velocity or (self.s_brake and not self.failure_brake) or self.e_brake or self.authority <= 0:
             self.set_commanded_power(0)
             self.ek = 0
             self.ek_1 = 0
