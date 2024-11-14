@@ -21,8 +21,10 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
     def __init__(self):
         super().__init__()
 
-        self.oldTime = 21600 # the system will began at 6AM
-        self.speed = 1 # the system will be running at 1x speed by default
+        myClock.old_time = 21600 # the system will began at 6AM
+        myClock.sim_speed = 1 # the system will be running at 1x speed by default
+
+        self.system_time = 0
 
         # Helps with toggling mode button text
         self.automatic_mode = True # the system begins in automatic mode
@@ -164,8 +166,8 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             "speed": self.speed_for_wayside
         }
 
-        self.index
-        self.output_block
+        self.index = 0 
+        self.output_block = 0
         # Wayside Vision
         self.wayside_vision_dict = {
             "index" : self.index,
@@ -890,49 +892,9 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             # Update the label in UI
             self.clock_label.setText(myClock.current_time)
 
-            for block in self.maintenance_blocks:
-                block_label = self.block_labels[block]
-                self.update_label_background(block_label, block)
+            self.system_time = myClock.elapsed_time
 
-            for block in self.occupied_blocks:
-                block_label = self.block_labels[block]
-                self.update_label_background(block_label, block)
-
-            # print('-------------Switch Safety-------------')
-            # # Perform possible safety meaures relating to the switch
-            # for train in self.trains:
-            #     if train.destination == "STATION: B" and self.switch_status == False and self.occupied_blocks.count(('Green', 4)):
-            #         print('Wrong Switch scenario')
-            #         # Prevent train for going the wrong way
-            #         train.setSuggestedSpeed(0)
-            #         self.train_suggested_speed_label.setText('Suggested Speed = 0 mph')
-            #     elif train.destination == "STATION: C" and self.switch_status == True and self.occupied_blocks.count(('Green', 4)):
-            #         print('Wrong Switch Scenario')
-            #         # Prevent train for going the wrong way
-            #         train.setSuggestedSpeed(0)
-            #         self.train_suggested_speed_label.setText('Suggested Speed = 0 mph')
-            #     elif train.destination == "STATION: B" and self.top_light_status == False and self.occupied_blocks.count(('Green', 6)):
-            #         print('Top Light Scenario')
-            #         # Prevent train from running the light
-            #         train.setSuggestedSpeed(0)
-            #         self.train_suggested_speed_label.setText('Suggested Speed = 0 mph')
-            #     elif train.destination == "STATION: C" and self.bottom_light_status == False and self.occupied_blocks.count(('Green', 12)):
-            #         print('Bottom Light Measure')
-            #         # Prevent train from running the light
-            #         train.setSuggestedSpeed(0)
-            #         self.train_suggested_speed_label.setText('Suggested Speed = 0 mph')
-            #     elif self.crossing_status == False and self.occupied_blocks.count(('Blue', 3)):
-            #         print('Railway Crossing Measure')
-            #         # Prevent train from running the railway crossing
-            #         train.setSuggestedSpeed(0)
-            #         self.train_suggested_speed_label.setText('Suggested Speed = 0 mph')
-            #     else:
-            #         print('Good')
-            #         # Keep Suggested Speed the same
-            #         if train.suggested_speed == 0:
-            #             train.setSuggestedSpeed(50)
-            #             self.train_suggested_speed_label.setText('Suggested Speed = 31 mph')
-            #     print('---------------------------------')
+            self.dispatch_train()
 
     # What happens when the user presses Current Mode button
     def mode_clicked(self):        
@@ -1145,9 +1107,9 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             # Split the time string into hours, minutes, and seconds
             hours, minutes, seconds = map(int, time.split(":"))
             time_in_seconds = hours * 3600 + minutes * 60 + seconds
-            hours = time_in_seconds // 3600
-            minutes = (time_in_seconds % 3600) //60
-            seconds = time_in_seconds % 60
+            hours = int(time_in_seconds // 3600)
+            minutes = int((time_in_seconds % 3600) //60)
+            seconds = int(time_in_seconds % 60)
             print('arrival time =', hours, minutes, seconds)
             new_train.set_first_arrival_time(time_in_seconds)
             hours = new_train.dispatch_time // 3600
@@ -1205,7 +1167,6 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             selected_train.add_stop(self.station_select_combo_box.currentText())
             selected_train.get_authority_from_map()
             
-
     # Display the correct data based on the train selected
     def train_selected(self, selected_train):
         for train in self.trains:
@@ -1347,17 +1308,25 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
 
         self.update_label_background()
 
-        # Wayside Vision stuff
-
-
-    # Update the wayside vision dictionary
-    def update_wayside_vision(self):
-        pass
-        
-
-    # API function for wayside vision
-    def get_wayside_vision(self):
-        return self.wayside_vision_dict
+    # Release a train from the yard if its time
+    def dispatch_train(self):
+        for train in self.trains:
+            if self.system_time >= train.dispatch_time and train.on_track == False:
+                print('dispatching a train')
+                self.authority_dict["line"] = "Green"
+                self.authority_dict["index"] = 0
+                popped_auth = self.yard.pop_authority()
+                self.authority_dict["authority"] = popped_auth[1]
+                while(1):
+                        response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                        if response.status_code == 200:
+                            break
+                self.wayside_vision_dict["index"] = 2
+                self.wayside_vision_dict["output_block"] = 0
+                while(1):
+                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vsion", json=self.wayside_vision_dict)
+                    if response.status_code == 200:
+                        break
 
 if __name__ == "__main__":    
     app = QApplication(sys.argv)

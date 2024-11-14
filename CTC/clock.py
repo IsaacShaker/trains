@@ -10,9 +10,9 @@ class Clock:
     # Format the time to the form of a clock
     def format_time(self, seconds: int):
         self.current_time = ''
-        hours = (seconds // 3600) % 24
-        minutes = (seconds % 3600) // 60
-        seconds = seconds % 60
+        hours = int(seconds // 3600) % 24
+        minutes = int(seconds % 3600) // 60
+        seconds = int(seconds % 60)
         self.current_time = f"{hours:02}:{minutes:02}:{seconds:02}"
         return self.current_time
     
