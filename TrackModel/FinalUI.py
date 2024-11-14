@@ -270,6 +270,15 @@ class TrackUI(QMainWindow):
         if data['line'] == 'Green':
             greenBlocks[data['index']].set_closed(data['maintenance'])
 
+    def set_block_authority(self, data):
+        if data['line'] == 'Green':
+            greenBlocks[data['index']].set_authority(data['authority'])
+
+    def set_block_cmdSpeed(self, data):
+        if data['line'] == 'Green':
+            greenBlocks[data['index']].set_authority(data['speed'])
+
+
     # def set_train_speed(self, data):
     #     for i in range(len(data)):
     #         greenTrains[].set_train_speed(data[''])
