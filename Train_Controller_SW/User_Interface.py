@@ -58,13 +58,13 @@ from PyQt6.QtWidgets import (
 
 class Train_Controller_SW_UI(QMainWindow):
 
-    def __init__(self,):
+    def __init__(self):
         super(Train_Controller_SW_UI, self).__init__()
 
         self.auth_counter = 0
         self.next_train_id = 0
         self.train_list =[]
-        self.var_from_mitch = 1
+        self.var_from_mitch = 5
 
         self.add_train()
         #self.add_train()
@@ -1374,7 +1374,7 @@ class Train_Controller_SW_UI(QMainWindow):
                 self.s_brake_pressed()
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
-            else:
+            else: 
                 self.s_brake_released()
                 self.s_brake_button.setChecked(False)
                 self.s_brake_button.setCheckable(False)
