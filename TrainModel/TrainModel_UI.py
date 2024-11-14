@@ -66,8 +66,6 @@ class Train_UI(QMainWindow):
         self.train_list = TrainList()
 
         self.train_list.add_train()
-        self.train_list.add_train()
-        self.train_list.add_train()
 
         self.setWindowTitle("Train Model")
         self.setGeometry(100, 100, 800, 600)
