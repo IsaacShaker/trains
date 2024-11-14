@@ -28,30 +28,29 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
     def set_M_hazard(truth_val):
         for i in range(74, 77):
             speed_hazard[i] = truth_val
-
-    def Q_is_hazard():
-        for i in range(98, 101):
-            if speed_hazard[i]:
-                return True
-        return False
     
-    def M_is_hazard():
-        for i in range(74, 77):
-            if speed_hazard[i]:
-                return True
-        return False
+    def J_is_hazard():
+        for i in range(58, 63):
+            if speed_hazard[i] == False:
+                return False
+        return True
+    
+    def set_J_hazard(truth_val):
+        for i in range(58, 63):
+            speed_hazard[i] = truth_val
     
     while not stop_event.is_set():
-        # reset speed hazard
-        for i in range(len(speed_hazard)):
-            speed_hazard[i] = False
-
+        J_hazard = J_is_hazard()
         # Sections I - M
         for i in range(36, 77):
             if block_occupancies[i]:
                 # trailing 4 blocks so other trains don't get too close
                 for j in range(1, 5):
                     speed_hazard[i-j] = True
+            speed_hazard[i] = False
+
+        if J_hazard == True:
+            set_J_hazard(True)
         
         # Sections O - Q
         for i in range(86, 101):
@@ -59,6 +58,7 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
                 # trailing 4 blocks so other trains don't get too close
                 for j in range(1, 5):
                     speed_hazard[i-j] = True
+            speed_hazard[i] = False
 
         # Sections S -  U
         for i in range(105, 117):
@@ -66,6 +66,7 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
                 # trailing 4 blocks so other trains don't get too close
                 for j in range(1, 5):
                     speed_hazard[i-j] = True
+            speed_hazard[i] = False
         
         if N_occupied() == False:
             switches[4] = False
