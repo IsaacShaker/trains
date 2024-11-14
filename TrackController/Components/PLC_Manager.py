@@ -68,6 +68,7 @@ class PLCManager(QObject):
         # populate the list with proper values
         for block in self.track_data["blocks"]:
             self.blocks[block["block"]] = block["occupied"]
+            self.speed_hazard[block["block"]] = block["speed_hazard"]
         
         for switch in self.track_data["switches"]:
             self.switch_suggest[switch["id"]] = switch["suggested_toggle"]

@@ -66,8 +66,6 @@ class Train_UI(QMainWindow):
         self.train_list = TrainList()
 
         self.train_list.add_train()
-        self.train_list.add_train()
-        self.train_list.add_train()
 
         self.setWindowTitle("Train Model")
         self.setGeometry(100, 100, 800, 600)
@@ -541,7 +539,7 @@ class Train_UI(QMainWindow):
         authority_layout.addWidget(authority_button)
 
         speed_layout = QHBoxLayout()
-        speed_layout.addWidget(QLabel("Commanded Speed (mph):"))
+        speed_layout.addWidget(QLabel("Commanded Speed (km/hr):"))
         self.speed_input = QLineEdit()
         speed_layout.addWidget(self.speed_input)
         speed_button = QPushButton("Send")

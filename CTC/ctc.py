@@ -1,16 +1,22 @@
+import os
 import sys
 import time
 import pandas as pd
 import requests
-from train import Train
-from clock import Clock
-from scheduleReader import ScheduleReader
-from station import Station
-from block import Block
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem, QMessageBox
-from PyQt6.QtCore import Qt, QTimer, QRegularExpression
-from PyQt6.QtGui import QRegularExpressionValidator
-from collections import defaultdict, deque
+from CTC.train import Train
+from CTC.clock import Clock
+from CTC.scheduleReader import ScheduleReader
+from CTC.station import Station
+from CTC.block import Block
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QGridLayout, QSpacerItem, QSizePolicy, QHBoxLayout, QComboBox, QInputDialog, QDialog, QLineEdit, QFileDialog, QScrollArea, QListWidget, QListWidgetItem
+from PyQt6.QtCore import Qt, QTimer
+from collections import defaultdict
+
+base_path = os.path.dirname(os.path.abspath(__file__))  # Full path of the current file's directory
+# Set the file_path to one directory up from base_path and join it with 'block.csv'
+FILE_PATH = os.path.join(base_path, '..', 'CTC', 'Blocks.xlsx')
+# Normalize the path to remove any redundant separators
+FILE_PATH = os.path.abspath(FILE_PATH)
 
 # Create an object from Clock class
 myClock = Clock()
@@ -120,11 +126,10 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         ##################################################
         #     Create the blocks from the Track Layout    #
         ##################################################
-        file_path = 'C:/Trains C/trains/CTC/Blocks.xlsx'
         self.blocks = defaultdict(list)
         for line_color in ['Green', 'Red']:
             excel_sheet = line_color+" Line"
-            blocks_df = pd.read_excel(file_path, sheet_name=excel_sheet)            
+            blocks_df = pd.read_excel(FILE_PATH, sheet_name=excel_sheet)            
             
             # Loop through each row and create a Block instance
             for _, row in blocks_df.iterrows():
@@ -175,9 +180,9 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         }
 
         #               Timer Stuff                 #
-        # self.request_block_occupancies_timer = QTimer(self)
-        # self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
-        # self.request_block_occupancies_timer.start(1000)
+        self.request_block_occupancies_timer = QTimer(self)
+        self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
+        self.request_block_occupancies_timer.start(1000)
 
     # Create the Home and Test Bench tab for the window
     def create_tabs(self):

@@ -36,6 +36,7 @@ class TrainModel(QObject):
         self.commandedSpeed = 0.0
         self.authority = 0.0
         self.beaconInfo=0
+        self.grade=0.0
 
         #Brakes
         self.emergencyBrake = False
@@ -151,17 +152,19 @@ class TrainModel(QObject):
         self.ui_refresh.emit()
 
     def set_commandedSpeed(self, speed: float):
-        self.commandedSpeed = self.mph_to_mps(speed)
+        self.commandedSpeed = self.kmh_to_ms(speed)
         self.commanded_velocity_dict["commanded_velocity"]=self.commandedSpeed
-        print(f"Commanded speed set to {speed} m/s.")
+        print(f"Commanded speed set to {speed} km/hr.")
         response = requests.post(URL + "/train-controller/receive-commanded-velocity", json=self.commanded_velocity_dict)
         self.ui_refresh.emit()
 
     def set_authority(self, authority: float):
+        
         self.authority = authority
         self.authority_dict["authority"]=self.authority
         print(f"Authority set to {authority}.")
-        response = requests.post(URL + "/train-controller/receive-authority", json=self.authority_dict)
+        if(authority is not None):
+            response = requests.post(URL + "/train-controller/receive-authority", json=self.authority_dict)
         self.ui_refresh.emit()
 
     def set_beaconInfo(self, info: string):
@@ -171,11 +174,14 @@ class TrainModel(QObject):
         response = requests.post(URL + "/train-controller/receive-beacon-info", json=self.beacon_info_dict)
         self.ui_refresh.emit()
 
+    def set_grade(self, grade: float):
+        self.grade=grade
+
     def set_currentVelocity(self, vel: float):
         self.currentVelocity=vel
         self.actual_velocity_dict["actual_velocity"]=self.currentVelocity
         response = requests.post(URL + "/train-controller/receive-actual-velocity", json=self.actual_velocity_dict)
-        #response = requests.
+        #response = requests.post(URL + "/track-model/get-data/current-speed", json=self.actual_velocity_dict)
         self.ui_refresh.emit()
 
     def set_signal_pickup_failure(self, state: bool):
@@ -241,6 +247,10 @@ class TrainModel(QObject):
     def tons_to_kg(self, mass):
         mass=mass*907.18474
         return mass
+
+    def kmh_to_ms(self,speed):
+        speed=(((speed*1000)/60)/60)
+        return speed
 
     def start_adjusting_temperature(self):
         self.adjust_timer.start(100)  # Update every 100 ms

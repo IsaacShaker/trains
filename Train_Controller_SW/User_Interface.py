@@ -61,7 +61,7 @@ class Train_Controller_SW_UI(QMainWindow):
     def __init__(self):
         super(Train_Controller_SW_UI, self).__init__()
 
-
+        self.auth_counter = 0
         self.next_train_id = 0
         self.train_list =[]
 
@@ -72,7 +72,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.train_list[1].authority = 250
         self.train_list[2].authority = 100
 
-        self.train_list[0].actual_velocity = 10
+        self.train_list[0].actual_velocity = 0
         self.train_list[0].commanded_velocity = 18
         self.train_list[0].setpoint_velocity = 14
 
@@ -708,9 +708,9 @@ class Train_Controller_SW_UI(QMainWindow):
         self.check_errors()
 
         # Create a QTimer for computing power
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.calculate_power)  # Connect the timer to your function
-        self.timer.start(50)  # 50 milliseconds interval
+        self.power_timer = QTimer(self)
+        self.power_timer.timeout.connect(self.calculate_power)  # Connect the timer to your function
+        self.power_timer.start(50)  # 50 milliseconds interval
 
 
 
@@ -1357,8 +1357,14 @@ class Train_Controller_SW_UI(QMainWindow):
         #calculate power
         self.train_list[self.current_train].calculate_commanded_power()
 
+        self.auth_counter +=1
+
+        if self.auth_counter == 40:
+            self.auth_counter = 0
+            self.train_list[self.current_train].send_auth_diff()
+
         #update authority
-        self.train_list[self.current_train].update_authority()
+        #self.train_list[self.current_train].update_authority()
 
         #update power in test bench
         self.commanded_power_output.setText(f'<span style="color: #C598FF;"> &nbsp; Commanded Power: </span> <span style="color: white;">{self.train_list[self.current_train].get_commanded_power():.2f} Watts</span>')
@@ -1393,8 +1399,8 @@ class Train_Controller_SW_UI(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     
-    window = Train_Controller_SW_UI()
-    window.show()
+    window_2 = Train_Controller_SW_UI()
+    window_2.show()
 
     sys.exit(app.exec())
 
