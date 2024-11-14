@@ -71,6 +71,7 @@ class TrainModel(QObject):
         self.currForce = 0.0
         self.currPower = 0.0
         self.samplePeriod = 0.09
+        self.mitch_var=1
         self.lastVel=0.0
 
         #Constants
@@ -375,7 +376,7 @@ class TrainModel(QObject):
         print(self.currAccel)
 
         #Velocity acceleration
-        velocityNew = self.currentVelocity + ((self.samplePeriod / 2) * (self.currAccel + previousAcceleration))
+        velocityNew = self.currentVelocity + (((self.samplePeriod / 2)/self.mitch_var) * (self.currAccel + previousAcceleration))
         if(velocityNew >= self.VELOCITY_LIMIT):
             # If the velocity is greater than max speed
             velocityNew = self.VELOCITY_LIMIT # m/s
