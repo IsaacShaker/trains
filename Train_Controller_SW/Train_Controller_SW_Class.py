@@ -36,9 +36,10 @@ class Train_Controller:
         self.commanded_power = 0.0
         self.ek = 0.0
         self.ek_1 = 0.0
-        self.T = 0.05 #time samples of 50 ms
+        self.T = 0.09 #time samples of 50 ms
         self.uk = 0.0
         self.uk_1 = 0.0
+        self.auth_diff = 0.0
 
         #Ints
         self.received_authority = 0
@@ -86,6 +87,11 @@ class Train_Controller:
         self.brakes_dict = {
             "s_brake": self.s_brake,
             "e_brake": self.e_brake,
+            "train_id": self.train_id
+        }
+
+        self.auth_diff_dict = {
+            "auth_diff": self.auth_diff,
             "train_id": self.train_id
         }
 
@@ -181,9 +187,31 @@ class Train_Controller:
     def set_received_authority(self, distance):
         self.received_authority = distance
 
+    def send_auth_diff(self):
+        try:
+            response = requests.post(URL + "/track-model/get-data/auth_difference", json=self.auth_diff_dict)
+            response.raise_for_status()  # This will raise an error for 4xx/5xx responses
+
+            print("Success:", response.json())
+
+        except requests.exceptions.HTTPError as http_err:
+            # Print the HTTP error response
+            print(f"HTTP error occurred: {http_err}")  # HTTP error details
+            print("Response content:", response.text)   # Full response content
+
+        except Exception as err:
+        # Catch any other exceptions
+            print(f"Other error occurred: {err}")
+
+        print(f"Difference: {self.auth_diff}")
+        print(f"Current Authority: {self.authority}")
+        self.set_auth_diff(0)
+        
+
     #set velocities
     def set_actual_velocity(self, v):
         self.actual_velocity = v
+        self.update_authority()
 
     def set_commanded_velocity(self, v):
         self.commanded_velocity = v
@@ -200,6 +228,9 @@ class Train_Controller:
 
     #set commanded power
     def set_commanded_power(self, power):
+        if power > 120000:
+            power = 120000
+            
         self.commanded_power = power
 
         self.commanded_power_dict["commanded_power"] = self.commanded_power
@@ -217,16 +248,26 @@ class Train_Controller:
     def set_can_get_authority(self, truth):
         self.can_get_authority = truth
 
+    def set_auth_diff(self, auth):
+        self.auth_diff = auth
+        self.auth_diff_dict["auth_diff"] = self.auth_diff
+
+    def add_auth_diff(self, auth):
+        self.auth_diff += auth
+        self.auth_diff_dict["auth_diff"] = self.auth_diff
+
     def set_train_id(self, number):
         self.train_id = number
 
-    def get_train_id(self):
-        return self.train_id
-
+    def set_T(self, speed):
+        self.T = .09/speed
 
     ############################
     #  Get Functions 
     ############################
+
+    def get_train_id(self):
+        return self.train_id
 
     #get manual mode
     def get_manual_mode(self):
@@ -329,7 +370,9 @@ class Train_Controller:
         
     #this function updates authority in real time in order to have an accurate reading for the driver
     def update_authority(self):
-        self.authority -= self.actual_velocity*self.T   #multiple time interval by actual velocity
+        self.authority -= self.actual_velocity*.09   #multiple time interval by actual velocity
+        self.add_auth_diff(self.actual_velocity*.09)
+
 
     #this function will return the setpoint velocity based on the commaned velocity and user inputed set point velocity
     #if the user inputs a value higher than commaned velocity, the set point will default to the commanded velocity
@@ -393,7 +436,7 @@ class Train_Controller:
     def calculate_commanded_power(self):
 
         #check setpoint speed first or if any brakes are being pressed
-        if self.setpoint_velocity <= self.actual_velocity or self.s_brake or self.e_brake or self.authority <= 0:
+        if self.setpoint_velocity <= self.actual_velocity or (self.s_brake and not self.failure_brake) or self.e_brake or self.authority <= 0:
             self.set_commanded_power(0)
             self.ek = 0
             self.ek_1 = 0

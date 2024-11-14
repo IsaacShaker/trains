@@ -131,8 +131,8 @@ class MyApp(QWidget):
 
     def get_block_data(self):
         data = {
-            "Green": self.data_test["Green"]["SW"]["blocks"],
-            "Red": self.data_test["Red"]["SW"]["blocks"]
+            "Green": self.data_main["Green"]["SW"]["blocks"],
+            "Red": self.data_main["Red"]["SW"]["blocks"]
         }
         return data
 
@@ -143,30 +143,35 @@ class MyApp(QWidget):
         
     
     def add_authority(self, authority):
-        # TODO:
-        # send the authority to the Track Model
         print("Got em")
         print(authority)
 
-        # response = requests.post("http://127.0.0.1:5000/track-model/set-authority", json=authority)
-        # if response.status_code != 200:
-        #     print("Failed to give authority to Track Model")
+        response = requests.post("http://127.0.0.1:5000/track-model/set-authority", json=authority)
+        if response.status_code != 200:
+            print("Failed to give authority to Track Model")
 
     def add_speed(self, speed):
-        # TODO:
-        # send the speed to the Track Model
         print("Got em")
         print(speed)
 
-        # response = requests.post("http://127.0.0.1:5000/track-model/set-speed", json=speed)
-        # if response.status_code != 200:
-        #     print("Failed to give speed to Track Model")
+        response = requests.post("http://127.0.0.1:5000/track-model/set-commanded-speed", json=speed)
+        if response.status_code != 200:
+            print("Failed to give speed to Track Model")
 
     def add_wayside_vision(self, vision):
-        # TODO:
-        # parse and give it to the waysides
         print("Got em")
         print(vision)
+
+        if vision["index"] == 1:
+            if vision["output_block"] == 58:
+                self.data_main["Green"]["SW"]["switches"][0]["suggested_toggle"] = False
+            elif vision["output_block"] == 0:
+                self.data_main["Green"]["SW"]["switches"][0]["suggested_toggle"] = True
+        elif vision["index"] == 2:
+            if vision["output_block"] == 0:
+                self.data_main["Green"]["SW"]["switches"][1]["suggested_toggle"] = True
+            elif vision["output_block"] == 62:
+                self.data_main["Green"]["SW"]["switches"][1]["suggested_toggle"] = False
 
 
     def closeEvent(self, event):
@@ -213,7 +218,7 @@ class MyApp(QWidget):
 
         # Create a drop-down (combo box) with values 0 and 1
         plc_dropdown = QComboBox()
-        plc_dropdown.addItems(["0", "1"])  # Add options "0" and "1"
+        plc_dropdown.addItems(["0", "1", "2"])  # Add options "0" and "1"
         plc_dropdown.setCurrentText(str(self.plc_num))
         plc_dropdown.setFixedSize(50, 40)  # Adjust size to match the button's height
         horizontal_layout.addWidget(plc_dropdown)

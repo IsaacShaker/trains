@@ -36,6 +36,7 @@ class TrainModel(QObject):
         self.commandedSpeed = 0.0
         self.authority = 0.0
         self.beaconInfo=0
+        self.grade=0.0
 
         #Brakes
         self.emergencyBrake = False
@@ -69,7 +70,8 @@ class TrainModel(QObject):
         #Calculations
         self.currForce = 0.0
         self.currPower = 0.0
-        self.samplePeriod = 0.05
+        self.samplePeriod = 0.09
+        self.mitch_var=1
         self.lastVel=0.0
 
         #Constants
@@ -151,17 +153,19 @@ class TrainModel(QObject):
         self.ui_refresh.emit()
 
     def set_commandedSpeed(self, speed: float):
-        self.commandedSpeed = self.mph_to_mps(speed)
+        self.commandedSpeed = self.kmh_to_ms(speed)
         self.commanded_velocity_dict["commanded_velocity"]=self.commandedSpeed
-        print(f"Commanded speed set to {speed} m/s.")
+        print(f"Commanded speed set to {speed} km/hr.")
         response = requests.post(URL + "/train-controller/receive-commanded-velocity", json=self.commanded_velocity_dict)
         self.ui_refresh.emit()
 
     def set_authority(self, authority: float):
+        
         self.authority = authority
         self.authority_dict["authority"]=self.authority
         print(f"Authority set to {authority}.")
-        response = requests.post(URL + "/train-controller/receive-authority", json=self.authority_dict)
+        if(authority is not None):
+            response = requests.post(URL + "/train-controller/receive-authority", json=self.authority_dict)
         self.ui_refresh.emit()
 
     def set_beaconInfo(self, info: string):
@@ -171,11 +175,14 @@ class TrainModel(QObject):
         response = requests.post(URL + "/train-controller/receive-beacon-info", json=self.beacon_info_dict)
         self.ui_refresh.emit()
 
+    def set_grade(self, grade: float):
+        self.grade=grade
+
     def set_currentVelocity(self, vel: float):
         self.currentVelocity=vel
         self.actual_velocity_dict["actual_velocity"]=self.currentVelocity
         response = requests.post(URL + "/train-controller/receive-actual-velocity", json=self.actual_velocity_dict)
-        #response = requests.
+        response = requests.post(URL + "/track-model/get-data/current-speed", json=self.actual_velocity_dict)
         self.ui_refresh.emit()
 
     def set_signal_pickup_failure(self, state: bool):
@@ -239,7 +246,15 @@ class TrainModel(QObject):
         return num
 
     def tons_to_kg(self, mass):
-        mass=mass*907.18474
+        mass=mass*1000
+        return mass
+
+    def kmh_to_ms(self,speed):
+        speed=(((speed*1000)/60)/60)
+        return speed
+    
+    def tons_to_N(self,mass):
+        mass=mass*1000*9.80665
         return mass
 
     def start_adjusting_temperature(self):
@@ -259,7 +274,7 @@ class TrainModel(QObject):
     def calc_total_mass(self):
     
         # Convert train weight to pounds
-        car_weight_pounds = self.CAR_MASS * 2000
+        car_weight_pounds = self.CAR_MASS * 2204.623
 
         train_weight_pounds=car_weight_pounds*self.numberOfCars
         
@@ -270,7 +285,7 @@ class TrainModel(QObject):
         total_weight_pounds = train_weight_pounds + total_people_weight
         
         # Convert total weight to tons
-        total_weight_tons = total_weight_pounds / 2000  # Convert back to tons
+        total_weight_tons = total_weight_pounds / 2204.623  # Convert back to tons
 
         print (total_weight_tons)
 
@@ -289,7 +304,7 @@ class TrainModel(QObject):
         if self.currForce > max_force:
             self.currForce = max_force
         #If the power is at 0 and we are not moving or the emergency brake is pulled
-        elif (self.currPower == 0 and self.lastVel == 0) or self.emergencyBrake or self.signalPickupFailure or self.engineFailure or self.brakeFailure:
+        elif (self.currPower == 0 and self.lastVel == 0) or self.emergencyBrake or self.engineFailure:
             self.currForce = 0
         #If the train is not moving, add limiter so the force is not infinite
         elif self.lastVel == 0:
@@ -347,18 +362,21 @@ class TrainModel(QObject):
         else:
              #Force to 0 if velocity is 0 to avoid divide by zero error
             self.currForce = 0
+        print(self.currForce)
         self.limit_force()
-
+        print(self.currForce)
         #Acceleration calc
         if self.totalMass != 0:
-            self.currAccel = self.currForce / (self.tons_to_kg(self.totalMass))  # Ensure totalMass is not zero
+            self.currAccel = self.currForce / (self.tons_to_kg(self.totalMass)) 
+        # Ensure totalMass is not zero
         else:
             self.currAccel = 0
-
+        print(self.currAccel)
         self.limit_accel()
+        print(self.currAccel)
 
         #Velocity acceleration
-        velocityNew = self.currentVelocity + ((self.samplePeriod / 2) * (self.currAccel + previousAcceleration))
+        velocityNew = self.currentVelocity + (((self.samplePeriod / 2)/self.mitch_var) * (self.currAccel + previousAcceleration))
         if(velocityNew >= self.VELOCITY_LIMIT):
             # If the velocity is greater than max speed
             velocityNew = self.VELOCITY_LIMIT # m/s
