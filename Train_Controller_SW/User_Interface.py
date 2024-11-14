@@ -58,12 +58,13 @@ from PyQt6.QtWidgets import (
 
 class Train_Controller_SW_UI(QMainWindow):
 
-    def __init__(self):
+    def __init__(self,):
         super(Train_Controller_SW_UI, self).__init__()
 
         self.auth_counter = 0
         self.next_train_id = 0
         self.train_list =[]
+        self.var_from_mitch = 1
 
         self.add_train()
         #self.add_train()
@@ -710,7 +711,11 @@ class Train_Controller_SW_UI(QMainWindow):
         # Create a QTimer for computing power
         self.power_timer = QTimer(self)
         self.power_timer.timeout.connect(self.calculate_power)  # Connect the timer to your function
-        self.power_timer.start(90)  # 50 milliseconds interval
+        self.power_timer.start(90)  # 90 milliseconds interval
+
+        self.change_timer(self.var_from_mitch)
+
+        
 
 
 
@@ -1059,7 +1064,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.l_door_button.setText("Opened")
 
         #start 60s timer
-        self.l_door_timer.start(4000)
+        self.l_door_timer.start(int(60000/self.var_from_mitch))
 
         print(f"The current train is {self.current_train}")
 
@@ -1092,7 +1097,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.r_door_button.setText("Opened")
 
         #start 60s timer
-        self.r_door_timer.start(4000)
+        self.r_door_timer.start(int(60000/self.var_from_mitch))
 
     #activates door button again
     def close_r_door(self):
@@ -1428,6 +1433,12 @@ class Train_Controller_SW_UI(QMainWindow):
         #     self.train_selection.addItems(["Train " + str(self.next_train_id)])
         self.next_train_id += 1
         self.train_list.append(new_train)
+
+    def change_timer(self, sim_speed):
+        self.var_from_mitch = sim_speed
+        #change timer
+        self.power_timer.setInterval(int(90/sim_speed))
+        self.train_list[self.current_train].set_T(sim_speed)
 
 
 
