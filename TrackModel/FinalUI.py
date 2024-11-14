@@ -769,15 +769,14 @@ class MainWindow(QMainWindow):
                 print("Index Error sendButton_click function.")
         #if row 3 input for traffic lights
         elif i == 2:
-            print("No traffic lights")
-        #     if id <= 1 and id >= 0:
-        #         if var == "Red":
-        #             redTrafficLights[id].set_R()
-        #         else:
-        #             blueTrafficLights[id].set_G()
-        #     else:
-        #         print("Index Error sendButton_click function.")
-        # #if row 4 input authority for specific block changes
+            if id <= 1 and id >= 0:
+                if var == "Red":
+                    greenTrafficLights[id].set_R()
+                else:
+                    greenTrafficLights[id].set_G()
+            else:
+                print("Index Error sendButton_click function.")
+        #if row 4 input authority for specific block changes
         elif i == 3:
             if id <= 150 and id >= 1:
                 greenBlocks[id].set_authority(float(var))

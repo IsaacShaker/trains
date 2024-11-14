@@ -108,8 +108,7 @@ class Block:
         else:
             return f"Block {index}:\n\tLine: {self.line} \n\tSection: {self.section} \n\tBlock Number: {self.number} \n\tNext Block: {self.nextBlock.display_num()} \n\tBlock Length: {self.length} \n\tBlock Grade: {self.grade} \n\tSpeed Limit: {self.speedLimit} \n\tElevation: {self.elevation} \n\tCumulative Elevation: {self.cumElevation} \n\tOccupied: {self.occupied}\n\tBroken Track: {self.brokenTrack}\n\tTrack Circuit Failure: {self.circuitFailure}\n\tPower Failure: {self.powerFailure}"
     def display_num(self):
-        return f"{self.number}"
-      
+        return f"{self.number}"  
     def get_if_train(self):
         if isinstance(self.train, Train):
             return True
@@ -133,6 +132,7 @@ class Block:
     def train_set_beacon(self, train):
         if isinstance(self.beacon, Beacon):
             train.set_staticData(self.beacon.get_staticData())
+
             
     def set_occupancies(self):
         if isinstance(self.train, Train) or self.brokenTrack or self.circuitFailure or self.powerFailure or self.closed:
@@ -163,8 +163,6 @@ class Block:
         self.switch = switch
     def set_traffic(self, traffic):
         self.trafficLight = traffic
-    def set_closed(self, closed):
-        self.closed = closed
 
     def get_num(self):
         return self.number
@@ -176,8 +174,6 @@ class Block:
         return self.brokenTrack
     def get_circuit(self):
         return self.circuitFailure
-    def get_closed(self):
-        return self.closed
     def get_power(self):
         return self.powerFailure
     def get_heater(self):
