@@ -131,8 +131,8 @@ class MyApp(QWidget):
 
     def get_block_data(self):
         data = {
-            "Green": self.data_main["Green"]["SW"]["blocks"],
-            "Red": self.data_main["Red"]["SW"]["blocks"]
+            "Green": self.data_main["Green"]["SW"]["blocks"] + self.data_main["Green"]["HW"]["blocks"],
+            "Red": self.data_main["Red"]["SW"]["blocks"] + self.data_main["Red"]["SW"]["blocks"]
         }
         return data
 
@@ -281,7 +281,7 @@ class MyApp(QWidget):
         lines_dropdown_menu.currentIndexChanged.connect(lambda: self.update_line(lines_dropdown_menu))
         plc_dropdown.currentIndexChanged.connect(lambda: self.update_plc_num(plc_dropdown))
 
-        # hw_sw_toggle_button.clicked.connect(self.toggle_hw_sw_mode)
+        hw_sw_toggle_button.clicked.connect(self.toggle_hw_sw_mode)
         manual_auto_toggle_button.clicked.connect(self.toggle_manual_auto_mode)
 
         # Add left and right layouts to the main layout
@@ -499,12 +499,12 @@ class MyApp(QWidget):
         # self.update_content()
 
     # Toggle between Hardware and Software modes
-    # def toggle_hw_sw_mode(self):
-    #    if self.mode == "HW":
-    #        self.mode = "SW"
-    #    else:
-    #        self.mode = "HW"
-    #   self.update_content()
+    def toggle_hw_sw_mode(self):
+        if self.mode == "HW":
+           self.mode = "SW"
+        else:
+           self.mode = "HW"
+        # self.update_content()
 
     # Toggle between Manual and Auto modes
     def toggle_manual_auto_mode(self):

@@ -175,11 +175,12 @@ class TrackUI(QMainWindow):
         for i in range(10):
             greenTrafficLights.append(TrafficLight("Green", i))
 
-        # #override for sake of spawn simulation
-        # for i in range(150):
-        #     greenBlocks[i].set_cmd_speed(70)
-        greenBlocks[87].set_authority(262.7)
-        
+        #override for sake of spawn simulation
+        for i in range(150):
+            greenBlocks[i].set_cmd_speed(70)
+        #greenBlocks[85].set_authority(262.7)
+        greenBlocks[0].set_authority(15475.6)
+
         greenSections = [] # make green sections
         greenSections.append(Section('A'))
         greenSections.append(Section('B'))
