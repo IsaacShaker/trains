@@ -1317,7 +1317,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                     self.wayside_vision_dict["index"] = 2
                     self.wayside_vision_dict["output_block"] = 0
                     while(1):
-                        response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                        response = requests.post(URL + "/track-controller-sw/give-data/wayside_vision", json=self.wayside_vision_dict)
                         if response.status_code == 200:
                             break
 

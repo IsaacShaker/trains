@@ -179,8 +179,7 @@ class TrackUI(QMainWindow):
         for i in range(150):
             greenBlocks[i].set_cmd_speed(70)
         #greenBlocks[85].set_authority(262.7)
-        greenBlocks[0].set_authority(15475.6)
-
+        
         greenSections = [] # make green sections
         greenSections.append(Section('A'))
         greenSections.append(Section('B'))
@@ -219,7 +218,10 @@ class TrackUI(QMainWindow):
         
             
         #Train (temporary until we figure out how to initialize a train)
-        tempTrain = Train(10, greenBlocks[87], 32.2, 0)
+        
+
+
+        tempTrain = Train(10, greenBlocks[0], 32.2, 0)
         greenTrains.addTrain(tempTrain)
         auth.append(0.0)
         cmd.append(0.0)
