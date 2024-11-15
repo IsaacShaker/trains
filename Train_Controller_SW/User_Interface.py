@@ -64,7 +64,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.auth_counter = 0
         self.next_train_id = 0
         self.train_list =[]
-        self.var_from_mitch = 5
+        self.var_from_mitch = 1
 
         self.add_train()
         #self.add_train()
