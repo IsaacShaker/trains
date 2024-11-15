@@ -58,7 +58,7 @@ from PyQt6.QtWidgets import (
 
 class Train_Controller_SW_UI(QMainWindow):
 
-    def __init__(self,):
+    def __init__(self):
         super(Train_Controller_SW_UI, self).__init__()
 
         self.auth_counter = 0

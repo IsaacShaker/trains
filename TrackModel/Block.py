@@ -133,10 +133,6 @@ class Block:
             if isinstance(self.station, Station) and (self.train.get_fLocOnBlock() > (self.length/2) - 17.1) and (self.train.get_fLocOnBlock() < (self.length/2) - 15.1):
                 self.station.set_trainIn(True, self.train)
             else:
-                print("Hello")
-                print("Forward: " + str((self.length/2) - 17.1))
-                print("Backward: " + str((self.length/2) - 15.1))
-                print("Location: " + str(self.train.get_fLocOnBlock()))
                 if isinstance(self.station, Station):
                     self.station.set_trainIn(False, self.train)
         else:
@@ -145,7 +141,7 @@ class Block:
     def train_set_beacon(self, train):
         if isinstance(self.beacon, Beacon):
             self.beacon_data["id"]=train.get_id()
-            self.beacon_data["beacon_info"]=self.beacon.get_staticData()
+            self.beacon_data["beacon_info"]=str(self.beacon.get_staticData())
             train.set_staticData(self.beacon.get_staticData())
             print("beacon info:" + self.beacon.get_staticData())
             response = requests.post(URL + '/train-model/get-data/beacon-info', json=self.beacon_data)

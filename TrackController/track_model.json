@@ -1081,7 +1081,7 @@
           "name_1": "63 to YARD",
           "name_2": "63 to 62",
           "from": 63,
-          "to": [62, "YARD"],
+          "to": ["YARD", 62],
           "suggested_toggle": true,
           "toggled": true
         },
