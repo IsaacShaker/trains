@@ -1372,14 +1372,16 @@ class Train_Controller_SW_UI(QMainWindow):
                 self.s_brake_pressed()
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
-            elif self.train_list[self.current_train].get_setpoint_velocity() < self.train_list[self.current_train].get_actual_velocity() and self.train_list[self.current_train].get_e_brake() == False:
+            elif self.train_list[self.current_train].get_commanded_velocity() < self.train_list[self.current_train].get_actual_velocity() and self.train_list[self.current_train].get_e_brake() == False:
                 self.s_brake_pressed()
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
-            else: 
+            else:
                 self.s_brake_released()
                 self.s_brake_button.setChecked(False)
                 self.s_brake_button.setCheckable(False)
+
+            print(f"Service Brake = {self.train_list[self.current_train].get_s_brake()}")
 
 
         #if e_brake is pressed, checks if it can be unpressed

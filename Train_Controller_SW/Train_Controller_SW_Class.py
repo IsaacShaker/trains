@@ -178,10 +178,12 @@ class Train_Controller:
         
     #set brakes
     def set_s_brake(self, status):
+        old_brake = self.s_brake
         self.s_brake = status
         self.brakes_dict["s_brake"] = self.s_brake
 
-        if self.is_micah:
+        #only sends a new state if a change occurs
+        if self.is_micah and old_brake != self.s_brake:
             response = requests.post(URL + "/train-model/receive-brakes", json=self.brakes_dict)
 
     def set_e_brake(self, status):
