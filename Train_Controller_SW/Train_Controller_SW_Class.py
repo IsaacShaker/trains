@@ -207,6 +207,7 @@ class Train_Controller:
     def send_auth_diff(self):
         try:
             if self.is_micah:
+                print("")
                 response = requests.post(URL + "/track-model/get-data/auth_difference", json=self.auth_diff_dict)
                 response.raise_for_status()  # This will raise an error for 4xx/5xx responses
 
@@ -480,6 +481,8 @@ class Train_Controller:
 
         #calculate commaneded power (kp*ek + ki*uk)
         self.set_commanded_power(self.k_p*self.ek + self.k_i*self.uk)
+
+        print(f"Commanded Power: {self.commanded_power}")
 
         if self.is_micah:
             response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)

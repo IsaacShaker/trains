@@ -66,6 +66,8 @@ class Train_Controller_SW_UI(QMainWindow):
         self.train_list =[]
         self.var_from_mitch = 1
 
+
+
         self.add_train()
         #self.add_train()
         # self.add_train()
@@ -1424,6 +1426,14 @@ class Train_Controller_SW_UI(QMainWindow):
                 self.open_l_door()
             elif doors == "1":
                 self.open_r_door()
+
+        #keeps doors unable to be used until velocity is 0 and in manual mode
+        if self.train_list[self.current_train].get_actual_velocity() == 0 and self.train_list[self.current_train].get_manual_mode():
+            self.l_door_button.setEnabled(True)
+            self.r_door_button.setEnabled(True)
+        else:
+            self.l_door_button.setEnabled(False)
+            self.r_door_button.setEnabled(False)
     
 
     def add_train(self):
