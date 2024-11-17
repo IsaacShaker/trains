@@ -69,7 +69,6 @@ class Train:
         self.grade_info["id"]=self.id
         self.grade_info["grade_info"]=self.fBlock.get_grade()
         response = requests.post(URL + "/train-model/get-data/grade-info", json=self.grade_info)
-        print(f"LocOnBLock: {self.fLocOnBlock}")
             
 
     def syncBack(self):

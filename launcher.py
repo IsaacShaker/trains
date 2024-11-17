@@ -25,8 +25,8 @@ class MainApp(QApplication):
 
         self.track_controller.show()
         self.ctc.show()
-        #self.train_model.show()
-        #self.train_controller_sw.show()
+        self.train_model.show()
+        self.train_controller_sw.show()
         #self.train_controller_hw.show()
         self.track_model.show()
 
