@@ -68,16 +68,14 @@ class Train_Controller_SW_UI(QMainWindow):
 
 
 
-        self.add_train()
-        #self.add_train()
-        # self.add_train()
-        self.train_list[0].authority = 0
+        
+        #self.train_list[0].authority = 0
         # self.train_list[1].authority = 250
         # self.train_list[2].authority = 100
 
-        self.train_list[0].actual_velocity = 0
-        self.train_list[0].commanded_velocity = 0
-        self.train_list[0].setpoint_velocity = 0
+        #self.train_list[0].actual_velocity = 0
+        #self.train_list[0].commanded_velocity = 0
+        #self.train_list[0].setpoint_velocity = 0
 
         # self.train_list[1].actual_velocity = 11
         # self.train_list[1].commanded_velocity = 7
@@ -150,6 +148,13 @@ class Train_Controller_SW_UI(QMainWindow):
         self.current_train = self.train_selection.currentIndex()
 
         self.train_selection.setEditable(True)
+
+        self.add_train()
+        self.add_train()
+        self.add_train()
+
+        self.train_list[1].commanded_velocity = 7
+        self.train_list[2].commanded_velocity = 20
 
         #############################################
         #Driver and Engineer Sections
@@ -1441,8 +1446,10 @@ class Train_Controller_SW_UI(QMainWindow):
     def add_train(self):
         new_train = Train_Controller(self.next_train_id)
 
-        # if self.next_train_id > 0:
-        #     self.train_selection.addItems(["Train " + str(self.next_train_id)])
+        if self.next_train_id > 0:
+            self.train_selection.addItems(["Train " + str(self.next_train_id)])
+
+        #increment
         self.next_train_id += 1
         self.train_list.append(new_train)
 
