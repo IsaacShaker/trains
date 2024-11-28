@@ -1,6 +1,7 @@
 import sys
 import time
 import requests
+from PyQt6.QtCore import Qt, QTimer
 
 URL = 'http://127.0.0.1:5000'
 
@@ -96,6 +97,15 @@ class Train_Controller:
             "auth_diff": self.auth_diff,
             "train_id": self.train_id
         }
+
+        #Timer Initilization for both doors
+        self.l_door_timer = QTimer()
+        self.l_door_timer.setSingleShot(True)
+        self.l_door_timer.timeout.connect(self.close_l_door)
+
+        self.r_door_timer = QTimer()
+        self.r_door_timer.setSingleShot(True)
+        self.r_door_timer.timeout.connect(self.close_r_door)
 
 
     ############################
@@ -489,6 +499,49 @@ class Train_Controller:
         if self.is_micah:
             response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
 
+    def open_l_door(self, sim_speed):
+        self.set_l_door(True)
+        self.set_doors_can_open(False)
+
+        #JUST IN CURRENT
+        # self.l_door_button.setEnabled(False)
+        # self.l_door_button.setText("Opened")
+
+        #start 60s timer (divides by sim speed to account for simulation time)
+        self.l_door_timer.start(int(60000/sim_speed))
+
+    def open_r_door(self, sim_speed):
+        self.set_r_door(True)
+        self.set_doors_can_open(False)
+
+        #JUST IN CURRENT
+        # self.r_door_button.setEnabled(False)
+        # self.r_door_button.setText("Opened")
+
+        #start 60s timer (divides by sim speed to account for simulation time)
+        self.r_door_timer.start(int(60000/sim_speed))
+
+    def close_l_door(self):
+        #door is now closed
+        self.set_l_door(False)
+
+        #ONLY IN CURRENT
+        # self.l_door_button.setText("Closed")
+
+        # #activates door button again if in manual mode (ONLY IN CURRENT)
+        # if self.train_list[self.current_train].get_manual_mode():
+        #     self.l_door_button.setEnabled(True)
+
+    def close_r_door(self):
+        #door is now closed
+        self.set_r_door(False)
+
+        #ONLY IN CURRENT
+        # self.r_door_button.setText("Closed")
+
+        # #activates door button again if in manual mode (ONLY IN CURRENT)
+        # if self.train_list[self.current_train].get_manual_mode():
+        #     self.r_door_button.setEnabled(True)
 
 
 

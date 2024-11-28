@@ -64,7 +64,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.auth_counter = 0
         self.next_train_id = 0
         self.train_list =[]
-        self.var_from_mitch = 1
+        self.var_from_mitch = 10
 
 
 
@@ -1088,7 +1088,7 @@ class Train_Controller_SW_UI(QMainWindow):
             self.l_door_button.setEnabled(True)
 
 
-        print(f"The current train is {self.current_train}")
+        #print(f"The current train is {self.current_train}")
     
 
     #this function handles when the l_door_button is pressed
@@ -1374,19 +1374,19 @@ class Train_Controller_SW_UI(QMainWindow):
 
             #first we ehck if train has to brake to stop at a station
             if self.train_list[self.current_train].stop_at_station() == True:
-                self.s_brake_pressed()
+                self.train_list[self.current_train].set_s_brake(True)
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
             elif self.train_list[self.current_train].get_commanded_velocity() < self.train_list[self.current_train].get_actual_velocity() and self.train_list[self.current_train].get_e_brake() == False:
-                self.s_brake_pressed()
+                self.train_list[self.current_train].set_s_brake(True)
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
             else:
-                self.s_brake_released()
+                self.train_list[self.current_train].set_s_brake(False)
                 self.s_brake_button.setChecked(False)
                 self.s_brake_button.setCheckable(False)
 
-            print(f"Service Brake = {self.train_list[self.current_train].get_s_brake()}")
+            #print(f"Service Brake = {self.train_list[self.current_train].get_s_brake()}")
 
 
         #if e_brake is pressed, checks if it can be unpressed
@@ -1404,7 +1404,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.train_list[self.current_train].calculate_commanded_power()
 
         self.auth_counter +=1
-
+        #once counter reaches 40, sends updated amount moved to track model
         if self.auth_counter == 40:
             self.auth_counter = 0
             self.train_list[self.current_train].send_auth_diff()
@@ -1425,14 +1425,47 @@ class Train_Controller_SW_UI(QMainWindow):
             doors = self.train_list[self.current_train].get_doors_to_open()
 
             print(doors)
+
             #opens correct doors based off decoded beacon info
             if doors == "3":
-                self.open_l_door()
-                self.open_r_door()
+                self.train_list[self.current_train].open_l_door(self.var_from_mitch)
+                self.train_list[self.current_train].open_r_door(self.var_from_mitch)
             elif doors == "2":
-                self.open_l_door()
+                self.train_list[self.current_train].open_l_door(self.var_from_mitch)
             elif doors == "1":
-                self.open_r_door()
+                self.train_list[self.current_train].open_r_door(self.var_from_mitch)
+
+        ##################################################################
+        #Checking for door states being shown correctly in current train
+        ##################################################################
+
+        #left door
+        if self.train_list[self.current_train].get_l_door():
+            self.l_door_button.setEnabled(False)
+            self.l_door_button.setText("Opened")
+        else:
+            #activates door button again if in manual mode (ONLY IN CURRENT)
+            if self.train_list[self.current_train].get_manual_mode():
+                self.l_door_button.setEnabled(True)
+
+            self.l_door_button.setText("Closed")
+
+        #right door
+        if self.train_list[self.current_train].get_r_door():
+            self.r_door_button.setEnabled(False)
+            self.r_door_button.setText("Opened")
+        else:
+            #activates door button again if in manual mode (ONLY IN CURRENT)
+            if self.train_list[self.current_train].get_manual_mode():
+                self.r_door_button.setEnabled(True)
+
+            self.r_door_button.setText("Closed")
+
+
+        print(f"right door:{self.train_list[self.current_train].get_r_door()}")
+        print(f"left door:{self.train_list[self.current_train].get_l_door()}")
+
+        
 
         #keeps doors unable to be used until velocity is 0 and in manual mode
         if self.train_list[self.current_train].get_actual_velocity() == 0 and self.train_list[self.current_train].get_manual_mode():
