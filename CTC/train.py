@@ -1,6 +1,7 @@
 from collections import deque
 from CTC.mapReader import MapReader
 import pandas as pd
+import os
 
 class Train:
 
@@ -34,7 +35,11 @@ class Train:
         self.calculate_dispatch_time(self.first_arrival)
     
     def calculate_dispatch_time(self, arrival_time):
-        file_path = 'C:/Trains C/trains/Train Paths.xlsx'
+        # Get the directory of the currently running Python file
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Construct the file path dynamically
+        file_path = os.path.join(current_dir, 'Train Paths.xlsx')
         df = pd.read_excel(file_path, sheet_name='Green Line')
 
         time_sum = 0
