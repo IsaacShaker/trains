@@ -3,7 +3,7 @@ from flask import Flask, render_template_string, jsonify, request
 app = Flask(__name__)
 app.qt_app_instance = None
 
-is_micah = True
+is_micah = False
 
 ###################################
 #Train Contoller Input Functions
@@ -38,7 +38,7 @@ def receive_authority():
     if is_micah:
         app.qt_app_instance.train_controller_sw.train_list[index].set_received_authority(float_value)
     else:
-        app.qt_app_instance.train_controller_hw.set_authority(float_value)
+        app.qt_app_instance.train_controller_hw.set_commanded_authority(float_value)
     return jsonify("Success"), 200
 
 
