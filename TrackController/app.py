@@ -143,7 +143,7 @@ class MyApp(QWidget):
         
     
     def add_authority(self, authority):
-        print("Got em")
+        print("Got em authority")
         print(authority)
 
         response = requests.post("http://127.0.0.1:5000/track-model/set-authority", json=authority)
@@ -151,7 +151,7 @@ class MyApp(QWidget):
             print("Failed to give authority to Track Model")
 
     def add_speed(self, speed):
-        print("Got em")
+        print("Got em speed")
         print(speed)
 
         response = requests.post("http://127.0.0.1:5000/track-model/set-commanded-speed", json=speed)
@@ -159,7 +159,7 @@ class MyApp(QWidget):
             print("Failed to give speed to Track Model")
 
     def add_wayside_vision(self, vision):
-        print("Got em")
+        print("Got em wayside")
         print(vision)
 
         if vision["index"] == 1:
@@ -169,9 +169,9 @@ class MyApp(QWidget):
                 self.data_main["Green"]["SW"]["switches"][0]["suggested_toggle"] = True
         elif vision["index"] == 2:
             if vision["output_block"] == 0:
-                self.data_main["Green"]["SW"]["switches"][1]["suggested_toggle"] = True
-            elif vision["output_block"] == 62:
                 self.data_main["Green"]["SW"]["switches"][1]["suggested_toggle"] = False
+            elif vision["output_block"] == 62:
+                self.data_main["Green"]["SW"]["switches"][1]["suggested_toggle"] = True
 
 
     def closeEvent(self, event):
@@ -527,6 +527,12 @@ class MyApp(QWidget):
 
         if index == 0:
             print("Sending Authority to Track Model: {Block_id: " + str(block_id) + ", Meters: " + text + "}" )
+            data = {
+                "line": self.line,
+                "index": block_id,
+                "authority": float(text)
+            }
+            self.add_authority(data)
         elif index == 1 or index == 3:
             print("Sending Suggested/Commanded Speed to Track Model: {Block_id: " + str(block_id) + ", Speed(kh/hr): " + text + "}")
         elif index == 2:
