@@ -769,7 +769,7 @@ class MainWindow(QMainWindow):
                 print("Index Error sendButton_click function.")
         #if row 3 input for traffic lights
         elif i == 2:
-            if id <= 1 and id >= 0:
+            if id <= 5 and id >= 0:
                 if var == "Red":
                     greenTrafficLights[id].set_R()
                 else:

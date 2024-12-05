@@ -184,6 +184,8 @@ class Block:
         return self.nextBlock, self.nextBlock.get_length()
     def get_station(self):
         return self.station
+    def get_closed(self):
+        return self.closed
 
     def change_broken(self):
         if (self.brokenTrack):
