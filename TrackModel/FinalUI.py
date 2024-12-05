@@ -1,5 +1,7 @@
 launcher = True
 import sys
+import requests
+URL = 'http://127.0.0.1:5000'
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QTabWidget, QWidget, QLineEdit, QComboBox, QLabel, QTableView, QVBoxLayout
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QPixmap, QStandardItemModel, QStandardItem, QFont
@@ -46,7 +48,12 @@ blockGrade = []
 
 initialized = False
 
-class TrackUI(QMainWindow):
+authAndSpeed = {
+        'authorities' : None,
+        'commandedSpeeds' : None
+    }
+
+class Bluh(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Track Model UI")
@@ -87,6 +94,36 @@ class TrackUI(QMainWindow):
         self.button.setGeometry(365, 240, 120, 50)
         self.button.clicked.connect(self.initialize_track)
 
+    
+    
+
+#Main UI with maps, tables, test benches      
+class TrackUI(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        global redYard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations, redSections
+        global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
+        self.initialize_track()
+        
+        #Make a PyQt Window
+        self.setWindowTitle("Track Model UI")
+        self.setGeometry(100,100,850,550)
+        self.setStyleSheet("background-color: grey")
+
+        #Makes tabs for the windows
+        self.tab_widget = QTabWidget()
+        self.setCentralWidget(self.tab_widget)
+        self.create_tabs()
+
+        #Train movement function, called every ms
+        self.train_timer = QTimer()
+        self.train_timer.timeout.connect(greenTrains.get_info)
+        self.train_timer.start(10)
+
+        self.send_timer = QTimer()
+        self.send_timer.timeout.connect(self.post_auth_and_cmd_speed)
+        self.send_timer.start(1000)
+
     def initialize_track(self):
         global initialized 
         initialized = True
@@ -94,8 +131,8 @@ class TrackUI(QMainWindow):
         global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
         global greenTrains
         # Store text entry values in separate variables
-        self.input_value1 = self.text_entry1.text()
-        self.input_value2 = self.text_entry2.text()
+        self.input_value1 = "trackData/RedLine.xlsx"
+        self.input_value2 = "trackData/GreenLine.xlsx"
 
         #Red Line initial prep
         redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations = buildTrack(add_TM+self.input_value1)
@@ -141,9 +178,9 @@ class TrackUI(QMainWindow):
         #override for sake of spawn simulation
         for i in range(150):
             greenBlocks[i].set_cmd_speed(70)
-        greenBlocks[81].set_authority(1446.6)
-        greenBlocks[10].set_authority(1446.6)
-        
+        greenBlocks[74].set_authority(10000)
+        #greenBlocks[0].set_authority(15475.6)
+
         greenSections = [] # make green sections
         greenSections.append(Section('A'))
         greenSections.append(Section('B'))
@@ -182,19 +219,10 @@ class TrackUI(QMainWindow):
         
             
         #Train (temporary until we figure out how to initialize a train)
-        tempTrain = Train(10, greenBlocks[85], 20)
+        tempTrain = Train(10, greenBlocks[87], 32.2, 0)
         greenTrains.addTrain(tempTrain)
         auth.append(0.0)
         cmd.append(0.0)
-        tempTrain = Train(10, greenBlocks[10], 20)
-        greenTrains.addTrain(tempTrain)
-        auth.append(0.0)
-        cmd.append(0.0)
-
-        #Start the window
-        self.ui_window = MainWindow()
-        self.ui_window = self.ui_window.show()    
-        self.close()
     
     #For Wayside
     def get_occupancies(self):
@@ -240,27 +268,34 @@ class TrackUI(QMainWindow):
         if data['line'] == 'Green':
             greenBlocks[data['index']].set_closed(data['maintenance'])
 
-#Main UI with maps, tables, test benches      
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        global redYard, redBlocks, redSwitches, redRailroadCrossing, redBeacons, redStations, redSections
-        global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
-        
-        #Make a PyQt Window
-        self.setWindowTitle("Track Model UI")
-        self.setGeometry(100,100,850,550)
-        self.setStyleSheet("background-color: grey")
+    def set_block_authority(self, data):
+        if data['line'] == 'Green':
+            greenBlocks[data['index']].set_authority(data['authority'])
 
-        #Makes tabs for the windows
-        self.tab_widget = QTabWidget()
-        self.setCentralWidget(self.tab_widget)
-        self.create_tabs()
+    def set_block_cmdSpeed(self, data):
+        if data['line'] == 'Green':
+            greenBlocks[data['index']].set_cmd_speed(data['speed'])
 
-        #Train movement function, called every ms
-        self.train_timer = QTimer()
-        self.train_timer.timeout.connect(greenTrains.moveTrains)
-        self.train_timer.start(1)
+
+    # def set_train_speed(self, data):
+    #     for i in range(len(data)):
+    #         greenTrains[].set_train_speed(data[''])
+
+    # def set_indexed_train_speed(self,index,speed):
+    #     if initialized == False:
+    #         return
+    #     greenTrains.set_indexed_speed(index, speed)
+
+    def set_indexed_train_auth_diff(self,index,diff):
+        if initialized == False:
+            return
+        greenTrains.trainList[index].moveTrain(diff)
+        #greenTrains.set_indexed_speed(index, diff)
+
+    def post_auth_and_cmd_speed(self):
+        authAndSpeed["authorities"]=greenTrains.authorities
+        authAndSpeed["commandedSpeeds"]=greenTrains.commandedSpeeds
+        response = requests.post(URL + "/train-model/get-data/authority-cmd-speed", json=authAndSpeed)
 
     #initializes all maps, tables, test benches
     def create_tabs(self):
@@ -390,8 +425,8 @@ class MainWindow(QMainWindow):
 
     #initialize green line table
     def make_green_table(self, tab):
-        self.green_block_table = QStandardItemModel(len(greenBlocks), 19)
-        self.green_block_table.setHorizontalHeaderLabels(["Section", "Occupied", "Authority", "Commanded Speed", "Beacon", "Station", "Railroad", "Switch", "Traffic Light", "Next Block", "Previous Block", "Length", "Grade", "Speed Limit", "Elevation", "Cum. Elevation", "Underground", "Broken Track", "Circuit Failure", "Power Failure"])
+        self.green_block_table = QStandardItemModel(len(greenBlocks), 18)
+        self.green_block_table.setHorizontalHeaderLabels(["Section", "Occupied", "Authority", "Commanded Speed", "Beacon", "Station", "Railroad", "Switch", "Next Block", "Previous Block", "Length", "Grade", "Speed Limit", "Elevation", "Cum. Elevation", "Underground", "Broken Track", "Circuit Failure", "Power Failure"])
         self.populate_green_table()
 
         green_block_table_view = QTableView()
@@ -404,7 +439,7 @@ class MainWindow(QMainWindow):
     #green table update function
     def populate_green_table(self):
         for row in range(len(greenBlocks)):
-            for col in range(19):
+            for col in range(18):
                 value = greenBlocks[row].get_table_data(col)
                 item = QStandardItem(value)
                 self.green_block_table.setItem(row, col, item)

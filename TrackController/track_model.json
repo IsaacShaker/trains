@@ -80,6 +80,7 @@
       ],
       "switches": [
         {
+          "id": 0,
           "name_1": "5 to 6",
           "name_2": "5 to 11",
           "from": 5,
@@ -90,11 +91,13 @@
       ],
       "traffic_lights": [
         {
+          "id": 0,
           "name_1": "Block 6 - Red",
           "name_2": "Block 6 - Green",
           "toggled": false
         },
         {
+          "id": 1,
           "name_1": "Block 11 - Red",
           "name_2": "Block 11 - Green",
           "toggled": false
@@ -102,6 +105,7 @@
       ],
       "crossings": [
         {
+          "id": 0,
           "name_1": "Block 3 - UP",
           "name_2": "Block 3 - DOWN",
           "toggled": false
@@ -188,6 +192,7 @@
       ],
       "switches": [
         {
+          "id": 0,
           "name_1": "5 to 6",
           "name_2": "5 to 11",
           "from": 5,
@@ -198,23 +203,21 @@
       ],
       "traffic_lights": [
         {
+          "id": 0,
           "name_1": "Block 6 - Red",
           "name_2": "Block 6 - Green",
           "toggled": false
         },
         {
+          "id": 1,
           "name_1": "Block 11 - Red",
           "name_2": "Block 11 - Green",
-          "toggled": false
-        },
-        {
-          "name_1": "New Light",
-          "name_2": "something",
           "toggled": false
         }
       ],
       "crossings": [
         {
+          "id": 0,
           "name_1": "Block 3 - UP",
           "name_2": "Block 3 - DOWN",
           "toggled": false
@@ -588,6 +591,7 @@
       "switches": [
         {
           "id": 0,
+          "plc_num": 0,
           "name_1": "13 to 12",
           "name_2": "13 to 1",
           "from": 13,
@@ -597,6 +601,7 @@
         },
         {
           "id": 1,
+          "plc_num": 0,
           "name_1": "29 to 28",
           "name_2": "29 to 150",
           "from": 29,
@@ -608,24 +613,28 @@
       "traffic_lights": [
         {
           "id": 0,
+          "plc_num": 0,
           "name_1": "Block 1 - Red",
           "name_2": "Block 1 - Green",
           "toggled": false
         },
         {
           "id": 1,
+          "plc_num": 0,
           "name_1": "Block 12 - Red",
           "name_2": "Block 12 - Green",
           "toggled": false
         },
         {
           "id": 2,
+          "plc_num": 0,
           "name_1": "Block 28 - Red",
           "name_2": "Block 28 - Green",
           "toggled": false
         },
         {
           "id": 3,
+          "plc_num": 0,
           "name_1": "Block 150 - Red",
           "name_2": "Block 150 - Green",
           "toggled": false
@@ -634,6 +643,7 @@
       "crossings": [
         {
           "id": 0,
+          "plc_num": 0,
           "name_1": "Block 19 - UP",
           "name_2": "Block 19 - DOWN",
           "toggled": false
@@ -642,6 +652,12 @@
     },
     "SW": {
       "blocks": [
+        {
+          "comment": "THIS DA YARD: train should go from block 0 (YARD) to 63",
+          "block": 1,
+          "occupied": false,
+          "speed_hazard": false
+        },
         {
           "block": 36,
           "occupied": false,
@@ -1051,6 +1067,7 @@
       "switches": [
         {
           "id": 2,
+          "plc_num": 1,
           "name_1": "57 to 58",
           "name_2": "57 to YARD",
           "from": 57,
@@ -1060,15 +1077,17 @@
         },
         {
           "id": 3,
+          "plc_num": 2,
           "name_1": "63 to YARD",
           "name_2": "63 to 62",
           "from": 63,
-          "to": ["Yard", 62],
-          "suggested_toggle": false,
-          "toggled": false
+          "to": ["YARD", 62],
+          "suggested_toggle": true,
+          "toggled": true
         },
         {
           "id": 4,
+          "plc_num": 0,
           "name_1": "77 to 76",
           "name_2": "77 to 101",
           "from": 77,
@@ -1078,6 +1097,7 @@
         },
         {
           "id": 5,
+          "plc_num": 0,
           "name_1": "85 to 86",
           "name_2": "85 to 100",
           "from": 85,
@@ -1089,36 +1109,42 @@
       "traffic_lights": [
         {
           "id": 4,
+          "plc_num": 1,
           "name_1": "Block 57 - Red",
           "name_2": "Block 57 - Green",
           "toggled": false
         },
         {
           "id": 5,
+          "plc_num": 2,
           "name_1": "Block 63 - Red",
           "name_2": "Block 63 - Green",
           "toggled": false
         },
         {
           "id": 6,
+          "plc_num": 0,
           "name_1": "Block 76 - Red",
           "name_2": "Block 76 - Green",
           "toggled": false
         },
         {
           "id": 7,
+          "plc_num": 0,
           "name_1": "Block 86 - Red",
           "name_2": "Block 86 - Green",
           "toggled": false
         },
         {
           "id": 8,
+          "plc_num": 0,
           "name_1": "Block 100 - Red",
           "name_2": "Block 100 - Green",
           "toggled": false
         },
         {
           "id": 9,
+          "plc_num": 0,
           "name_1": "Block 101 - Red",
           "name_2": "Block 101 - Green",
           "toggled": false
@@ -1127,6 +1153,7 @@
       "crossings": [
         {
           "id": 1,
+          "plc_num": 0,
           "name_1": "Block 108 - UP",
           "name_2": "Block 108 - DOWN",
           "toggled": false

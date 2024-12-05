@@ -6,22 +6,35 @@ import os
 import shutil
 import json
 import copy
-from threading import Thread
 import requests  # For triggering shutdown
-#from TrackController.api import start_api  # Import the API starter function
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QApplication, QWidget, QTabWidget, QComboBox, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog
-from TrackController.Components.Toggle_Buttons.AutoToggle import AutoToggle
-from TrackController.Components.Toggle_Buttons.ModeToggle import ModeToggle
-from TrackController.Components.Switches.Switches import Switches
-from TrackController.Components.Traffic_Lights.TrafficLights import TrafficLights
-from TrackController.Components.Crossings.Crossings import Crossings
-from TrackController.Components.Block_Occupancy.block_occupancy import BlockOccupancy
-from TrackController.Components.PLC_Manager import PLCManager
 
+LOCAL_DEVELOPMENT = False
+base_path = os.path.dirname(__file__)
+
+try:
+    # For Launcher
+    from TrackController.Components.Toggle_Buttons.AutoToggle import AutoToggle
+    from TrackController.Components.Toggle_Buttons.ModeToggle import ModeToggle
+    from TrackController.Components.Switches.Switches import Switches
+    from TrackController.Components.Traffic_Lights.TrafficLights import TrafficLights
+    from TrackController.Components.Crossings.Crossings import Crossings
+    from TrackController.Components.Block_Occupancy.block_occupancy import BlockOccupancy
+    from TrackController.Components.PLC_Manager import PLCManager
+except ImportError:
+    # For Local
+    LOCAL_DEVELOPMENT = True
+    from Components.Toggle_Buttons.AutoToggle import AutoToggle
+    from Components.Toggle_Buttons.ModeToggle import ModeToggle
+    from Components.Switches.Switches import Switches
+    from Components.Traffic_Lights.TrafficLights import TrafficLights
+    from Components.Crossings.Crossings import Crossings
+    from Components.Block_Occupancy.block_occupancy import BlockOccupancy
+    from Components.PLC_Manager import PLCManager
 
 # Load the JSON file with block and switch data
-json_path="TrackController/track_model.json"
+json_path=f"{base_path}/track_model.json"
 with open(json_path, 'r') as json_file:
     data = json.load(json_file)
 
@@ -51,15 +64,12 @@ class MyApp(QWidget):
             }
         }
 
-        self.maintence_list = []
-        self.authority_list = []
-        self.speed_list = []
-        self.wayside_vision = []
+        self.plc_managers = {}
+        self.plc_num = 0
+        # self.blue_line_plc_manager = PLCManager(self.data_test["Blue"]["SW"], self.auto)
+        # self.blue_line_plc_manager_HW = PLCManager(self.data_test["Blue"]["HW"], self.auto)
 
-        self.blue_line_plc_manager = PLCManager(self.data_test["Blue"]["SW"], self.auto)
-        self.blue_line_plc_manager_HW = PLCManager(self.data_test["Blue"]["HW"], self.auto)
-
-        with open("TrackController/styles.qss", "r") as f:
+        with open(f"{base_path}/styles.qss", "r") as f:
             style = f.read()
         self.setStyleSheet(style)
 
@@ -83,9 +93,10 @@ class MyApp(QWidget):
         # Start the timer to call update_content every 500 milliseconds
         self.update_ui_timer.start(500)
 
-        self.api_call_timer = QTimer(self)
-        self.api_call_timer.timeout.connect(self.call_apis)
-        self.api_call_timer.start(1000)
+        if LOCAL_DEVELOPMENT == False:
+            self.api_call_timer = QTimer(self)
+            self.api_call_timer.timeout.connect(self.call_apis)
+            self.api_call_timer.start(1000)
 
     def call_apis(self):
         self.request_block_occupancies()
@@ -98,10 +109,9 @@ class MyApp(QWidget):
         if response.status_code == 200:
             data_dict = response.json()  # This converts the JSON response to a Python dictionary
         else:
-            print("Failed to retrieve data:", response.text)
+            print("Failed to retrieve occupancies from Track Model:", response.text)
             return
-        
-        # print("Updating block occupancies")
+
         # Green
         for block in self.data_main["Green"]["HW"]["blocks"]:
             block["occupied"] = data_dict['Green'][block["block"]]
@@ -116,43 +126,59 @@ class MyApp(QWidget):
     
     def give_signals(self):
         response = requests.post("http://127.0.0.1:5000/track-model/recieve-signals", json=self.sw_signal_data)
+        if response.status_code != 200:
+            print("Failed to give signals to Track Model")
 
     def get_block_data(self):
         data = {
-            # "Blue": self.data_test["Blue"]["SW"]["blocks"],
-            "Green": self.data_main["Green"]["SW"]["blocks"],
-            "Red": self.data_main["Red"]["SW"]["blocks"]
+            "Green": self.data_main["Green"]["SW"]["blocks"] + self.data_main["Green"]["HW"]["blocks"],
+            "Red": self.data_main["Red"]["SW"]["blocks"] + self.data_main["Red"]["SW"]["blocks"]
         }
-
         return data
 
     def add_maintenance(self, maintenance):
-        # self.maintence_list.append(maintenance)
         response = requests.post("http://127.0.0.1:5000/track-model/set-maintenance", json=maintenance)
+        if response.status_code != 200:
+            print("Failed to give maintenance to Track Model")
         
     
     def add_authority(self, authority):
-        self.authority_list.append(authority)
-        
-        # TODO:
-        # send the authority to the Track Model
+        print("Got em authority")
+        print(authority)
+
+        response = requests.post("http://127.0.0.1:5000/track-model/set-authority", json=authority)
+        if response.status_code != 200:
+            print("Failed to give authority to Track Model")
 
     def add_speed(self, speed):
-        self.speed_list.append(speed)
-        
-        # TODO:
-        # send the speed to the Track Model
+        print("Got em speed")
+        print(speed)
+
+        response = requests.post("http://127.0.0.1:5000/track-model/set-commanded-speed", json=speed)
+        if response.status_code != 200:
+            print("Failed to give speed to Track Model")
 
     def add_wayside_vision(self, vision):
-        self.wayside_vision.append(vision)
+        print("Got em wayside")
+        print(vision)
 
-        # TODO:
-        # parse and give it to the waysides
+        if vision["index"] == 1:
+            if vision["output_block"] == 58:
+                self.data_main["Green"]["SW"]["switches"][0]["suggested_toggle"] = False
+            elif vision["output_block"] == 0:
+                self.data_main["Green"]["SW"]["switches"][0]["suggested_toggle"] = True
+        elif vision["index"] == 2:
+            if vision["output_block"] == 0:
+                self.data_main["Green"]["SW"]["switches"][1]["suggested_toggle"] = False
+            elif vision["output_block"] == 62:
+                self.data_main["Green"]["SW"]["switches"][1]["suggested_toggle"] = True
+
 
     def closeEvent(self, event):
         """Override the close event to stop the timer before closing."""
-        self.blue_line_plc_manager.stop_current_plc()  # Stop the PLC if running
-        self.blue_line_plc_manager_HW.stop_current_plc()  # Stop the PLC if running
+        for name, plc_manager in self.plc_managers.items():
+            plc_manager.stop_current_plc()  # Call the member function on each instance
+
         self.update_ui_timer.stop()  # Stop the timer when the app closes
         event.accept()  # Accept the event to close the window
         
@@ -173,8 +199,11 @@ class MyApp(QWidget):
         left_layout.addWidget(lines_dropdown_menu)
 
         # Create a label to show the uploaded file path
-        file_label = QLabel("No file uploaded")
+        file_label = QLabel("No PLC file uploaded")
         left_layout.addWidget(file_label)
+
+        # Create a horizontal layout for the upload button and the combo box
+        horizontal_layout = QHBoxLayout()
 
         # Create an upload button
         upload_button = QPushButton("+")  # Set the button text to a plus sign
@@ -185,7 +214,17 @@ class MyApp(QWidget):
 
         # Connect the button to the upload_file function
         upload_button.clicked.connect(lambda: self.upload_file(file_label))
-        left_layout.addWidget(upload_button, stretch=1)
+        horizontal_layout.addWidget(upload_button)  # Add upload button to the horizontal layout
+
+        # Create a drop-down (combo box) with values 0 and 1
+        plc_dropdown = QComboBox()
+        plc_dropdown.addItems(["0", "1", "2"])  # Add options "0" and "1"
+        plc_dropdown.setCurrentText(str(self.plc_num))
+        plc_dropdown.setFixedSize(50, 40)  # Adjust size to match the button's height
+        horizontal_layout.addWidget(plc_dropdown)
+        
+        left_layout.addLayout(horizontal_layout)
+
 
         # Add label for Block Occupancy
         left_layout.addWidget(QLabel("Block Occupancy"))
@@ -213,7 +252,7 @@ class MyApp(QWidget):
 
         # Scroll area for traffic lights (right side)
         traffic_lights_scroll = QScrollArea()
-        traffic_lights_widget = TrafficLights((self.data_test if test else self.data_main), self.line, self.mode, editable=(False if self.auto else True))
+        traffic_lights_widget = TrafficLights((self.data_test if test else self.data_main), self.line, self.mode, self.plc_num, editable=(False if self.auto else True))
         traffic_lights_scroll.setWidget(traffic_lights_widget)
         traffic_lights_scroll.setWidgetResizable(True)
         right_layout.addWidget(traffic_lights_scroll)
@@ -223,7 +262,7 @@ class MyApp(QWidget):
 
         # Scroll area for switches (right side)
         switches_scroll = QScrollArea()
-        switches_widget = Switches((self.data_test if test else self.data_main), self.line, self.mode, editable=(False if self.auto else True))
+        switches_widget = Switches((self.data_test if test else self.data_main), self.line, self.mode, self.plc_num, editable=(False if self.auto else True))
         switches_scroll.setWidget(switches_widget)
         switches_scroll.setWidgetResizable(True)
         right_layout.addWidget(switches_scroll)
@@ -233,15 +272,16 @@ class MyApp(QWidget):
 
         # Scroll area for crossings (right side)
         crossings_scroll = QScrollArea()
-        crossings_widget = Crossings((self.data_test if test else self.data_main), self.line, self.mode)
+        crossings_widget = Crossings((self.data_test if test else self.data_main), self.line, self.mode, self.plc_num)
         crossings_scroll.setWidget(crossings_widget)
         crossings_scroll.setWidgetResizable(True)
         right_layout.addWidget(crossings_scroll)
 
         # Connect dropdown menu to update content function
         lines_dropdown_menu.currentIndexChanged.connect(lambda: self.update_line(lines_dropdown_menu))
+        plc_dropdown.currentIndexChanged.connect(lambda: self.update_plc_num(plc_dropdown))
 
-        # hw_sw_toggle_button.clicked.connect(self.toggle_hw_sw_mode)
+        hw_sw_toggle_button.clicked.connect(self.toggle_hw_sw_mode)
         manual_auto_toggle_button.clicked.connect(self.toggle_manual_auto_mode)
 
         # Add left and right layouts to the main layout
@@ -327,6 +367,17 @@ class MyApp(QWidget):
         command_speed_save_button.clicked.connect(lambda: self.save_value(block_id_input.text(),command_speed_input_field.text(), 3))
         input_layout_in_frame.addWidget(command_speed_save_button)
 
+         # Create input field
+        command_speed_input_field = QLineEdit()
+        command_speed_input_field.setPlaceholderText("Enter Speed Hazard (bool)...")
+        command_speed_input_field.setFixedHeight(30)  # Adjusted input field height
+        command_speed_input_field.setMinimumWidth(150)  # Ensure input field has a minimum width
+        input_layout_in_frame.addWidget(command_speed_input_field)
+        command_speed_save_button = QPushButton("Save Speed Hazard")
+        command_speed_save_button.setFixedHeight(30)  # Ensure save button doesn't overlap
+        command_speed_save_button.clicked.connect(lambda: self.save_value(block_id_input.text(),command_speed_input_field.text(), 4))
+        input_layout_in_frame.addWidget(command_speed_save_button)
+
         # Add the input layout to the test layout
         test_layout.addLayout(input_layout_in_frame)
 
@@ -336,49 +387,11 @@ class MyApp(QWidget):
 
         self.tabs.addTab(self.test_tab, "Test")
 
-    #def create_upload_tab(self):
-    #    """Creates an upload tab and adds it to the provided QTabWidget."""
-        # Create the upload tab widget
-        #upload_tab = QWidget()
-        #upload_layout = QVBoxLayout()
-        
-        # Create dropdown menu for line selection
-        #lines_dropdown_menu = QComboBox()
-        #lines_dropdown_menu.addItems(["Blue", "Green", "Red"])
-        #lines_dropdown_menu.setFixedHeight(40)  # Adjust height for a consistent look
-        #lines_dropdown_menu.setFixedWidth(120)  # Adjust height for a consistent look
-        #lines_dropdown_menu.setCurrentText(self.line)
-        #lines_dropdown_menu.currentIndexChanged.connect(lambda: self.update_line(lines_dropdown_menu))
-
-        # Create a label to show the uploaded file path
-        #file_label = QLabel("No file uploaded")
-        
-        # Create an upload button
-        #upload_button = QPushButton("+")  # Set the button text to a plus sign
-        #upload_button.setFixedSize(40, 100)  # Adjust the size to make the plus sign more prominent
-
-        # Style the button to center the plus symbol and make it look larger
-        #upload_button.setStyleSheet("font-size: 20px;")
-
-        # Connect the button to the upload_file function
-        #upload_button.clicked.connect(lambda: self.upload_file(file_label))
-
-        # Add the label and button to the layout
-        #upload_layout.addWidget(upload_button, alignment=Qt.AlignmentFlag.AlignCenter)
-        #upload_layout.addWidget(file_label, alignment=Qt.AlignmentFlag.AlignCenter)
-
-        # Set alignment for the entire layout to center
-        #upload_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        # Set the layout for the upload tab
-        #upload_tab.setLayout(upload_layout)
-
-        # Add the upload tab to the provided tab widget
-        #self.tabs.addTab(upload_tab, "Upload Tab")
-
     def upload_file(self, file_label):
         """Handles the file upload process, saves the file to a folder, and restarts the PLC program."""
         global plc_thread, plc_stop_event
+        
+        tab = self.tabs.tabText(self.tabs.currentIndex())
 
         # Open a file dialog to select a Python script
         file_path, _ = QFileDialog.getOpenFileName(None, "Select Python Script", "", "Python Files (*.py)")
@@ -391,7 +404,7 @@ class MyApp(QWidget):
 
             # Extract the file name from the file path
             file_name = os.path.basename(file_path)
-            new_file_name = self.line + "_line_PLC.py"
+            new_file_name = f"{self.line}_line_{self.mode}_{tab}_{self.plc_num}_PLC.py"
             # Set the destination path (in the 'uploaded_scripts' folder)
             destination = os.path.join(save_folder, new_file_name)
 
@@ -401,13 +414,16 @@ class MyApp(QWidget):
             # Update the label to show the uploaded file path
             file_label.setText(f"Uploaded: {file_name}")
 
+            # check if there is already a plc manager for it. If not create one
+            if f"{self.line}_{self.mode}_{tab}_{self.plc_num}" not in self.plc_managers:
+                if tab == "Test":
+                    self.plc_managers[f"{self.line}_{self.mode}_{tab}_{self.plc_num}"] = PLCManager(self.data_test, self.line, self.mode, self.auto, self.plc_num)
+                elif tab == "Main":
+                    self.plc_managers[f"{self.line}_{self.mode}_{tab}_{self.plc_num}"] = PLCManager(self.data_main, self.line, self.mode, self.auto, self.plc_num)
+
             # Start the new PLC program
-            if self.line == "Blue":
-                self.blue_line_plc_manager.start_new_plc(destination)
-            elif self.line == "Green":
-                pass
-            elif self.line == "Red":
-                pass
+            plc_manager = self.plc_managers[f"{self.line}_{self.mode}_{tab}_{self.plc_num}"]
+            plc_manager.start_new_plc(destination)
     
     # Function to update content when switching lines, mode, or Auto/Manual
     def update_content(self):
@@ -432,15 +448,15 @@ class MyApp(QWidget):
 
             traffic_lights = self.test_tab.findChild(TrafficLights)
             if traffic_lights:
-                traffic_lights.refresh(self.line, self.mode, editable=(False if self.auto else True))
+                traffic_lights.refresh(self.line, self.mode, self.plc_num, editable=(False if self.auto else True))
             
             crossings = self.test_tab.findChild(Crossings)
             if crossings:
-                crossings.refresh(self.line, self.mode, editable=(False if self.auto else True))
+                crossings.refresh(self.line, self.mode, self.plc_num, editable=(False if self.auto else True))
             
             switches = self.test_tab.findChild(Switches)
             if switches:
-                switches.refresh(self.line, self.mode, editable=(False if self.auto else True))
+                switches.refresh(self.line, self.mode, self.plc_num, editable=(False if self.auto else True))
 
         if self.tabs.tabText(current_tab_index) == "Main":
             dropdown = self.main_tab.findChild(QComboBox)
@@ -465,26 +481,30 @@ class MyApp(QWidget):
 
             traffic_lights = self.main_tab.findChild(TrafficLights)
             if traffic_lights:
-                traffic_lights.refresh(self.line, self.mode, editable=(False if self.auto else True))
+                traffic_lights.refresh(self.line, self.mode, self.plc_num, editable=(False if self.auto else True))
             crossings = self.main_tab.findChild(Crossings)
             if crossings:
-                crossings.refresh(self.line, self.mode, editable=(False if self.auto else True))
+                crossings.refresh(self.line, self.mode, self.plc_num, editable=(False if self.auto else True))
             switches = self.main_tab.findChild(Switches)
             if switches:
-                switches.refresh(self.line, self.mode, editable=(False if self.auto else True))
+                switches.refresh(self.line, self.mode, self.plc_num, editable=(False if self.auto else True))
 
     # Swtich between lines
     def update_line(self, dropdown):
         self.line = dropdown.currentText()
-        self.update_content()
+        # self.update_content()
+
+    def update_plc_num(self, dropdown):
+        self.plc_num = int(dropdown.currentText())
+        # self.update_content()
 
     # Toggle between Hardware and Software modes
-    # def toggle_hw_sw_mode(self):
-    #    if self.mode == "HW":
-    #        self.mode = "SW"
-    #    else:
-    #        self.mode = "HW"
-    #   self.update_content()
+    def toggle_hw_sw_mode(self):
+        if self.mode == "HW":
+           self.mode = "SW"
+        else:
+           self.mode = "HW"
+        # self.update_content()
 
     # Toggle between Manual and Auto modes
     def toggle_manual_auto_mode(self):
@@ -492,8 +512,9 @@ class MyApp(QWidget):
             self.auto = False
         else:
             self.auto = True
-        self.blue_line_plc_manager.update_auto(self.auto)
-        self.update_content()
+        
+        for name, plc_manager in self.plc_managers.items():
+            plc_manager.update_auto(self.auto)  # Call the member function on each instance
 
     def save_value(self, block_id, text, index):
         if block_id == "" or text == "":
@@ -506,18 +527,38 @@ class MyApp(QWidget):
 
         if index == 0:
             print("Sending Authority to Track Model: {Block_id: " + str(block_id) + ", Meters: " + text + "}" )
+            data = {
+                "line": self.line,
+                "index": block_id,
+                "authority": float(text)
+            }
+            self.add_authority(data)
         elif index == 1 or index == 3:
             print("Sending Suggested/Commanded Speed to Track Model: {Block_id: " + str(block_id) + ", Speed(kh/hr): " + text + "}")
         elif index == 2:
-            print("Updating Switch Suggestion Internally: {Block_id: " + str(block_id) + ", Switch_Suggest_State: " + text + "}")
             for switch in self.data_test[self.line][self.mode]['switches']:
                 if switch["from"] == block_id:
+                    print("Updating Switch Suggestion Internally: {Block_id: " + str(block_id) + ", Switch_Suggest_State: " + text + "}")
                     switch["suggested_toggle"] = bool(int(text))
                     break
+        elif index == 4:
+            print("Updating Speed Hazard Internally: {Block_id: " + str(block_id) + ", state: " + text + "}")
+            if text == "True" or text == "true":
+                for block in self.data_test[self.line][self.mode]["blocks"]:
+                    if block["block"] == block_id:
+                        block["speed_hazard"] = True
+                        print("set speed hazard to True")
+                        break
+            if text == "False" or text == "false":
+                for block in self.data_test[self.line][self.mode]["blocks"]:
+                    if block["block"] == block_id:
+                        block["speed_hazard"] = False
+                        print("set speed hazard to False")
+                        break
 
 
-# if __name__ == '__main__':
-#     app = QApplication(sys.argv)
-#     ex = MyApp()
-#     ex.show()
-#     sys.exit(app.exec())
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = MyApp()
+    ex.show()
+    sys.exit(app.exec())
