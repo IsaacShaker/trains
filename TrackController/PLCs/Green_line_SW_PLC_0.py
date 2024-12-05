@@ -39,7 +39,7 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
         for i in range(58, 63):
             speed_hazard[i] = truth_val
     
-    while not stop_event.is_set():
+    while 1:
         J_hazard = J_is_hazard()
         # Sections I - M
         for i in range(36, 77):
@@ -102,3 +102,6 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
 
         # Simulate delay to avoid CPU hogging
         time.sleep(0.1)
+        
+        if stop_event.is_set():
+            break
