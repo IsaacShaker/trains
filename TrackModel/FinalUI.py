@@ -178,8 +178,8 @@ class TrackUI(QMainWindow):
         #override for sake of spawn simulation
         for i in range(150):
             greenBlocks[i].set_cmd_speed(70)
-        #greenBlocks[85].set_authority(262.7)
-        greenBlocks[0].set_authority(15475.6)
+        greenBlocks[74].set_authority(10000)
+        #greenBlocks[0].set_authority(15475.6)
 
         greenSections = [] # make green sections
         greenSections.append(Section('A'))
@@ -219,10 +219,7 @@ class TrackUI(QMainWindow):
         
             
         #Train (temporary until we figure out how to initialize a train)
-        
-
-
-        tempTrain = Train(10, greenBlocks[0], 32.2, 0)
+        tempTrain = Train(10, greenBlocks[87], 32.2, 0)
         greenTrains.addTrain(tempTrain)
         auth.append(0.0)
         cmd.append(0.0)
@@ -428,8 +425,8 @@ class TrackUI(QMainWindow):
 
     #initialize green line table
     def make_green_table(self, tab):
-        self.green_block_table = QStandardItemModel(len(greenBlocks), 19)
-        self.green_block_table.setHorizontalHeaderLabels(["Section", "Occupied", "Authority", "Commanded Speed", "Beacon", "Station", "Railroad", "Switch", "Traffic Light", "Next Block", "Previous Block", "Length", "Grade", "Speed Limit", "Elevation", "Cum. Elevation", "Underground", "Broken Track", "Circuit Failure", "Power Failure"])
+        self.green_block_table = QStandardItemModel(len(greenBlocks), 18)
+        self.green_block_table.setHorizontalHeaderLabels(["Section", "Occupied", "Authority", "Commanded Speed", "Beacon", "Station", "Railroad", "Switch", "Next Block", "Previous Block", "Length", "Grade", "Speed Limit", "Elevation", "Cum. Elevation", "Underground", "Broken Track", "Circuit Failure", "Power Failure"])
         self.populate_green_table()
 
         green_block_table_view = QTableView()
@@ -442,7 +439,7 @@ class TrackUI(QMainWindow):
     #green table update function
     def populate_green_table(self):
         for row in range(len(greenBlocks)):
-            for col in range(19):
+            for col in range(18):
                 value = greenBlocks[row].get_table_data(col)
                 item = QStandardItem(value)
                 self.green_block_table.setItem(row, col, item)
