@@ -1373,8 +1373,6 @@ class Train_Controller_SW_UI(QMainWindow):
                 print(f"Train {train.train_id}: {train.get_s_brake()}")
                 #first we check if train has to brake to stop at a station
                 if train.stop_at_station() == True:
-                    train.set_s_brake(True)
-
                     if train == self.current_train:
                         self.s_brake_button.setCheckable(True)
                         self.s_brake_button.setChecked(True)

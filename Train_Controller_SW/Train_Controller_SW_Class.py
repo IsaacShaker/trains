@@ -199,6 +199,7 @@ class Train_Controller:
         self.s_brake = status
         self.brakes_dict["s_brake"] = self.s_brake
 
+        print(f"Different: {old_brake != self.s_brake}")
         #only sends a new state if a change occurs
         #if self.is_micah and old_brake != self.s_brake:
         if self.is_micah and old_brake != self.s_brake:
@@ -398,10 +399,10 @@ class Train_Controller:
 
         #checks if authorirt is less than Vi^2 / 2*max-braking
         if self.authority <= self.actual_velocity**2 / 2.4:
-            self.s_brake = True
+            self.set_s_brake(True)
             return True
         else:
-            self.s_brake = False
+            self.set_s_brake(False)
             return False
     
     #this function is called when we need to set authority to the authority sent us 
