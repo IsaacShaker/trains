@@ -149,6 +149,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         self.line_for_wayside = ""
         self.authority_for_wayside = 0
         self.speed_for_wayside = 0
+        self.yard_was_occupied = False
         
         #                   Dictionaries                  #
         # Maintenance Blocks
@@ -1217,6 +1218,17 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             #selected_train.route_authorities.clear()
             selected_train.add_stop(self.station_select_combo_box.currentText())
             selected_train.get_authority_from_map()
+
+    def add_train(self):
+        self.yard_was_occupied = True
+        self.wayside_vision_dict["line"] = "Green"
+        self.wayside_vision_dict["index"] = 1
+        self.wayside_vision_dict["output_block"] = 0
+        while(1):
+            response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
+            if response.status_code == 200:
+                break
+        # tell nate to create a train
             
     # Display the correct data based on the train selected
     def train_selected(self, selected_train):
@@ -1256,7 +1268,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             block_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.recently_opened.clear()
-        
+    
     # Function for receicing block occupancies from wayside
     def receive_block_occupancies(self):
         response = requests.get(URL + "/track-controller-sw/get-data/block_data")
@@ -1320,31 +1332,32 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                         response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
                         if response.status_code == 200:
                             break
-
+        
         for station in self.green_stations:
             station_id = 0
             new_block = ("Green", 0)
-            if new_block not in self.occupied_blocks:
-                station.set_popped(False)
-                self.wayside_vision_dict["line"] = "Green"
-                self.wayside_vision_dict["index"] = 2
-                self.wayside_vision_dict["output_block"] = 62
-                while(1):
-                    try:
-                        response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
-                        response.raise_for_status()  # This will raise an error for 4xx/5xx responses
+            if new_block in self.occupied_blocks:
+                self.yard_was_occupied = False
+            # if new_block not in self.occupied_blocks and self.yard_was_occupied == False:
+            #     station.set_popped(False)
+            #     self.wayside_vision_dict["line"] = "Green"
+            #     self.wayside_vision_dict["index"] = 2
+            #     self.wayside_vision_dict["output_block"] = 62
+            #     try:
+            #         response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
+            #         response.raise_for_status()  # This will raise an error for 4xx/5xx responses
 
-                        # If successful, print the response data
-                        print("Success:", response.json())
+            #         if response.status_code == 200:
+            #             break
 
-                    except requests.exceptions.HTTPError as http_err:
-                        # Print the HTTP error response
-                        print(f"HTTP error occurred: {http_err}")  # HTTP error details
-                        print("Response content:", response.text)   # Full response content
+            #     except requests.exceptions.HTTPError as http_err:
+            #         # Print the HTTP error response
+            #         print(f"HTTP error occurred: {http_err}")  # HTTP error details
+            #         print("Response content:", response.text)   # Full response content
 
-                    except Exception as err:
-                        # Catch any other exceptions
-                        print(f"Other error occurred: {err}")
+            #     except Exception as err:
+            #         # Catch any other exceptions
+            #         print(f"Other error occurred: {err}")
 
 
         # Speed Stuff 
@@ -1401,8 +1414,8 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                 response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
                 response.raise_for_status()  # This will raise an error for 4xx/5xx responses
 
-                # If successful, print the response data
-                print("Success:", response.json())
+                if response.status_code == 200:
+                    break
 
             except requests.exceptions.HTTPError as http_err:
                 # Print the HTTP error response

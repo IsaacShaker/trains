@@ -17,8 +17,8 @@ class MainApp(QApplication):
 
         self.ctc = MyWindow()
         self.track_controller = MyApp()
-        #self.train_model=Train_UI()
-        #self.train_controller_sw = Train_Controller_SW_UI()
+        self.train_model=Train_UI()
+        self.train_controller_sw = Train_Controller_SW_UI()
         #self.train_controller_hw = Train_Controller_HW_UI()
         self.track_model = TrackUI()
 
