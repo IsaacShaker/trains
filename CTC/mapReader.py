@@ -17,7 +17,6 @@ class MapReader():
         
         for i in range(len(stops) + 1):
             # Determine the current and next stop
-            print('i =', i)
             if i == 0:
                 current_stop = 'START'
                 next_stop = stops[i]
@@ -27,29 +26,21 @@ class MapReader():
             else:
                 current_stop = stops[i - 1]
                 next_stop = stops[i]
-            print('current stop = ', current_stop)
-            print('next stop = ', next_stop)
             # Find indices for the current and next stops
             current_stop_index = df[df['Infrastructure'] == current_stop].index
-            print('current index =', current_stop_index)
             next_stop_index = df[df['Infrastructure'] == next_stop].index
-            print('current index =', next_stop_index)
 
             authority = 0.00
             # Check if indices are found to avoid errors
             if not current_stop_index.empty and not next_stop_index.empty:
                 if i == 0:
-                    print('adding authority to the yard')
                     start = current_stop_index[0]
                     end = next_stop_index[0]
-                    print('START = ', start)
-                    print('END =', end)
                     # Sum the block lengths from start to end
                     authority = df.loc[start:end - 1, 'Block Length (m)'].sum()
                     authority += df.loc[end, 'Block Length (m)']/2 + 13 + 10
                     self.route_authorities_list.append(float(authority))
                 else:
-                    print('adding authority to pioneer')
                     start = current_stop_index[0]
                     end = next_stop_index[0]
                     # Sum the block lengths from start to end
@@ -58,7 +49,6 @@ class MapReader():
                     self.route_authorities_list.append(float(authority))
             else:
                 print(f"Stop '{current_stop}' or '{next_stop}' not found in the data.")
-            print('---------------------------------------------------')
         return self.route_authorities_list
 
     
