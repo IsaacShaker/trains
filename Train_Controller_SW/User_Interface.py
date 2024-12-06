@@ -58,12 +58,12 @@ from PyQt6.QtWidgets import (
 
 class Train_Controller_SW_UI(QMainWindow):
 
-    def __init__(self, model_list):
+    def __init__(self, model_list, tc_list):
         super(Train_Controller_SW_UI, self).__init__()
 
         self.auth_counter = 0
         self.next_train_id = 0
-        self.train_list =[]
+        self.train_list = tc_list
         self.train_model_list = model_list
         self.var_from_mitch = 10
 
@@ -1369,7 +1369,8 @@ class Train_Controller_SW_UI(QMainWindow):
             #If in auto, sets setpoint velocity to commanded and automatically brakes if setpoint velocity is below actual velocity
             if train.get_manual_mode() == False:
                 train.set_setpoint_velocity(train.get_commanded_velocity())            #set setpoint equal to commanded
-
+                
+                print(f"Train {train.train_id}: {train.get_s_brake()}")
                 #first we check if train has to brake to stop at a station
                 if train.stop_at_station() == True:
                     train.set_s_brake(True)
