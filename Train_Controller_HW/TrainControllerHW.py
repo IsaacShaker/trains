@@ -80,6 +80,7 @@ class Train_Controller_HW_UI(QMainWindow):
         self.beacon_identifier = ""
         self.at_stop = 0
         self.in_tunnel = False
+        self.manual_mode = False
         #used for door timing
 
     #Inputs from world clock class
@@ -346,7 +347,7 @@ class Train_Controller_HW_UI(QMainWindow):
             #Line comes in the form of "commanded_temperature, brake_state, door_state, light_state, commanded_power"
             if line:
                 values = line.split(',')
-                if len(values) == 7:  # Ensure we have 7 values
+                if len(values) == 8:  # Ensure we have 8 values
                     temp = int(values[0])
                     self.compare_and_set(temp, self.commanded_temperature, self.set_commanded_temperature)
                     
@@ -367,6 +368,8 @@ class Train_Controller_HW_UI(QMainWindow):
                     self.compare_and_set(float(values[5]), self.ki_value, self.set_ki_value)
 
                     self.compare_and_set(float(values[6]), self.kp_value, self.set_kp_value)
+
+                    self.manual_mode = bool(values[7])
                     
                     self.calculate_commanded_power()
                     self.update_current_authority()
@@ -404,8 +407,8 @@ class Train_Controller_HW_UI(QMainWindow):
             str(self.get_engine_failure()) + "," +                           #4
             str(self.get_signal_failure()) + "," +                           #5
             str(self.meters_to_feet(self.get_current_authority())) + "," +   #6
-            str(self.mps_to_mph(self.get_actual_velocity())) + "," +         #7
-            str(self.get_commanded_velocity()) + "," +      #8
+            "{:.1f}".format(self.mps_to_mph(self.get_actual_velocity())) + "," +         #7
+            "{:.1f}".format(self.mps_to_mph(self.get_commanded_velocity())) + "," +      #8
             str(self.get_required_doors()) + "," +                           #9
             str(self.get_T()) + "," + 
             str(self.get_commanded_power()) + "," +      
@@ -504,6 +507,8 @@ class Train_Controller_HW_UI(QMainWindow):
         elif self.commanded_power < 0.0:
             self.commanded_power = 0.0
         elif self.door_state > 0:
+            self.commanded_power = 0.0
+        elif self.manual_mode and (self.mph_to_mps(self.setpoint_velocity) < self.actual_velocity):
             self.commanded_power = 0.0
 
         self.set_commanded_power(self.commanded_power)
@@ -636,7 +641,8 @@ class Train_Controller_HW_UI(QMainWindow):
         #self.write_to_serial()
 
     def set_commanded_velocity(self, input):
-        self.commanded_velocity = self.mps_to_mph(input)
+        #self.commanded_velocity = self.mps_to_mph(input)
+        self.commanded_velocity = input
         #self.write_to_serial()
 
     def set_beacon_information(self, input):
