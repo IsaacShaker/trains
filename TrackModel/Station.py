@@ -11,7 +11,7 @@ class Station:
         self.peopleAtStation = random.randint(1,100)
         
     def display_info(self):
-        string = f"{self.name}:\n\tLine: {self.line} \n\tSection: {self.section} \n\tBlock Number: {self.block.display_num()} \n\tLeft Door: {self.leftDoor}\n\tRight Door: {self.rightDoor}"
+        string = f"{self.name}:\n\tLine: {self.line}\n\tBlock Number: {self.block.display_num()} \n\tLeft Door: {self.leftDoor}\n\tRight Door: {self.rightDoor}"
         return string
     
     def set_trainIn(self, x):

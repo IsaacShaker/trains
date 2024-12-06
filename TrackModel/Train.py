@@ -36,11 +36,11 @@ class Train:
         elif index == 3:
             return str(self.commandedSpeed)
         elif index == 4:
-            return str(self.fBlock)
+            return str(self.fBlock.number)
         elif index == 5:
             return str(self.fLocOnBlock)
         elif index == 6:
-            return str(self.bBlock)
+            return str(self.bBlock.number)
         elif index == 7:
             return str(self.bLocOnBlock)
         else:
