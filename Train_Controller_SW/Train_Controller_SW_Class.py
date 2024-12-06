@@ -107,6 +107,9 @@ class Train_Controller:
         self.r_door_timer.setSingleShot(True)
         self.r_door_timer.timeout.connect(self.close_r_door)
 
+        #self.session = self._create_session()
+        self.session = requests.Session()
+
 
     ############################
     #  Function Declaration 
@@ -397,7 +400,7 @@ class Train_Controller:
     
     #this function is called when we need to set authority to the authority sent us 
     def set_authority_to_received(self):
-        self.set_authority(self.received_authority + self.authority)
+        self.set_authority(self.received_authority + self.authority) #adds to compensate for overshooting station by a little
         
     #this function updates authority in real time in order to have an accurate reading for the driver
     def update_authority(self):
@@ -475,7 +478,11 @@ class Train_Controller:
             self.uk_1 = 0
 
             if self.is_micah:
-                response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
+                try:
+                    response = self.session.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict, timeout = 5)
+                except requests.exceptions.Timeout:
+                    print("The request timed out. KEVIN...")
+
             return
         
         #update ek_1 and uk_1
@@ -497,7 +504,10 @@ class Train_Controller:
         print(f"Commanded Power: {self.commanded_power}")
 
         if self.is_micah:
-            response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
+            try:
+                response = self.session.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict, timeout = 5)
+            except requests.exceptions.Timeout:
+                print("The request timed out. KEVIN2...")
 
     def open_l_door(self, sim_speed):
         self.set_l_door(True)
