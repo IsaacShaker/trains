@@ -14,7 +14,11 @@ URL = 'http://127.0.0.1:5000'
 class Train_Controller:
 
     #train constructor function
-    def __init__ (self, id):
+    def __init__ (self, id, model_list):
+        
+        self.train_model_list = model_list
+
+
         self.is_micah = True
         self.manual_mode = False
         self.e_brake = False
@@ -477,11 +481,16 @@ class Train_Controller:
             self.uk = 0
             self.uk_1 = 0
 
-            if self.is_micah:
-                try:
-                    response = self.session.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict, timeout = 5)
-                except requests.exceptions.Timeout:
-                    print("The request timed out. KEVIN...")
+
+
+            # if self.is_micah:
+            #     try:
+            #         response = self.session.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict, timeout = 5)
+            #         self.session.close()
+            #     except requests.exceptions.ConnectionError as e:
+            #         print("Connection error:", e)
+
+            self.train_model_list[self.train_id].set_commanded_power(self.commanded_power)
 
             return
         
@@ -503,11 +512,14 @@ class Train_Controller:
 
         print(f"Commanded Power: {self.commanded_power}")
 
-        if self.is_micah:
-            try:
-                response = self.session.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict, timeout = 5)
-            except requests.exceptions.Timeout:
-                print("The request timed out. KEVIN2...")
+        # if self.is_micah:
+        #     try:
+        #         response = self.session.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict, timeout = 5)
+        #         self.session.close()
+        #     except requests.exceptions.ConnectionError as e:
+        #         print("Connection error:", e)
+
+        self.train_model_list[self.train_id].set_commanded_power(self.commanded_power)
 
     def open_l_door(self, sim_speed):
         self.set_l_door(True)
