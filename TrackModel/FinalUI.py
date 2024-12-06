@@ -1,4 +1,4 @@
-launcher = False
+launcher = True
 import sys
 import requests
 URL = 'http://127.0.0.1:5000'
@@ -186,12 +186,10 @@ class TrackUI(QMainWindow):
             greenTrafficLights.append(TrafficLight("Green", False))
 
         #override for sake of spawn simulation
-        #for i in range(150):
-            #greenBlocks[i].set_cmd_speed(70)
-        #greenBlocks[74].set_authority(10000)
+        for i in range(150):
+            greenBlocks[i].set_cmd_speed(70)
         #greenBlocks[0].set_authority(15475.6)
         greenBlocks[85].set_authority(262.7)
-        #greenBlocks[0].set_authority(15475.6)
 
         greenSections = [] # make green sections
         greenSections.append(Section('A'))
@@ -231,11 +229,7 @@ class TrackUI(QMainWindow):
         
             
         #Train (temporary until we figure out how to initialize a train)
-        tempTrain = Train(10, greenBlocks[87], 32.2, 0)
-        
-
-
-        tempTrain = Train(10, greenBlocks[85], 32.2, 0)
+        tempTrain = Train(10, greenBlocks[85], 32.2, 0, "Green")
         greenTrains.addTrain(tempTrain)
         greenAuth.append(0.0)
         greenCmd.append(0.0)

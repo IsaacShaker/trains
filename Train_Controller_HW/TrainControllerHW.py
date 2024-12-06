@@ -24,9 +24,8 @@ class Train_Controller_HW_UI(QMainWindow):
         #self.timer_to_track_model = QTimer(self)
 
         self.timer.timeout.connect(self.read_serial)
-        #self.timer_to_track_model.timeout.connect(self.send_to_track_model)
-
         self.timer.start(90)  # Read every 90ms
+        
         #self.timer.start(2000) # Send data every 2 seconds
 
     ###################################
@@ -81,6 +80,8 @@ class Train_Controller_HW_UI(QMainWindow):
         self.at_stop = 0
         self.in_tunnel = False
         self.manual_mode = False
+        self.difference_in_authority = 0.0
+        self.counter_authority = 1
         #used for door timing
 
     #Inputs from world clock class
@@ -390,9 +391,10 @@ class Train_Controller_HW_UI(QMainWindow):
                     self.setpoint_velocity_tb.setText(f"Setpoint Velocity: {values[4]}")
                     self.commanded_power_tb.setText(f"Commanded Power: {self.commanded_power}  Watts")   
 
-    def send_to_track_model(self):
-        self.auth_diff_dict["auth_diff"] = self.current_authority
-        response = requests.post(URL + "/track-model/get-data/auth_difference", json=self.authority_dict)
+    def send_to_track_model(self, input):
+        self.auth_diff_dict["auth_diff"] = input
+        response = requests.post(URL + "/track-model/get-data/auth_difference", json=self.auth_diff_dict)
+        print (f"UPDATED AUTHORITY: {self.current_authority}")
                                 
     def write_to_serial(self):
         #self.decode_beacon_info(self.beacon_info)
@@ -481,12 +483,25 @@ class Train_Controller_HW_UI(QMainWindow):
     def meters_to_feet(self, input):
         return (float(input)*3.28084)
 
+    def feet_to_meters(self, input):
+        return (float(input)/3.28084)
+
     def update_current_authority(self):
         if(self.current_authority <= 0 and self.actual_velocity == 0):
             self.set_current_authority(self.commanded_authority + self.current_authority) 
         else:
             self.current_authority -= self.actual_velocity*self.T
+            self.difference_in_authority += self.actual_velocity*self.T
+
+        if self.counter_authority >= 40:
+            self.send_to_track_model(self.difference_in_authority)
+            self.difference_in_authority = 0
+            self.counter_authority = 1
+        else:
+            self.counter_authority += 1
         
+        
+
         self.write_to_serial()
 
     def calculate_commanded_power(self):

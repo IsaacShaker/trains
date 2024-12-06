@@ -1,6 +1,6 @@
 import requests
 URL = 'http://127.0.0.1:5000'
-launcher = False
+launcher = True
 if launcher:
     from TrackModel.Beacon import Beacon
     from TrackModel.RailroadCrossing import RailroadCrossing
@@ -143,7 +143,7 @@ class Block:
             self.beacon_data["beacon_info"]=str(self.beacon.get_staticData())
             train.set_staticData(self.beacon.get_staticData())
 
-            print("beacon info:" + self.beacon.get_staticData())
+           # print("beacon info:" + self.beacon.get_staticData())
             response = requests.post(URL + '/train-model/get-data/beacon-info', json=self.beacon_data)
 
             
