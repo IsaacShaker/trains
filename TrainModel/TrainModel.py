@@ -17,7 +17,7 @@ class TrainModel(QObject):
     ui_refresh = pyqtSignal()
     start_temperature_adjustment_signal = pyqtSignal(float)
 
-    def __init__(self):
+    def __init__(self, tc_list):
         super().__init__()
         self.adjust_timer = QTimer(self)
         self.adjust_timer.timeout.connect(self.update_temperature)
@@ -25,6 +25,9 @@ class TrainModel(QObject):
         self.start_temperature_adjustment_signal.connect(self.start_adjusting_temperature)
 
         # Initialize variables
+
+        #For the dynamic list
+        self.train_controller_list = tc_list
 
         #Train number
         self.ID=0
@@ -185,7 +188,8 @@ class TrainModel(QObject):
         self.currentVelocity=vel
         self.actual_velocity_dict["train_id"]=self.ID
         self.actual_velocity_dict["actual_velocity"]=self.currentVelocity
-        response = requests.post(URL + "/train-controller/receive-actual-velocity", json=self.actual_velocity_dict)
+        # response = requests.post(URL + "/train-controller/receive-actual-velocity", json=self.actual_velocity_dict)
+        self.train_controller_list[self.ID].set_actual_velocity(self.currentVelocity)
         response = requests.post(URL + "/track-model/get-data/current-speed", json=self.actual_velocity_dict)
         self.ui_refresh.emit()
 

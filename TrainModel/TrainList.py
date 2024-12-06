@@ -5,9 +5,10 @@ class TrainList:
     def __init__(self):
         self.train_list = []  # This will hold the list of train objects
 
-    def add_train(self):
+    def add_train(self, tc_list):
         """Add a new TrainModel to the list."""
-        train_model = TrainModel()
+        
+        train_model = TrainModel(tc_list)
         train_model.ID = len(self.train_list)
         self.train_list.append(train_model)
     
@@ -33,4 +34,5 @@ class TrainList:
 
     def __getitem__(self, index):
         """Allow indexing like train_list[0]."""
+
         return self.train_list[index]
