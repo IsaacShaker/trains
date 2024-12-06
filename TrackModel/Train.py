@@ -6,8 +6,9 @@ if launcher:
 else:
     from Station import Station
 class Train:
-    def __init__(self, fLocOnBlock, fBlock, length, id):
+    def __init__(self, fLocOnBlock, fBlock, length, id, line):
         self.id = id
+        self.line = line
         self.fLocOnBlock = fLocOnBlock
         self.fBlock = fBlock
         self.fBlockPrevious = fBlock
@@ -25,20 +26,69 @@ class Train:
             'id' : None,
             'grade' : None
         }
+    def get_table_data(self, index):
+        if index == 0:
+            return str(self.id)
+        elif index == 1:
+            return str(self.speed)
+        elif index == 2:
+            return str(self.authority)
+        elif index == 3:
+            return str(self.commandedSpeed)
+        elif index == 4:
+            return str(self.fBlock.number)
+        elif index == 5:
+            return str(self.fLocOnBlock)
+        elif index == 6:
+            return str(self.bBlock.number)
+        elif index == 7:
+            return str(self.bLocOnBlock)
+        else:
+            return ""    
         
     def display_info(self,index):
         string = f"Train {index}: \n\tFront Location: {self.fLocOnBlock} \n\tFront Block: {self.fBlock.display_num()} \n\tPrevious Front Block: {self.fBlockPrevious.display_num()} \n\tBack Location: {self.bLocOnBlock} \n\tBack Block: {self.bBlock.display_num()}\n\tLength: {self.length} \n\tSpeed: {self.speed} \n\tAuthority: {self.authority} \n\tStatic Data: {self.staticData}"
         return string
     
     def moveTrain(self, diff):
-        if self.fBlock.get_num() == 85 and self.fBlockPrevious.get_num() == 100:
-            self.fBackwards = True 
-        elif self.fBlock.get_num() == 101 and self.fBlockPrevious.get_num() == 77:
-            self.fBackwards = False
-        elif self.fBlock.get_num() == 28 and self.fBlockPrevious.get_num() == 150:
-            self.fBackwards = True
-        elif self.fBlock.get_num() == 1 and self.fBlockPrevious.get_num() == 13:
-            self.fBackwards = False
+        if self.line == "Green":
+            if self.fBlock.get_num() == 85 and self.fBlockPrevious.get_num() == 100:
+                self.fBackwards = True 
+            elif self.fBlock.get_num() == 101 and self.fBlockPrevious.get_num() == 77:
+                self.fBackwards = False
+            elif self.fBlock.get_num() == 28 and self.fBlockPrevious.get_num() == 150:
+                self.fBackwards = True
+            elif self.fBlock.get_num() == 1 and self.fBlockPrevious.get_num() == 13:
+                self.fBackwards = False
+        else:
+            if self.fBlock.get_num() == 0 and self.fBlockPrevious.get_num() == 9:
+                self.fBackwards = True
+            elif self.fBlock.get_num() == 9 and self.fBlockPrevious.get_num() == 0:
+                self.fBackwards = True
+            elif self.fBlock.get_num() == 1 and self.fBlockPrevious.get_num() == 16:
+                self.fBackwards = False
+            elif self.fBlock.get_num() == 16 and self.fBlockPrevious.get_num() == 1:
+                self.fBackwards = False
+            elif self.fBlock.get_num() == 27 and self.fBlockPrevious.get_num() == 76:
+                self.fBackwards = True
+            elif self.fBlock.get_num() == 76 and self.fBlockPrevious.get_num() == 27:
+                self.fBackwards = True
+            elif self.fBlock.get_num() == 72 and self.fBlockPrevious.get_num() == 33:
+                self.fBackwards = False
+            elif self.fBlock.get_num() == 33 and self.fBlockPrevious.get_num() == 72:
+                self.fBackwards = False
+            elif self.fBlock.get_num() == 71 and self.fBlockPrevious.get_num() == 38:
+                self.fBackwards = True
+            elif self.fBlock.get_num() == 38 and self.fBlockPrevious.get_num() == 71:
+                self.fBackwards = True
+            elif self.fBlock.get_num() == 44 and self.fBlockPrevious.get_num() == 67:
+                self.fBackwards = False
+            elif self.fBlock.get_num() == 67 and self.fBlockPrevious.get_num() == 44:
+                self.fBackwards = False
+            elif self.fBlock.get_num() == 66 and self.fBlockPrevious.get_num() == 52:
+                self.fBackwards = True
+            elif self.fBlock.get_num() == 52 and self.fBlockPrevious.get_num() == 66:
+                self.fBackwards = True
 
         if diff == None:
             diff = 0

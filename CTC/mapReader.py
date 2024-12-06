@@ -1,5 +1,6 @@
 import pandas as pd
 from collections import deque
+import os
 
 class MapReader():
 
@@ -8,7 +9,9 @@ class MapReader():
 
     def calculate_green_authorities(self, stops):
         # Open the train path file
-        file_path = 'C:/Trains C/trains/Train Paths.xlsx'
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(current_dir, 'Train Paths.xlsx')
+        print('file path is ', file_path)
         df = pd.read_excel(file_path, sheet_name='Green Line')
         df['Block Length (m)'] = df['Block Length (m)'].astype(float)
         

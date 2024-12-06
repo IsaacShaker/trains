@@ -58,26 +58,25 @@ from PyQt6.QtWidgets import (
 
 class Train_Controller_SW_UI(QMainWindow):
 
-    def __init__(self):
+    def __init__(self, model_list):
         super(Train_Controller_SW_UI, self).__init__()
 
         self.auth_counter = 0
         self.next_train_id = 0
         self.train_list =[]
-        self.var_from_mitch = 1
+        self.train_model_list = model_list
+        self.var_from_mitch = 10
 
 
 
-        self.add_train()
-        #self.add_train()
-        # self.add_train()
-        self.train_list[0].authority = 0
+        
+        #self.train_list[0].authority = 0
         # self.train_list[1].authority = 250
         # self.train_list[2].authority = 100
 
-        self.train_list[0].actual_velocity = 0
-        self.train_list[0].commanded_velocity = 0
-        self.train_list[0].setpoint_velocity = 0
+        #self.train_list[0].actual_velocity = 0
+        #self.train_list[0].commanded_velocity = 0
+        #self.train_list[0].setpoint_velocity = 0
 
         # self.train_list[1].actual_velocity = 11
         # self.train_list[1].commanded_velocity = 7
@@ -150,6 +149,13 @@ class Train_Controller_SW_UI(QMainWindow):
         self.current_train = self.train_selection.currentIndex()
 
         self.train_selection.setEditable(True)
+
+        self.add_train()
+        self.add_train()
+        self.add_train()
+
+        #self.train_list[1].commanded_velocity = 7
+        #self.train_list[2].commanded_velocity = 20
 
         #############################################
         #Driver and Engineer Sections
@@ -1083,7 +1089,7 @@ class Train_Controller_SW_UI(QMainWindow):
             self.l_door_button.setEnabled(True)
 
 
-        print(f"The current train is {self.current_train}")
+        #print(f"The current train is {self.current_train}")
     
 
     #this function handles when the l_door_button is pressed
@@ -1348,10 +1354,71 @@ class Train_Controller_SW_UI(QMainWindow):
     #function that calculates power and does all other timed function
     def calculate_power(self):
         
-        #if received authority is negative, then that means we are supposed to receive new authority
-        if self.train_list[self.current_train].get_received_authority() > 0 and self.train_list[self.current_train].get_can_get_authority():
-            self.train_list[self.current_train].set_authority_to_received()
-            self.train_list[self.current_train].set_can_get_authority(False)                                                    #COMMENT THIS OUT TO TEST WITHOUT THIS FUNCTION
+        self.auth_counter +=1
+
+        #this loop goes through all necessary actions which have to be completed for each train
+        for train in self.train_list:
+
+            #if received authority is negative, then that means we are supposed to receive new authority
+            if train.get_received_authority() > 0 and train.get_can_get_authority():
+                train.set_authority_to_received()
+                train.set_can_get_authority(False)                                                    #COMMENT THIS OUT TO TEST WITHOUT THIS FUNCTION
+
+
+                #checks if train is in manual mode
+            #If in auto, sets setpoint velocity to commanded and automatically brakes if setpoint velocity is below actual velocity
+            if train.get_manual_mode() == False:
+                train.set_setpoint_velocity(train.get_commanded_velocity())            #set setpoint equal to commanded
+
+                #first we check if train has to brake to stop at a station
+                if train.stop_at_station() == True:
+                    train.set_s_brake(True)
+
+                    if train == self.current_train:
+                        self.s_brake_button.setCheckable(True)
+                        self.s_brake_button.setChecked(True)
+                elif train.get_commanded_velocity() < train.get_actual_velocity() and train.get_e_brake() == False:
+                    train.set_s_brake(True)
+
+                    if train == self.current_train:
+                        self.s_brake_button.setCheckable(True)
+                        self.s_brake_button.setChecked(True)
+                else:
+                    train.set_s_brake(False)
+
+                    if train == self.current_train:
+                        self.s_brake_button.setChecked(False)
+                        self.s_brake_button.setCheckable(False)
+
+
+            #make sure setpoint can not exceed commanded
+            train.SetSetPointVelocity()
+
+            #calculate power
+            train.calculate_commanded_power()
+
+            #once counter reaches 40, sends updated amount moved to track model
+            if self.auth_counter == 40:
+                self.auth_counter = 0
+                train.send_auth_diff()
+
+
+            #check if doors have to open if train has stopped, auhority is 0, and doors haven't opened
+            if train.get_authority() <= 0.0 and train.get_actual_velocity() == 0.0 and train.get_doors_can_open():
+                
+                #checks which doors to open
+                doors = train.get_doors_to_open()
+
+                print(doors)
+
+                #opens correct doors based off decoded beacon info
+                if doors == "3":
+                    train.open_l_door(self.var_from_mitch)
+                    train.open_r_door(self.var_from_mitch)
+                elif doors == "2":
+                    train.open_l_door(self.var_from_mitch)
+                elif doors == "1":
+                    train.open_r_door(self.var_from_mitch)
 
         #updates UI info
         self.authority_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Authority: </span> <span style="color: white;">{self.meters_to_feet(self.train_list[self.current_train].get_authority())} ft</span>')
@@ -1362,26 +1429,8 @@ class Train_Controller_SW_UI(QMainWindow):
         
         self.check_errors()
 
-        #checks if train is in manual mode
-        #If in auto, sets setpoint velocity to commanded and automatically brakes if setpoint velocity is below actual velocity
-        if self.train_list[self.current_train].get_manual_mode() == False:
-            self.train_list[self.current_train].set_setpoint_velocity(self.train_list[self.current_train].get_commanded_velocity())            #set setpoint equal to commanded
 
-            #first we ehck if train has to brake to stop at a station
-            if self.train_list[self.current_train].stop_at_station() == True:
-                self.s_brake_pressed()
-                self.s_brake_button.setCheckable(True)
-                self.s_brake_button.setChecked(True)
-            elif self.train_list[self.current_train].get_commanded_velocity() < self.train_list[self.current_train].get_actual_velocity() and self.train_list[self.current_train].get_e_brake() == False:
-                self.s_brake_pressed()
-                self.s_brake_button.setCheckable(True)
-                self.s_brake_button.setChecked(True)
-            else:
-                self.s_brake_released()
-                self.s_brake_button.setChecked(False)
-                self.s_brake_button.setCheckable(False)
-
-            print(f"Service Brake = {self.train_list[self.current_train].get_s_brake()}")
+        #print(f"Service Brake = {self.train_list[self.current_train].get_s_brake()}")
 
 
         #if e_brake is pressed, checks if it can be unpressed
@@ -1390,19 +1439,7 @@ class Train_Controller_SW_UI(QMainWindow):
                 self.e_brake_button.setEnabled(True)
                 #print(self.train_list[self.current_train].get_e_brake())
 
-        #make sure setpoint can not exceed commanded
-        self.train_list[self.current_train].SetSetPointVelocity()
-
         self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[self.current_train].get_setpoint_velocity())} MPH</span>') #update setpoint 
-           
-        #calculate power
-        self.train_list[self.current_train].calculate_commanded_power()
-
-        self.auth_counter +=1
-
-        if self.auth_counter == 40:
-            self.auth_counter = 0
-            self.train_list[self.current_train].send_auth_diff()
 
         #update authority
         #self.train_list[self.current_train].update_authority()
@@ -1412,22 +1449,36 @@ class Train_Controller_SW_UI(QMainWindow):
 
 
         #print(str(self.train_list[self.current_train].get_authority()))
-        #check if doors have to open if train has stopped, auhority is 0, and doors haven't opened
 
-        if self.train_list[self.current_train].get_authority() <= 0.0 and self.train_list[self.current_train].get_actual_velocity() == 0.0 and self.train_list[self.current_train].get_doors_can_open():
-            
-            #checks which doors to open
-            doors = self.train_list[self.current_train].get_doors_to_open()
+        ##################################################################
+        #Checking for door states being shown correctly in current train
+        ##################################################################
 
-            print(doors)
-            #opens correct doors based off decoded beacon info
-            if doors == "3":
-                self.open_l_door()
-                self.open_r_door()
-            elif doors == "2":
-                self.open_l_door()
-            elif doors == "1":
-                self.open_r_door()
+        #left door
+        if self.train_list[self.current_train].get_l_door():
+            self.l_door_button.setEnabled(False)
+            self.l_door_button.setText("Opened")
+        else:
+            #activates door button again if in manual mode (ONLY IN CURRENT)
+            if self.train_list[self.current_train].get_manual_mode():
+                self.l_door_button.setEnabled(True)
+
+            self.l_door_button.setText("Closed")
+
+        #right door
+        if self.train_list[self.current_train].get_r_door():
+            self.r_door_button.setEnabled(False)
+            self.r_door_button.setText("Opened")
+        else:
+            #activates door button again if in manual mode (ONLY IN CURRENT)
+            if self.train_list[self.current_train].get_manual_mode():
+                self.r_door_button.setEnabled(True)
+
+            self.r_door_button.setText("Closed")
+
+
+        print(f"right door:{self.train_list[self.current_train].get_r_door()}")
+        print(f"left door:{self.train_list[self.current_train].get_l_door()}")
 
         #keeps doors unable to be used until velocity is 0 and in manual mode
         if self.train_list[self.current_train].get_actual_velocity() == 0 and self.train_list[self.current_train].get_manual_mode():
@@ -1439,10 +1490,12 @@ class Train_Controller_SW_UI(QMainWindow):
     
 
     def add_train(self):
-        new_train = Train_Controller(self.next_train_id)
+        new_train = Train_Controller(self.next_train_id, self.train_model_list)
 
-        # if self.next_train_id > 0:
-        #     self.train_selection.addItems(["Train " + str(self.next_train_id)])
+        if self.next_train_id > 0:
+            self.train_selection.addItems(["Train " + str(self.next_train_id)])
+
+        #increment
         self.next_train_id += 1
         self.train_list.append(new_train)
 
