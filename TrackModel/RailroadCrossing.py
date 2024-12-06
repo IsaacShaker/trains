@@ -10,7 +10,7 @@ class RailroadCrossing:
             ud = "Down"
         else:
             ud = "Up"
-        string = f"Railroad Crossing {index}:\n\tLine: {self.line} \n\tSection: {self.section}" + "\n\t" + f"Block Number: {self.block.display_num()}" + f"\n\tUp or Down: " + ud
+        string = f"Railroad Crossing {index}:\n\tLine: {self.line}" + "\n\t" + f"Block Number: {self.block.display_num()}" + f"\n\tUp or Down: " + ud
         return string
 
     def set_U(self):
