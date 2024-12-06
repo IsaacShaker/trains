@@ -1,4 +1,4 @@
-launcher = True
+launcher = False
 import sys
 import requests
 URL = 'http://127.0.0.1:5000'
@@ -28,6 +28,7 @@ redRailroadCrossing = []
 redBeacons = [] 
 redStations = [] 
 redSections = []
+
 greenYard = []
 greenBlocks = [] 
 greenSwitches = [] 
@@ -38,17 +39,25 @@ greenStations = []
 greenSections = []
 #Initialize train global variables
 greenTrains = Trains()
+redTrains = Trains()
 #Initialize global occupation variables for Wayside
 greenOccs = [False] * 151
 redOccs = [False] * 77
 #Initialize global variables for trains to recieve
-auth = []
-cmd = []
-blockGrade = []
+greenAuth = []
+greenCmd = []
+
+redAuth = []
+redCmd = []
 
 initialized = False
 
-authAndSpeed = {
+greenAuthAndSpeed = {
+        'authorities' : None,
+        'commandedSpeeds' : None
+    }
+
+redAuthAndSpeed = {
         'authorities' : None,
         'commandedSpeeds' : None
     }
@@ -121,7 +130,7 @@ class TrackUI(QMainWindow):
         self.train_timer.start(10)
 
         self.send_timer = QTimer()
-        self.send_timer.timeout.connect(self.post_auth_and_cmd_speed)
+        self.send_timer.timeout.connect(self.green_post_auth_and_cmd_speed)
         self.send_timer.start(1000)
 
     def initialize_track(self):
@@ -172,13 +181,14 @@ class TrackUI(QMainWindow):
                 redSections[9].add_block(redBlocks[i])
             
         greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations = buildTrack(add_TM+self.input_value2)
+        
         for i in range(10):
-            greenTrafficLights.append(TrafficLight("Green", i))
+            greenTrafficLights.append(TrafficLight("Green", False))
 
         #override for sake of spawn simulation
-        for i in range(150):
-            greenBlocks[i].set_cmd_speed(70)
-        greenBlocks[74].set_authority(10000)
+        #for i in range(150):
+            #greenBlocks[i].set_cmd_speed(70)
+        #greenBlocks[74].set_authority(10000)
         #greenBlocks[0].set_authority(15475.6)
         greenBlocks[85].set_authority(262.7)
         #greenBlocks[0].set_authority(15475.6)
@@ -227,8 +237,8 @@ class TrackUI(QMainWindow):
 
         tempTrain = Train(10, greenBlocks[85], 32.2, 0)
         greenTrains.addTrain(tempTrain)
-        auth.append(0.0)
-        cmd.append(0.0)
+        greenAuth.append(0.0)
+        greenCmd.append(0.0)
     
     #For Wayside
     def get_occupancies(self):
@@ -237,12 +247,12 @@ class TrackUI(QMainWindow):
         return occ_data
 
     #For Train Model
-    def get_track_to_train(self):
+    def green_get_track_to_train(self):
         for i in range(len(Trains)):
-            auth[i] = Trains[i].trainAuth
-            cmd[i] = Trains[i].trainCmd
-        data = { "authority" : auth, 
-                 "commandedSpeed" : cmd}
+            greenAuth[i] = Trains[i].trainAuth
+            greenCmd[i] = Trains[i].trainCmd
+        data = { "authority" : greenAuth, 
+                 "commandedSpeed" : greenCmd}
         return data
     
     #From Wayside
@@ -298,94 +308,99 @@ class TrackUI(QMainWindow):
         greenTrains.trainList[index].moveTrain(diff)
         #greenTrains.set_indexed_speed(index, diff)
 
-    def post_auth_and_cmd_speed(self):
-        authAndSpeed["authorities"]=greenTrains.authorities
-        authAndSpeed["commandedSpeeds"]=greenTrains.commandedSpeeds
-        response = requests.post(URL + "/train-model/get-data/authority-cmd-speed", json=authAndSpeed)
+    def green_post_auth_and_cmd_speed(self):
+        greenAuthAndSpeed["authorities"]=greenTrains.authorities
+        greenAuthAndSpeed["commandedSpeeds"]=greenTrains.commandedSpeeds
+        if launcher:
+            response = requests.post(URL + "/train-model/get-data/authority-cmd-speed", json=greenAuthAndSpeed)
+        
+    def red_post_auth_and_cmd_speed(self):
+        redAuthAndSpeed["authorities"]=redTrains.authorities
+        redAuthAndSpeed["commandedSpeeds"]=redTrains.commandedSpeeds
+        if launcher:
+            response = requests.post(URL + "/train-model/get-data/authority-cmd-speed", json=redAuthAndSpeed)
 
     #initializes all maps, tables, test benches
     def create_tabs(self):
         #Tab 3 for green line
-        tab4 = QWidget()
-        self.tab_widget.addTab(tab4, "Green Line")
+        tab1 = QWidget()
+        self.tab_widget.addTab(tab1, "Green Line")
         self.tab_widget.setStyleSheet("background-color: #444444; color: white;")
 
-        self.make_green_sections(tab4, -100, 50)
-
-        self.make_green_switches(tab4, -100, 50)
-
-        # self.make_lights(tab1, 110)
-
-        self.make_green_crossings(tab4, 0, 0)
-
-        self.make_train(tab4)
-
-        self.make_green_stations(tab4, 0, 0)
-
-        self.make_green_lights(tab4, 0)
-
-        # self.make_beacons(tab1)
-
-        self.make_green_failure_buttons(tab4)
-        
-        self.make_green_temp(tab4)
+        self.make_green_sections(tab1, -100, 50)
+        self.make_green_switches(tab1, -100, 50)
+        self.make_green_crossings(tab1, 0, 0)
+        self.make_train(tab1)
+        self.make_green_stations(tab1, 0, 0)
+        self.make_green_lights(tab1, 0)
+        self.make_green_failure_buttons(tab1)
+        self.make_green_temp(tab1)
     
         #Tab 5 for table info 
-        tab5 = QWidget()
-        self.tab_widget.addTab(tab5, "Green Track Info")
+        tab2 = QWidget()
+        self.tab_widget.addTab(tab2, "Green Track Info")
         self.tab_widget.setStyleSheet("background-color: #444444; color: white;")
         
-        self.make_green_table(tab5)
+        self.make_green_track_table(tab2)
+
+        tab3 = QWidget()
+        self.tab_widget.addTab(tab3, "Green Train Info")
+        self.tab_widget.setStyleSheet("background-color: #444444; color: white;")
+        
+        self.make_green_train_table(tab3)
+
+
 
         #Tab 4 for test bench
         #input track changes here
-        tab6 = QWidget()
-        self.tab_widget.addTab(tab6, "Green Test Bench")
+        tab4 = QWidget()
+        self.tab_widget.addTab(tab4, "Green Test Bench")
         self.tab_widget.setStyleSheet("background-color: #444444; color: white;")
         
-        self.make_green_test_bench(tab6, -30)
+        self.make_green_test_bench(tab4, -30)
 
         #Create Tab 1 red line
-        tab1 = QWidget()
-        self.tab_widget.addTab(tab1, "Red Line")
+        tab5 = QWidget()
+        self.tab_widget.addTab(tab5, "Red Line")
         self.tab_widget.setStyleSheet("background-color: #444444; color: white;")
 
-        self.make_red_sections(tab1, 0, 0)
-
-        self.make_red_switches(tab1, 0, 0)
-
+        self.make_red_sections(tab5)
+        self.make_red_switches(tab5)
         # self.make_lights(tab1, 110)
-
         # self.make_crossing(tab1, 110)
-
         # self.make_train(tab1)
-
-        # self.make_stations(tab1)
-
+        self.make_red_stations(tab5)
         # self.make_beacons(tab1)
-
         # self.make_failure_buttons(tab1)
 
         #Tab 2 for table info 
-        tab2 = QWidget()
-        self.tab_widget.addTab(tab2, "Red Track Info")
+        tab6 = QWidget()
+        self.tab_widget.addTab(tab6, "Red Track Info")
         self.tab_widget.setStyleSheet("background-color: #444444; color: white;")
 
-        self.make_red_table(tab2)
+        self.make_red_track_table(tab6)
+
+        tab7 = QWidget()
+        self.tab_widget.addTab(tab7, "Red Train Info")
+        self.tab_widget.setStyleSheet("background-color: #444444; color: white;")
+        
+        self.make_red_train_table(tab7)
+
+
 
         #Tab 3 for test bench
         #input track changes here
-        tab3 = QWidget()
-        self.tab_widget.addTab(tab3, "Red Test Bench")
+        tab8 = QWidget()
+        self.tab_widget.addTab(tab8, "Red Test Bench")
         self.tab_widget.setStyleSheet("background-color: #444444; color: white;")
         
-        self.make_red_test_bench(tab3, -30)
+        self.make_red_test_bench(tab8, -30)
 
     #initializes red line table
-    def make_red_table(self, tab):
+    def make_red_track_table(self, tab):
         self.red_block_table = QStandardItemModel(len(redBlocks), 15)
-        self.red_block_table.setHorizontalHeaderLabels(["Section", "Occupied", "Authority", "Commanded Speed", "Beacon", "Station", "Railroad", "Switch", "Traffic Light", "Next Block", "Previous Block", "Length", "Grade", "Speed Limit", "Elevation", "Cum. Elevation", "Underground", "Broken Track", "Circuit Failure", "Power Failure"])
-        self.populate_red_table()
+        self.red_block_table.setHorizontalHeaderLabels(["Section", "Occupied", "Authority", "Cmd. Speed", "Beacon", "Station", "Railroad", "Switch", "Traffic Light", "Next Block", "Previous Block", "Length", "Grade", "Speed Limit", "Elevation", "Cum. Elevation", "Underground", "Broken Track", "Circuit Failure", "Power Failure"])
+        self.populate_red_track_table()
 
         red_block_table_view = QTableView()
         red_block_table_view.setModel(self.red_block_table)
@@ -393,14 +408,27 @@ class TrackUI(QMainWindow):
         layout = QVBoxLayout()
         layout.addWidget(red_block_table_view)
         tab.setLayout(layout)
+    
+    def make_red_train_table(self, tab):
+        self.red_train_table = QStandardItemModel(len(redTrains.trainList), 8)
+        self.red_train_table.setHorizontalHeaderLabels(["ID", "Speed", "Authority", "Cmd. Speed", "Front Block", "Location", "Back Block", "Location"])
+        self.populate_red_train_table()
+
+        red_train_table_view = QTableView()
+        red_train_table_view.setModel(self.red_train_table)
+
+        layout = QVBoxLayout()
+        layout.addWidget(red_train_table_view)
+        tab.setLayout(layout)
 
     #red table update function
-    def populate_red_table(self):
+    def populate_red_track_table(self):
         for row in range(len(redBlocks)):
             for col in range(20):
                 value = redBlocks[row].get_table_data(col)
                 item = QStandardItem(value)
                 self.red_block_table.setItem(row, col, item)
+                item.setBackground(Qt.GlobalColor.darkGray)
                 if col == 1:
                     if value == "True":
                         item.setBackground(Qt.GlobalColor.darkGreen)
@@ -429,11 +457,19 @@ class TrackUI(QMainWindow):
                 else:
                     item.setBackground(Qt.GlobalColor.darkGray)
 
+    def populate_red_train_table(self):
+        for row in range(len(redTrains.trainList)):
+            for col in range(8):
+                value = redTrains[row].get_table_data(col)
+                item = QStandardItem(value)
+                self.red_block_table.setItem(row, col, item)
+                item.setBackground(Qt.GlobalColor.darkGray)
+                
     #initialize green line table
-    def make_green_table(self, tab):
+    def make_green_track_table(self, tab):
         self.green_block_table = QStandardItemModel(len(greenBlocks), 18)
         self.green_block_table.setHorizontalHeaderLabels(["Section", "Occupied", "Authority", "Commanded Speed", "Beacon", "Station", "Railroad", "Switch", "Next Block", "Previous Block", "Length", "Grade", "Speed Limit", "Elevation", "Cum. Elevation", "Underground", "Broken Track", "Circuit Failure", "Power Failure"])
-        self.populate_green_table()
+        self.populate_green_track_table()
 
         green_block_table_view = QTableView()
         green_block_table_view.setModel(self.green_block_table)
@@ -441,9 +477,21 @@ class TrackUI(QMainWindow):
         layout = QVBoxLayout()
         layout.addWidget(green_block_table_view)
         tab.setLayout(layout)
+
+    def make_green_train_table(self, tab):
+        self.green_train_table = QStandardItemModel(len(greenTrains.trainList), 8)
+        self.green_train_table.setHorizontalHeaderLabels(["ID", "Speed", "Authority", "Commanded Speed", "Front Block", "Location", "Back Block", "Location"])
+        self.populate_green_train_table()
+
+        green_train_table_view = QTableView()
+        green_train_table_view.setModel(self.green_train_table)
+
+        layout = QVBoxLayout()
+        layout.addWidget(green_train_table_view)
+        tab.setLayout(layout)
     
     #green table update function
-    def populate_green_table(self):
+    def populate_green_track_table(self):
         for row in range(len(greenBlocks)):
             for col in range(18):
                 value = greenBlocks[row].get_table_data(col)
@@ -477,9 +525,17 @@ class TrackUI(QMainWindow):
                 else:
                     item.setBackground(Qt.GlobalColor.darkGray)
 
+    def populate_green_train_table(self):
+        for row in range(len(greenTrains.trainList)):
+            for col in range(8):
+                value = greenTrains.trainList[row].get_table_data(col)
+                item = QStandardItem(value)
+                self.green_block_table.setItem(row, col, item)
+                item.setBackground(Qt.GlobalColor.darkGray)
+
     #red map update function         
     def update_red_ui(self):
-        self.populate_red_table()
+        self.populate_red_track_table()
         #All "setToolTip" functions are updating the hover information for all objects
         #Constantly update block color based on occupied variable
         for i in range(10):
@@ -503,35 +559,20 @@ class TrackUI(QMainWindow):
             self.leftRedSwitches[i].setToolTip(redSwitches[i].display_info(0))
             self.rightRedSwitches[i].setToolTip(redSwitches[i].display_info(0))
 
-        # #Constantly update traffic light color based on red or green variable
-        # for i in range(2):
-        #     #red is underneath green
-        #     if blueTrafficLights[i].get_RorG():
-        #         self.greenLight[i].show()
-        #     else:
-        #         self.greenLight[i].hide()
-        #     self.greenLight[i].setToolTip(blueTrafficLights[i].display_info(i))
-        #     self.redLight[i].setToolTip(blueTrafficLights[i].display_info(i))
-            
-        # #Constantly update railroad crossing color based on up or down variable
-        # if blueRailroadCrossing.get_UorD():
-        #     self.greenCrossing.hide()
-        # else:
-        #     self.greenCrossing.show()
-        # self.greenCrossing.setToolTip(blueRailroadCrossing.display_info(0))
-        # self.redCrossing.setToolTip(blueRailroadCrossing.display_info(0))
+        for i in range(8):
+            if redStations[i].get_trainIn():
+                self.redStationsTop[i].hide()
+            else:
+                self.redStationsTop[i].show()
+            self.redStationsBot[i].setToolTip(redStations[i].display_info())
+            self.redStationsTop[i].setToolTip(redStations[i].display_info())
 
-        # self.trainLabel.setToolTip(blueTrain.display_info(0))
 
-        # self.stations[0].setToolTip(blueStations[0].display_info())
-        # self.stations[1].setToolTip(blueStations[1].display_info())
-
-        # self.beacons[0].setToolTip(blueBeacons[0].display_info())
-        # self.beacons[1].setToolTip(blueBeacons[1].display_info())
+    
 
     #green map update function
     def update_green_ui(self):
-        self.populate_green_table()
+        self.populate_green_track_table()
         
         for i in range(150):
             greenBlocks[i].set_occupancies()
@@ -581,11 +622,11 @@ class TrackUI(QMainWindow):
 
         for i in range(18):
             if greenStations[i].get_trainIn():
-                self.stations[i].hide()
+                self.greenStationsTop[i].hide()
             else:
-                self.stations[i].show()
-            self.stationsBot[i].setToolTip(greenStations[i].display_info())
-            self.stations[i].setToolTip(greenStations[i].display_info())
+                self.greenStationsTop[i].show()
+            self.greenStationsBot[i].setToolTip(greenStations[i].display_info())
+            self.greenStationsTop[i].setToolTip(greenStations[i].display_info())
 
         # self.beacons[0].setToolTip(blueBeacons[0].display_info())
         # self.beacons[1].setToolTip(blueBeacons[1].display_info())
@@ -684,13 +725,12 @@ class TrackUI(QMainWindow):
             else:
                 print("Index Error sendButton_click function.")
         #if row 3 input for traffic lights
-        elif i == 2:
-            print("No traffic lights")
-        #     if id <= 1 and id >= 0:
+        # elif i == 2:
+        #     if id <= 10 and id >= 0:
         #         if var == "Red":
         #             redTrafficLights[id].set_R()
         #         else:
-        #             blueTrafficLights[id].set_G()
+        #             redTrafficLights[id].set_G()
         #     else:
         #         print("Index Error sendButton_click function.")
         # #if row 4 input authority for specific block changes
@@ -810,15 +850,14 @@ class TrackUI(QMainWindow):
                 print("Index Error sendButton_click function.")
         #if row 3 input for traffic lights
         elif i == 2:
-            print("No traffic lights")
-        #     if id <= 1 and id >= 0:
-        #         if var == "Red":
-        #             redTrafficLights[id].set_R()
-        #         else:
-        #             blueTrafficLights[id].set_G()
-        #     else:
-        #         print("Index Error sendButton_click function.")
-        # #if row 4 input authority for specific block changes
+            if id <= 5 and id >= 0:
+                if var == "Red":
+                    greenTrafficLights[id].set_R()
+                else:
+                    greenTrafficLights[id].set_G()
+            else:
+                print("Index Error sendButton_click function.")
+        #if row 4 input authority for specific block changes
         elif i == 3:
             if id <= 150 and id >= 1:
                 greenBlocks[id].set_authority(float(var))
@@ -870,7 +909,7 @@ class TrackUI(QMainWindow):
                 greenBlocks[num].change_power()
 
     #initialize red section map features
-    def make_red_sections(self, tab1, x, y):
+    def make_red_sections(self, tab1):
         #White arrows are behind blue arrows so you can show or hide the blue arrows
         self.underRedArrows = []
         self.redArrows = []
@@ -878,40 +917,86 @@ class TrackUI(QMainWindow):
         resized_pixmap_white = original_pixmap_white.scaled(60,30)
         original_pixmap_blue = QPixmap(add_TM+"images/RedFlatArrow.png")
         resized_pixmap_blue = original_pixmap_blue.scaled(60,30)
-        for i in range(10):
+        original_tester = QPixmap(add_TM+"images/SizeTester.png")
+        section0_top = QPixmap(add_TM+"images/RedSection0Top.png")
+        section0_top = section0_top.scaled(114,30)
+        section0_bot = QPixmap(add_TM+"images/RedSection0Bot.png")
+        section0_bot = section0_bot.scaled(114,30)
+        section2_top = QPixmap(add_TM+"images/RedSection2Top.png")
+        section2_top = section2_top.scaled(168,30)
+        section2_bot = QPixmap(add_TM+"images/RedSection2Bot.png")
+        section2_bot = section2_bot.scaled(168,30)
+        section3_top = QPixmap(add_TM+"images/RedSection3Top.png")
+        section3_top = section3_top.scaled(97,30)
+        section3_bot = QPixmap(add_TM+"images/RedSection3Bot.png")
+        section3_bot = section3_bot.scaled(97,30)
+        section4_top = QPixmap(add_TM+"images/RedSection4Top.png")
+        section4_top = section4_top.scaled(60,245)
+        section4_bot = QPixmap(add_TM+"images/RedSection4Bot.png")
+        section4_bot = section4_bot.scaled(60,245)
+        section7_top = QPixmap(add_TM+"images/RedSection7Top.png")
+        section7_top = section7_top.scaled(107,123)
+        section7_bot = QPixmap(add_TM+"images/RedSection7Bot.png")
+        section7_bot = section7_bot.scaled(107,123)
+        redYard_top = QPixmap(add_TM+"images/RedYardTop.png")
+        redYard_top = redYard_top.scaled(100,40)
+        redYard_bot = QPixmap(add_TM+"images/YardBot.png")
+        redYard_bot = redYard_bot.scaled(100,40)
+        for i in range(11):
             self.underRedArrows.append(QLabel(tab1))
             self.underRedArrows[i].setPixmap(resized_pixmap_white)
             
             self.redArrows.append(QLabel(tab1))
             self.redArrows[i].setPixmap(resized_pixmap_blue)
-            
-        self.underRedArrows[0].setGeometry(183+x, 17+y, 60, 30)
-        self.redArrows[0].setGeometry(183+x, 17+y, 60, 30)
-        self.underRedArrows[1].setGeometry(183+x, 120+y, 60, 30)
-        self.redArrows[1].setGeometry(183+x, 120+y, 60, 30)
 
-        self.underRedArrows[2].setGeometry(333+x, 67+y, 60, 30)
-        self.redArrows[2].setGeometry(333+x, 67+y, 60, 30)
+        self.redArrows[0].setPixmap(section0_top)
+        self.underRedArrows[0].setPixmap(section0_bot)
+        self.redArrows[1].setPixmap(section0_top)
+        self.underRedArrows[1].setPixmap(section0_bot)
+        self.redArrows[2].setPixmap(section2_top)
+        self.underRedArrows[2].setPixmap(section2_bot)
+        self.redArrows[6].setPixmap(section2_top)
+        self.underRedArrows[6].setPixmap(section2_bot)
+        self.redArrows[3].setPixmap(section3_top)
+        self.underRedArrows[3].setPixmap(section3_bot)
+        self.redArrows[5].setPixmap(section3_top)
+        self.underRedArrows[5].setPixmap(section3_bot)
+        self.redArrows[7].setPixmap(section7_top)
+        self.underRedArrows[7].setPixmap(section7_bot)
+        self.redArrows[8].setPixmap(section3_top)
+        self.underRedArrows[8].setPixmap(section3_bot)
+        self.redArrows[9].setPixmap(section3_top)
+        self.underRedArrows[9].setPixmap(section3_bot)
+        self.redArrows[4].setPixmap(section4_top)
+        self.underRedArrows[4].setPixmap(section4_bot)
+        
 
-        self.underRedArrows[3].setGeometry(473+x, 17+y, 60, 30)
-        self.redArrows[3].setGeometry(473+x, 17+y, 60, 30)
-        self.underRedArrows[9].setGeometry(473+x, 120+y, 60, 30)
-        self.redArrows[9].setGeometry(473+x, 120+y, 60, 30)
+        self.underRedArrows[0].setGeometry(134, 77, 114, 30)
+        self.redArrows[0].setGeometry(134, 77, 114, 30)
+        self.underRedArrows[1].setGeometry(134, 180, 114, 30)
+        self.redArrows[1].setGeometry(134, 180, 114, 30)
+        self.underRedArrows[2].setGeometry(331, 127, 168, 30)
+        self.redArrows[2].setGeometry(331, 127, 168, 30)
+        self.underRedArrows[3].setGeometry(582, 77, 97, 30)
+        self.redArrows[3].setGeometry(582, 77, 97, 30)
+        self.underRedArrows[4].setGeometry(762, 131, 60, 245)
+        self.redArrows[4].setGeometry(762, 131, 60, 245)
+        self.underRedArrows[5].setGeometry(582, 400, 97, 30)
+        self.redArrows[5].setGeometry(582, 400, 97, 30)
+        self.underRedArrows[6].setGeometry(331, 346, 168, 30)
+        self.redArrows[6].setGeometry(331, 346, 168, 30)
+        self.underRedArrows[7].setGeometry(143, 300, 107, 123)
+        self.redArrows[7].setGeometry(143, 300, 107, 123)
+        self.underRedArrows[8].setGeometry(582, 300, 97, 30)
+        self.redArrows[8].setGeometry(582, 300, 97, 30)
+        self.underRedArrows[9].setGeometry(582, 177, 97, 30)
+        self.redArrows[9].setGeometry(582, 177, 97, 30)
 
-        self.underRedArrows[4].setGeometry(600+x, 140+y, 60, 30)
-        self.redArrows[4].setGeometry(600+x, 140+y, 60, 30)
-
-
-        self.underRedArrows[8].setGeometry(473+x, 177+y, 60, 30)
-        self.redArrows[8].setGeometry(473+x, 177, 60+y, 30)
-        self.underRedArrows[5].setGeometry(473+x, 280+y, 60, 30)
-        self.redArrows[5].setGeometry(473+x, 280+y, 60, 30)
-
-        self.underRedArrows[6].setGeometry(333+x, 227+y, 60, 30)
-        self.redArrows[6].setGeometry(333+x, 227+y, 60, 30)
-
-        self.underRedArrows[7].setGeometry(183+x, 227+y, 60, 30)
-        self.redArrows[7].setGeometry(183+x, 227+y, 60, 30)
+        self.redArrows[10].setPixmap(redYard_top)
+        self.underRedArrows[10].setPixmap(redYard_bot) 
+        self.redArrows[10].setGeometry(20, 220, 100, 40) 
+        self.underRedArrows[10].setGeometry(20, 220, 100, 40)
+        
 
         #this is the timer that constantly updates the states for all of the components 
         self.red_timer = QTimer()
@@ -968,10 +1053,10 @@ class TrackUI(QMainWindow):
         section9_top = section9_top.scaled(103,30)
         section9_bot = QPixmap(add_TM+"images/GreenSection9Bot.png")
         section9_bot = section9_bot.scaled(103,30)
-        yard_top = QPixmap(add_TM+"images/YardTop.png")
-        yard_top = yard_top.scaled(100,40)
-        yard_bot = QPixmap(add_TM+"images/YardBot.png")
-        yard_bot = yard_bot.scaled(100,40)
+        greenYard_top = QPixmap(add_TM+"images/GreenYardTop.png")
+        greenYard_top = greenYard_top.scaled(100,40)
+        greenYard_bot = QPixmap(add_TM+"images/YardBot.png")
+        greenYard_bot = greenYard_bot.scaled(100,40)
         for i in range(11):
             self.underGreenArrows.append(QLabel(tab3))
             self.underGreenArrows[i].setPixmap(resized_pixmap_white)
@@ -1029,8 +1114,8 @@ class TrackUI(QMainWindow):
         self.underGreenArrows[9].setGeometry(360+x, 120+y, 103, 30)
         self.greenArrows[9].setGeometry(360+x, 120+y, 103, 30)
 
-        self.greenArrows[10].setPixmap(yard_top)
-        self.underGreenArrows[10].setPixmap(yard_bot)  
+        self.greenArrows[10].setPixmap(greenYard_top)
+        self.underGreenArrows[10].setPixmap(greenYard_bot)  
         self.underGreenArrows[10].setGeometry(120+x, 200+y, 100, 40)
         self.greenArrows[10].setGeometry(120+x, 200+y, 100, 40)
 
@@ -1040,7 +1125,7 @@ class TrackUI(QMainWindow):
         self.green_timer.start(100)
 
     #initialize red switch map features
-    def make_red_switches(self, tab3, x, y):
+    def make_red_switches(self, tab3):
         self.leftRedSwitches = []
         self.rightRedSwitches = []
         original_pixmap_left = QPixmap(add_TM+"images/SwitchLeft.png")
@@ -1060,52 +1145,52 @@ class TrackUI(QMainWindow):
 
         self.leftRedSwitches.append(QLabel(tab3))
         self.leftRedSwitches[0].setPixmap(resized_pixmap_right_red1)
-        self.leftRedSwitches[0].setGeometry(100+x, 20+y, 83, 125)
+        self.leftRedSwitches[0].setGeometry(50, 80, 83, 125)
         self.rightRedSwitches.append(QLabel(tab3))
         self.rightRedSwitches[0].setPixmap(resized_pixmap_left_red1)
-        self.rightRedSwitches[0].setGeometry(100+x, 20+y, 83, 125)
+        self.rightRedSwitches[0].setGeometry(50, 80, 83, 125)
 
         self.leftRedSwitches.append(QLabel(tab3))
         self.leftRedSwitches[1].setPixmap(resized_pixmap_left_reversed)
-        self.leftRedSwitches[1].setGeometry(250+x, 20+y, 80, 125)
+        self.leftRedSwitches[1].setGeometry(250, 80, 80, 125)
         self.rightRedSwitches.append(QLabel(tab3))
         self.rightRedSwitches[1].setPixmap(resized_pixmap_right_reversed)
-        self.rightRedSwitches[1].setGeometry(250+x, 20+y, 80, 125)
+        self.rightRedSwitches[1].setGeometry(250, 80, 80, 125)
 
         self.leftRedSwitches.append(QLabel(tab3))
         self.leftRedSwitches[2].setPixmap(resized_pixmap_left)
-        self.leftRedSwitches[2].setGeometry(390+x, 20+y, 80, 125)
+        self.leftRedSwitches[2].setGeometry(500, 80, 80, 125)
         self.rightRedSwitches.append(QLabel(tab3))
         self.rightRedSwitches[2].setPixmap(resized_pixmap_right)
-        self.rightRedSwitches[2].setGeometry(390+x, 20+y, 80, 125)
+        self.rightRedSwitches[2].setGeometry(500, 80, 80, 125)
 
         self.leftRedSwitches.append(QLabel(tab3))
         self.leftRedSwitches[3].setPixmap(resized_pixmap_left_reversed)
-        self.leftRedSwitches[3].setGeometry(530+x, 20+y, 80, 125)
+        self.leftRedSwitches[3].setGeometry(680, 80, 80, 125)
         self.rightRedSwitches.append(QLabel(tab3))
         self.rightRedSwitches[3].setPixmap(resized_pixmap_right_reversed)
-        self.rightRedSwitches[3].setGeometry(530+x, 20+y, 80, 125)
+        self.rightRedSwitches[3].setGeometry(680, 80, 80, 125)
 
         self.leftRedSwitches.append(QLabel(tab3))
         self.leftRedSwitches[4].setPixmap(resized_pixmap_left_reversed)
-        self.leftRedSwitches[4].setGeometry(530+x, 180+y, 80, 125)
+        self.leftRedSwitches[4].setGeometry(680, 300, 80, 125)
         self.rightRedSwitches.append(QLabel(tab3))
         self.rightRedSwitches[4].setPixmap(resized_pixmap_right_reversed)
-        self.rightRedSwitches[4].setGeometry(530+x, 180+y, 80, 125)
+        self.rightRedSwitches[4].setGeometry(680, 300, 80, 125)
 
         self.leftRedSwitches.append(QLabel(tab3))
         self.leftRedSwitches[5].setPixmap(resized_pixmap_left)
-        self.leftRedSwitches[5].setGeometry(390+x, 180+y, 80, 125)
+        self.leftRedSwitches[5].setGeometry(500, 300, 80, 125)
         self.rightRedSwitches.append(QLabel(tab3))
         self.rightRedSwitches[5].setPixmap(resized_pixmap_right)
-        self.rightRedSwitches[5].setGeometry(390+x, 180+y, 80, 125)
+        self.rightRedSwitches[5].setGeometry(500, 300, 80, 125)
         
         self.leftRedSwitches.append(QLabel(tab3))
         self.leftRedSwitches[6].setPixmap(resized_pixmap_left_reversed)
-        self.leftRedSwitches[6].setGeometry(250+x, 180+y, 80, 125)
+        self.leftRedSwitches[6].setGeometry(250, 300, 80, 125)
         self.rightRedSwitches.append(QLabel(tab3))
         self.rightRedSwitches[6].setPixmap(resized_pixmap_right_reversed)
-        self.rightRedSwitches[6].setGeometry(250+x, 180+y, 80, 125)
+        self.rightRedSwitches[6].setGeometry(250, 300, 80, 125)
 
     #initialize green switch map features
     def make_green_switches(self, tab3, x, y):
@@ -1197,50 +1282,79 @@ class TrackUI(QMainWindow):
         resized_pixmap_station = original_pixmap_station.scaled(53,38)
         original_pixmap_station_bot = QPixmap(add_TM+"images/StationBot.png")
         resized_pixmap_station_bot = original_pixmap_station_bot.scaled(53,38)
-        self.stations = []
-        self.stationsBot = []
+        self.greenStationsTop = []
+        self.greenStationsBot = []
         for i in range(18):
-            self.stationsBot.append(QLabel(tab1))
-            self.stationsBot[i].setPixmap(resized_pixmap_station_bot)
-            self.stations.append(QLabel(tab1))
-            self.stations[i].setPixmap(resized_pixmap_station)
-        self.stationsBot[0].setGeometry(680+x, 197+y, 53, 38)
-        self.stationsBot[1].setGeometry(770+x, 100+y, 53, 38)
-        self.stationsBot[2].setGeometry(520+x, 75+y, 53, 38)
-        self.stationsBot[3].setGeometry(450+x, 75+y, 53, 38)
-        self.stationsBot[4].setGeometry(305+x, 32+y, 53, 38)
-        self.stationsBot[5].setGeometry(237+x, 32+y, 53, 38)
-        self.stationsBot[6].setGeometry(204+x, 100+y, 53, 38)
-        self.stationsBot[7].setGeometry(170+x, 32+y, 53, 38)
-        self.stationsBot[8].setGeometry(240+x, 460+y, 53, 38)
-        self.stationsBot[9].setGeometry(310+x, 460+y, 53, 38)
-        self.stationsBot[10].setGeometry(525+x, 410+y, 53, 38)
-        self.stationsBot[11].setGeometry(680+x, 290+y, 53, 38)
-        self.stationsBot[12].setGeometry(770+x, 360+y, 53, 38)
-        self.stationsBot[13].setGeometry(360+x, 287+y, 53, 38)
-        self.stationsBot[14].setGeometry(300+x, 360+y, 53, 38)
-        self.stationsBot[15].setGeometry(200+x, 270+y, 53, 38)
-        self.stationsBot[16].setGeometry(290+x, 230+y, 53, 38)
-        self.stationsBot[17].setGeometry(300+x, 135+y, 53, 38)
+            self.greenStationsBot.append(QLabel(tab1))
+            self.greenStationsBot[i].setPixmap(resized_pixmap_station_bot)
+            self.greenStationsTop.append(QLabel(tab1))
+            self.greenStationsTop[i].setPixmap(resized_pixmap_station)
+        self.greenStationsBot[0].setGeometry(680+x, 197+y, 53, 38)
+        self.greenStationsBot[1].setGeometry(770+x, 100+y, 53, 38)
+        self.greenStationsBot[2].setGeometry(520+x, 75+y, 53, 38)
+        self.greenStationsBot[3].setGeometry(450+x, 75+y, 53, 38)
+        self.greenStationsBot[4].setGeometry(305+x, 32+y, 53, 38)
+        self.greenStationsBot[5].setGeometry(237+x, 32+y, 53, 38)
+        self.greenStationsBot[6].setGeometry(204+x, 100+y, 53, 38)
+        self.greenStationsBot[7].setGeometry(170+x, 32+y, 53, 38)
+        self.greenStationsBot[8].setGeometry(240+x, 460+y, 53, 38)
+        self.greenStationsBot[9].setGeometry(310+x, 460+y, 53, 38)
+        self.greenStationsBot[10].setGeometry(525+x, 410+y, 53, 38)
+        self.greenStationsBot[11].setGeometry(680+x, 290+y, 53, 38)
+        self.greenStationsBot[12].setGeometry(770+x, 360+y, 53, 38)
+        self.greenStationsBot[13].setGeometry(360+x, 287+y, 53, 38)
+        self.greenStationsBot[14].setGeometry(300+x, 360+y, 53, 38)
+        self.greenStationsBot[15].setGeometry(200+x, 270+y, 53, 38)
+        self.greenStationsBot[16].setGeometry(290+x, 230+y, 53, 38)
+        self.greenStationsBot[17].setGeometry(300+x, 135+y, 53, 38)
 
-        self.stations[0].setGeometry(680+x, 197+y, 53, 38)
-        self.stations[1].setGeometry(770+x, 100+y, 53, 38)
-        self.stations[2].setGeometry(520+x, 75+y, 53, 38)
-        self.stations[3].setGeometry(450+x, 75+y, 53, 38)
-        self.stations[4].setGeometry(305+x, 32+y, 53, 38)
-        self.stations[5].setGeometry(237+x, 32+y, 53, 38)
-        self.stations[6].setGeometry(204+x, 100+y, 53, 38)
-        self.stations[7].setGeometry(170+x, 32+y, 53, 38)
-        self.stations[8].setGeometry(240+x, 460+y, 53, 38)
-        self.stations[9].setGeometry(310+x, 460+y, 53, 38)
-        self.stations[10].setGeometry(525+x, 410+y, 53, 38)
-        self.stations[11].setGeometry(680+x, 290+y, 53, 38)
-        self.stations[12].setGeometry(770+x, 360+y, 53, 38)
-        self.stations[13].setGeometry(360+x, 287+y, 53, 38)
-        self.stations[14].setGeometry(300+x, 360+y, 53, 38)
-        self.stations[15].setGeometry(200+x, 270+y, 53, 38)
-        self.stations[16].setGeometry(290+x, 230+y, 53, 38)
-        self.stations[17].setGeometry(300+x, 135+y, 53, 38)
+        self.greenStationsTop[0].setGeometry(680+x, 197+y, 53, 38)
+        self.greenStationsTop[1].setGeometry(770+x, 100+y, 53, 38)
+        self.greenStationsTop[2].setGeometry(520+x, 75+y, 53, 38)
+        self.greenStationsTop[3].setGeometry(450+x, 75+y, 53, 38)
+        self.greenStationsTop[4].setGeometry(305+x, 32+y, 53, 38)
+        self.greenStationsTop[5].setGeometry(237+x, 32+y, 53, 38)
+        self.greenStationsTop[6].setGeometry(204+x, 100+y, 53, 38)
+        self.greenStationsTop[7].setGeometry(170+x, 32+y, 53, 38)
+        self.greenStationsTop[8].setGeometry(240+x, 460+y, 53, 38)
+        self.greenStationsTop[9].setGeometry(310+x, 460+y, 53, 38)
+        self.greenStationsTop[10].setGeometry(525+x, 410+y, 53, 38)
+        self.greenStationsTop[11].setGeometry(680+x, 290+y, 53, 38)
+        self.greenStationsTop[12].setGeometry(770+x, 360+y, 53, 38)
+        self.greenStationsTop[13].setGeometry(360+x, 287+y, 53, 38)
+        self.greenStationsTop[14].setGeometry(300+x, 360+y, 53, 38)
+        self.greenStationsTop[15].setGeometry(200+x, 270+y, 53, 38)
+        self.greenStationsTop[16].setGeometry(290+x, 230+y, 53, 38)
+        self.greenStationsTop[17].setGeometry(300+x, 135+y, 53, 38)
+
+    #initialize green station map features
+    def make_red_stations(self,tab1):
+        original_pixmap_station = QPixmap(add_TM+"images/Station.png")
+        resized_pixmap_station = original_pixmap_station.scaled(53,38)
+        original_pixmap_station_bot = QPixmap(add_TM+"images/StationBot.png")
+        resized_pixmap_station_bot = original_pixmap_station_bot.scaled(53,38)
+        self.redStationsTop = []
+        self.redStationsBot = []
+        for i in range(8):
+            self.redStationsBot.append(QLabel(tab1))
+            self.redStationsBot[i].setPixmap(resized_pixmap_station_bot)
+            self.redStationsTop.append(QLabel(tab1))
+            self.redStationsTop[i].setPixmap(resized_pixmap_station)
+        self.redStationsBot[0].setGeometry(165, 40, 53, 38)
+        self.redStationsBot[1].setGeometry(340, 85, 53, 38)
+        self.redStationsBot[2].setGeometry(380, 155, 53, 38)
+        self.redStationsBot[3].setGeometry(420, 85, 53, 38)
+        self.redStationsBot[5].setGeometry(420, 310, 53, 38)
+        self.redStationsBot[6].setGeometry(340, 310, 53, 38)
+        self.redStationsBot[7].setGeometry(204, 100, 53, 38)
+
+        self.redStationsTop[0].setGeometry(165, 40, 53, 38)
+        self.redStationsTop[1].setGeometry(340, 85, 53, 38)
+        self.redStationsTop[2].setGeometry(380, 155, 53, 38)
+        self.redStationsTop[3].setGeometry(420, 85, 53, 38)
+        self.redStationsTop[5].setGeometry(420, 310, 53, 38)
+        self.redStationsTop[6].setGeometry(340, 310, 53, 38)
+        self.redStationsTop[7].setGeometry(204, 100, 53, 38)
 
     #initialize traffic lights 
     def make_green_lights(self, tab1, x):

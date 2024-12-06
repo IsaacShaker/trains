@@ -1,5 +1,3 @@
-
-
 class Trains:
     def __init__(self):
         self.trainList = []
