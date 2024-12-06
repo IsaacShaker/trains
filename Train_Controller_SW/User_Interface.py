@@ -58,12 +58,13 @@ from PyQt6.QtWidgets import (
 
 class Train_Controller_SW_UI(QMainWindow):
 
-    def __init__(self):
+    def __init__(self, model_list):
         super(Train_Controller_SW_UI, self).__init__()
 
         self.auth_counter = 0
         self.next_train_id = 0
         self.train_list =[]
+        self.train_model_list = model_list
         self.var_from_mitch = 10
 
 
@@ -1489,7 +1490,7 @@ class Train_Controller_SW_UI(QMainWindow):
     
 
     def add_train(self):
-        new_train = Train_Controller(self.next_train_id)
+        new_train = Train_Controller(self.next_train_id, self.train_model_list)
 
         if self.next_train_id > 0:
             self.train_selection.addItems(["Train " + str(self.next_train_id)])
