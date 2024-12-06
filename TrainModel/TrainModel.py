@@ -154,6 +154,7 @@ class TrainModel(QObject):
 
     def set_commandedSpeed(self, speed: float):
         self.commandedSpeed = self.kmh_to_ms(speed)
+        self.commanded_velocity_dict["train_id"]=self.ID
         self.commanded_velocity_dict["commanded_velocity"]=self.commandedSpeed
         print(f"Commanded speed set to {speed} km/hr.")
         response = requests.post(URL + "/train-controller/receive-commanded-velocity", json=self.commanded_velocity_dict)
@@ -162,6 +163,7 @@ class TrainModel(QObject):
     def set_authority(self, authority: float):
         
         self.authority = authority
+        self.authority_dict["train_id"]=self.ID
         self.authority_dict["authority"]=self.authority
         print(f"Authority set to {authority}.")
         if(authority is not None):
@@ -170,6 +172,7 @@ class TrainModel(QObject):
 
     def set_beaconInfo(self, info: string):
         self.beaconInfo = info
+        self.beacon_info_dict["train_id"]=self.ID
         self.beacon_info_dict["beacon_info"]=self.beaconInfo
         print(f"Beacon info set to {info}.")
         response = requests.post(URL + "/train-controller/receive-beacon-info", json=self.beacon_info_dict)
@@ -180,6 +183,7 @@ class TrainModel(QObject):
 
     def set_currentVelocity(self, vel: float):
         self.currentVelocity=vel
+        self.actual_velocity_dict["train_id"]=self.ID
         self.actual_velocity_dict["actual_velocity"]=self.currentVelocity
         response = requests.post(URL + "/train-controller/receive-actual-velocity", json=self.actual_velocity_dict)
         response = requests.post(URL + "/track-model/get-data/current-speed", json=self.actual_velocity_dict)
@@ -187,18 +191,21 @@ class TrainModel(QObject):
 
     def set_signal_pickup_failure(self, state: bool):
         self.signalPickupFailure=state
+        self.failure_modes_dict["train_id"]=self.ID
         self.failure_modes_dict["failure_signal"]=self.signalPickupFailure
         response = requests.post(URL + "/train-controller/receive-failure-modes", json=self.failure_modes_dict)
         self.ui_refresh.emit()
 
     def set_engine_failure(self, state: bool):
         self.engineFailure=state
+        self.failure_modes_dict["train_id"]=self.ID
         self.failure_modes_dict["failure_engine"]=self.engineFailure
         response = requests.post(URL + "/train-controller/receive-failure-modes", json=self.failure_modes_dict)
         self.ui_refresh.emit()
 
     def set_brake_failure(self, state: bool):
         self.brakeFailure=state
+        self.failure_modes_dict["train_id"]=self.ID
         self.failure_modes_dict["failure_brake"]=self.brakeFailure
         response = requests.post(URL + "/train-controller/receive-failure-modes", json=self.failure_modes_dict)
         self.ui_refresh.emit()
