@@ -38,7 +38,6 @@ class Train:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         file_path = os.path.join(current_dir, 'Train Paths.xlsx')
         df = pd.read_excel(file_path, sheet_name='Green Line')
-        df = pd.read_excel(file_path, sheet_name='Green Line')
 
         time_sum = 0
         for index, row in df.iterrows():
