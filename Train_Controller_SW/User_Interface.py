@@ -58,13 +58,15 @@ from PyQt6.QtWidgets import (
 
 class Train_Controller_SW_UI(QMainWindow):
 
-    def __init__(self,):
+    def __init__(self):
         super(Train_Controller_SW_UI, self).__init__()
 
         self.auth_counter = 0
         self.next_train_id = 0
         self.train_list =[]
         self.var_from_mitch = 1
+
+
 
         self.add_train()
         #self.add_train()
@@ -1370,7 +1372,7 @@ class Train_Controller_SW_UI(QMainWindow):
                 self.s_brake_pressed()
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
-            elif self.train_list[self.current_train].get_setpoint_velocity() < self.train_list[self.current_train].get_actual_velocity() and self.train_list[self.current_train].get_e_brake() == False:
+            elif self.train_list[self.current_train].get_commanded_velocity() < self.train_list[self.current_train].get_actual_velocity() and self.train_list[self.current_train].get_e_brake() == False:
                 self.s_brake_pressed()
                 self.s_brake_button.setCheckable(True)
                 self.s_brake_button.setChecked(True)
@@ -1378,6 +1380,8 @@ class Train_Controller_SW_UI(QMainWindow):
                 self.s_brake_released()
                 self.s_brake_button.setChecked(False)
                 self.s_brake_button.setCheckable(False)
+
+            print(f"Service Brake = {self.train_list[self.current_train].get_s_brake()}")
 
 
         #if e_brake is pressed, checks if it can be unpressed
@@ -1424,6 +1428,14 @@ class Train_Controller_SW_UI(QMainWindow):
                 self.open_l_door()
             elif doors == "1":
                 self.open_r_door()
+
+        #keeps doors unable to be used until velocity is 0 and in manual mode
+        if self.train_list[self.current_train].get_actual_velocity() == 0 and self.train_list[self.current_train].get_manual_mode():
+            self.l_door_button.setEnabled(True)
+            self.r_door_button.setEnabled(True)
+        else:
+            self.l_door_button.setEnabled(False)
+            self.r_door_button.setEnabled(False)
     
 
     def add_train(self):
