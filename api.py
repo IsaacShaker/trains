@@ -3,6 +3,8 @@ from flask import Flask, render_template_string, jsonify, request
 app = Flask(__name__)
 app.qt_app_instance = None
 
+is_micah = False
+
 ###################################
 #Train Contoller Input Functions
 ###################################
@@ -16,7 +18,10 @@ def recieve_sim_speed():
     if speed_int is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
-    app.qt_app_instance.train_controller_sw.change_timer(speed_int)
+    if is_micah:
+        app.qt_app_instance.train_controller_sw.change_timer(speed_int)
+    else:
+        app.qt_app_instance.train_controller_hw.change_timer(speed_int)
     #kevin's
     return jsonify("Success"), 200
 
@@ -30,8 +35,10 @@ def receive_authority():
     if float_value is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
-    app.qt_app_instance.train_controller_sw.train_list[index].set_received_authority(float_value)
-    #app.qt_app_instance.train_controller_hw.set_commanded_authority(float_value)
+    if is_micah:
+        app.qt_app_instance.train_controller_sw.train_list[index].set_received_authority(float_value)
+    else:
+        app.qt_app_instance.train_controller_hw.set_commanded_authority(float_value)
     return jsonify("Success"), 200
 
 
@@ -45,8 +52,10 @@ def receive_beacon_info():
     if string_value is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
-    app.qt_app_instance.train_controller_sw.train_list[index].set_beacon_info(string_value)
-    #app.qt_app_instance.train_controller_hw.set_beacon_information(string_value)
+    if is_micah: 
+        app.qt_app_instance.train_controller_sw.train_list[index].set_beacon_info(string_value)
+    else:
+        app.qt_app_instance.train_controller_hw.set_beacon_information(string_value)
     return jsonify("Success"), 200
 
 
@@ -60,8 +69,10 @@ def receive_commanded_velocity():
     if float_value is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
-    app.qt_app_instance.train_controller_sw.train_list[index].set_commanded_velocity(float_value)
-    #app.qt_app_instance.train_controller_hw.set_commanded_velocity(float_value)
+    if is_micah:
+        app.qt_app_instance.train_controller_sw.train_list[index].set_commanded_velocity(float_value)
+    else:
+        app.qt_app_instance.train_controller_hw.set_commanded_velocity(float_value)
     return jsonify("Success"), 200
 
 
@@ -75,8 +86,10 @@ def receive_actual_velocity():
     if float_value is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
-    app.qt_app_instance.train_controller_sw.train_list[index].set_actual_velocity(float_value)
-    #app.qt_app_instance.train_controller_hw.set_actual_velocity(float_value)
+    if is_micah:
+        app.qt_app_instance.train_controller_sw.train_list[index].set_actual_velocity(float_value)
+    else:
+        app.qt_app_instance.train_controller_hw.set_actual_velocity(float_value)
     return jsonify("Success"), 200
 
 @app.route('/train-controller/receive-failure-modes', methods=['POST'])
@@ -91,12 +104,14 @@ def receive_failure_modes():
     if engine_string is None or brake_string is None or signal_string is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
-    app.qt_app_instance.train_controller_sw.train_list[index].set_failure_engine(engine_string)
-    app.qt_app_instance.train_controller_sw.train_list[index].set_failure_brake(brake_string)
-    app.qt_app_instance.train_controller_sw.train_list[index].set_failure_signal(signal_string)
-    # app.qt_app_instance.train_controller_hw.set_engine_failure(engine_string)
-    # app.qt_app_instance.train_controller_hw.set_brake_failure(brake_string)
-    # app.qt_app_instance.train_controller_hw.set_signal_failure(signal_string)
+    if is_micah:
+        app.qt_app_instance.train_controller_sw.train_list[index].set_failure_engine(engine_string)
+        app.qt_app_instance.train_controller_sw.train_list[index].set_failure_brake(brake_string)
+        app.qt_app_instance.train_controller_sw.train_list[index].set_failure_signal(signal_string)
+    else:
+        app.qt_app_instance.train_controller_hw.set_engine_failure(engine_string)
+        app.qt_app_instance.train_controller_hw.set_brake_failure(brake_string)
+        app.qt_app_instance.train_controller_hw.set_signal_failure(signal_string)
     return jsonify("Success"), 200
 
 

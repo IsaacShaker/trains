@@ -115,8 +115,7 @@ class Block:
         else:
             return f"Block {index}:\n\tLine: {self.line} \n\tSection: {self.section} \n\tBlock Number: {self.number} \n\tNext Block: {self.nextBlock.display_num()} \n\tBlock Length: {self.length} \n\tBlock Grade: {self.grade} \n\tSpeed Limit: {self.speedLimit} \n\tElevation: {self.elevation} \n\tCumulative Elevation: {self.cumElevation} \n\tOccupied: {self.occupied}\n\tBroken Track: {self.brokenTrack}\n\tTrack Circuit Failure: {self.circuitFailure}\n\tPower Failure: {self.powerFailure}"
     def display_num(self):
-        return f"{self.number}"
-      
+        return f"{self.number}"  
     def get_if_train(self):
         if isinstance(self.train, Train):
             return True
@@ -131,23 +130,20 @@ class Block:
             if self.commandedSpeed != None and not FOrB and self.train.get_auth() != 0:
                 self.train.set_speed(self.commandedSpeed)
             if isinstance(self.station, Station) and (self.train.get_fLocOnBlock() > (self.length/2) - 17.1) and (self.train.get_fLocOnBlock() < (self.length/2) - 15.1):
-                self.station.set_trainIn(True, self.train)
+                self.station.set_trainIn(True)
             else:
-                print("Hello")
-                print("Forward: " + str((self.length/2) - 17.1))
-                print("Backward: " + str((self.length/2) - 15.1))
-                print("Location: " + str(self.train.get_fLocOnBlock()))
                 if isinstance(self.station, Station):
-                    self.station.set_trainIn(False, self.train)
+                    self.station.set_trainIn(False)
         else:
             self.train = None
 
     def train_set_beacon(self, train):
         if isinstance(self.beacon, Beacon):
             self.beacon_data["id"]=train.get_id()
-            self.beacon_data["beacon_info"]=self.beacon.get_staticData()
+            self.beacon_data["beacon_info"]=str(self.beacon.get_staticData())
             train.set_staticData(self.beacon.get_staticData())
-            print("beacon info:" + self.beacon.get_staticData())
+
+           # print("beacon info:" + self.beacon.get_staticData())
             response = requests.post(URL + '/train-model/get-data/beacon-info', json=self.beacon_data)
 
             
@@ -180,8 +176,6 @@ class Block:
         self.switch = switch
     def set_traffic(self, traffic):
         self.trafficLight = traffic
-    def set_closed(self, closed):
-        self.closed = closed
 
     def get_num(self):
         return self.number
@@ -193,8 +187,6 @@ class Block:
         return self.brokenTrack
     def get_circuit(self):
         return self.circuitFailure
-    def get_closed(self):
-        return self.closed
     def get_power(self):
         return self.powerFailure
     def get_heater(self):
@@ -205,8 +197,8 @@ class Block:
         return self.nextBlock, self.nextBlock.get_length()
     def get_station(self):
         return self.station
-    def get_grade(self):
-        return self.grade
+    def get_closed(self):
+        return self.closed
 
     def change_broken(self):
         if (self.brokenTrack):

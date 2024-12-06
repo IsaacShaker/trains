@@ -181,6 +181,10 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             "output_block": self.output_block
         }
 
+        self.sim_speed_dict = {
+            "sim_speed": self.sim_speed
+        }
+
         #               Timer Stuff                 #
         self.request_block_occupancies_timer = QTimer(self)
         self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
@@ -868,6 +872,16 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
     def sim_speed_selected(self, speed):
         print("The simulation is now running at", speed, "speed!")
         myClock.sim_speed = int(speed[:-1])  # Extracting the numeric value from the selected string
+        # Send Sim Speed
+        # self.sim_speed = myClock.sim_speed
+        # self.sim_speed_dict["sim_speed"] = 0.10
+        # print(self.sim_speed)
+
+        # while(1):
+        #     response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
+        #     if response.status_code == 200:
+        #         print('simulation running at', myClock.sim_speed)
+        #         break
 
     # The functionality of the user starting the simulation
     def operational_clicked(self):
@@ -892,14 +906,13 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
     # Update the clock every realtime second that passes
     def second_passed(self):
         # Only update the clock if the simulation is running
-        if myClock.simulation_running:
+        #if myClock.simulation_running:
             # Update the clock for everybody 
-            self.system_time = myClock.update_clock()
+        self.system_time = myClock.update_clock()
 
-            # Update the label in UI
-            self.clock_label.setText(myClock.current_time)
-            self.dispatch_train()
-
+        # Update the label in UI
+        self.clock_label.setText(myClock.current_time)
+            
     # What happens when the user presses Current Mode button
     def mode_clicked(self):        
         # Toggle the mode first
@@ -1163,8 +1176,42 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
 
             # Add the QComboBox to the layout
-            self.train_data_big_layout.addWidget(self.train_data_combo_box)            
+            self.train_data_big_layout.addWidget(self.train_data_combo_box)   
 
+            print('dispatching a train')
+            # Tell train controller to exist
+
+            # Put authority on the YARD block
+            self.authority_dict["line"] = "Green"
+            self.authority_dict["index"] = 0
+            popped_auth = self.yard.pop_authority()
+            self.authority_dict["authority"] = popped_auth[1]
+            while(1):
+                    response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                    if response.status_code == 200:
+                        break
+            self.wayside_vision_dict["line"] = "Green"
+            self.wayside_vision_dict["index"] = 2
+            self.wayside_vision_dict["output_block"] = 0
+            while(1):
+                try:
+                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
+                    response.raise_for_status()  # This will raise an error for 4xx/5xx responses
+
+                    # If successful, print the response data
+                    print("Success:", response.json())
+                    if response.status_code == 200:
+                        break
+
+                except requests.exceptions.HTTPError as http_err:
+                    # Print the HTTP error response
+                    print(f"HTTP error occurred: {http_err}")  # HTTP error details
+                    print("Response content:", response.text)   # Full response content
+
+                except Exception as err:
+                    # Catch any other exceptions
+                    print(f"Other error occurred: {err}")
+            self.trains[0].on_track = True
         else: # Add a stop to the train
             selected_train = next((train for train in self.trains if train.name == selected_name), None)
             #selected_train.route_authorities.clear()
@@ -1240,6 +1287,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             for id in station_id:
                 if ('Green', id) in self.occupied_blocks and station.get_popped() == False:
                     # Send authority to wayside since just entered station block
+                    print('releasing a train from the yard')
                     self.authority_dict["line"] = "Green"
                     self.authority_dict["index"] = id
                     popped_auth = station.pop_authority()
@@ -1252,7 +1300,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                                 self.wayside_vision_dict["index"] = 1
                                 self.wayside_vision_dict["output_block"] = 0
                                 while(1):
-                                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vsion", json=self.wayside_vision_dict)
+                                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
                                     if response.status_code == 200:
                                         break
                             else:
@@ -1260,7 +1308,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                                 self.wayside_vision_dict["index"] = 1
                                 self.wayside_vision_dict["output_block"] = 58
                                 while(1):
-                                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vsion", json=self.wayside_vision_dict)
+                                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
                                     if response.status_code == 200:
                                         break
                     station.set_popped(True)
@@ -1276,7 +1324,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         for station in self.green_stations:
             station_id = 0
             new_block = ("Green", 0)
-            if new_block in self.recently_opened:
+            if new_block not in self.occupied_blocks:
                 station.set_popped(False)
                 self.wayside_vision_dict["line"] = "Green"
                 self.wayside_vision_dict["index"] = 2
@@ -1331,40 +1379,40 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
 
     # Release a train from the yard if its time
     def dispatch_train(self):
-        for train in self.trains:
-            if self.system_time >= train.dispatch_time and train.on_track == False:
-                print('dispatching a train')
-                # Tell train controller to exist
+        # for train in self.trains:
+        #     if self.system_time >= train.dispatch_time and train.on_track == False:
+        print('dispatching a train')
+        # Tell train controller to exist
 
-                # Put authority on the YARD block
-                self.authority_dict["line"] = "Green"
-                self.authority_dict["index"] = 0
-                popped_auth = self.yard.pop_authority()
-                self.authority_dict["authority"] = popped_auth[1]
-                while(1):
-                        response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
-                        if response.status_code == 200:
-                            break
-                self.wayside_vision_dict["line"] = "Green"
-                self.wayside_vision_dict["index"] = 2
-                self.wayside_vision_dict["output_block"] = 0
-                while(1):
-                    try:
-                        response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
-                        response.raise_for_status()  # This will raise an error for 4xx/5xx responses
+        # Put authority on the YARD block
+        self.authority_dict["line"] = "Green"
+        self.authority_dict["index"] = 0
+        popped_auth = self.yard.pop_authority()
+        self.authority_dict["authority"] = popped_auth[1]
+        while(1):
+                response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                if response.status_code == 200:
+                    break
+        self.wayside_vision_dict["line"] = "Green"
+        self.wayside_vision_dict["index"] = 2
+        self.wayside_vision_dict["output_block"] = 0
+        while(1):
+            try:
+                response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
+                response.raise_for_status()  # This will raise an error for 4xx/5xx responses
 
-                        # If successful, print the response data
-                        print("Success:", response.json())
+                # If successful, print the response data
+                print("Success:", response.json())
 
-                    except requests.exceptions.HTTPError as http_err:
-                        # Print the HTTP error response
-                        print(f"HTTP error occurred: {http_err}")  # HTTP error details
-                        print("Response content:", response.text)   # Full response content
+            except requests.exceptions.HTTPError as http_err:
+                # Print the HTTP error response
+                print(f"HTTP error occurred: {http_err}")  # HTTP error details
+                print("Response content:", response.text)   # Full response content
 
-                    except Exception as err:
-                        # Catch any other exceptions
-                        print(f"Other error occurred: {err}")
-                train.on_track = True
+            except Exception as err:
+                # Catch any other exceptions
+                print(f"Other error occurred: {err}")
+        self.trains[0].on_track = True
 
 if __name__ == "__main__":    
 

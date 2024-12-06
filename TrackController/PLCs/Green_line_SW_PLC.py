@@ -28,45 +28,31 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
     def set_M_hazard(truth_val):
         for i in range(74, 77):
             speed_hazard[i] = truth_val
+
+    def Q_is_hazard():
+        for i in range(98, 101):
+            if speed_hazard[i]:
+                return True
+        return False
     
-    def J_is_hazard():
-        for i in range(58, 63):
-            if speed_hazard[i] == False:
-                return False
-        return True
+    def M_is_hazard():
+        for i in range(74, 77):
+            if speed_hazard[i]:
+                return True
+        return False
     
-    def set_J_hazard(truth_val):
-        for i in range(58, 63):
-            speed_hazard[i] = truth_val
-    
-    while 1:
-        J_hazard = J_is_hazard()
+    while not stop_event.is_set():
+        # reset speed hazard
+        for i in range(len(speed_hazard)):
+            speed_hazard[i] = False
+
         # Sections I - M
         for i in range(36, 77):
             if block_occupancies[i]:
                 # trailing 4 blocks so other trains don't get too close
                 for j in range(1, 5):
                     speed_hazard[i-j] = True
-            speed_hazard[i] = False
-
-        if J_hazard == True:
-            set_J_hazard(True)
-        
-        # Sections O - Q
-        for i in range(86, 101):
-            if block_occupancies[i]:
-                # trailing 4 blocks so other trains don't get too close
-                for j in range(1, 5):
-                    speed_hazard[i-j] = True
-            speed_hazard[i] = False
-
-        # Sections S -  U
-        for i in range(105, 117):
-            if block_occupancies[i]:
-                # trailing 4 blocks so other trains don't get too close
-                for j in range(1, 5):
-                    speed_hazard[i-j] = True
-            speed_hazard[i] = False
+       
         
         if N_occupied() == False:
             switches[4] = False
@@ -82,7 +68,7 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
             # if trains are at both ends of section N, give priority over trains at section M
             if Q_occupied() and M_occupied():
                 set_Q_hazard(True) # stops trains at Q
-        elif N_occupied() == True and not block_occupancies[76] and not block_occupancies[100]:
+        elif N_occupied() == True and not block_occupancies[78] and not block_occupancies[100]:
             switches[4] = True
             switches[5] = False
             traffic_lights[6] = False
@@ -102,6 +88,3 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
 
         # Simulate delay to avoid CPU hogging
         time.sleep(0.1)
-        
-        if stop_event.is_set():
-            break

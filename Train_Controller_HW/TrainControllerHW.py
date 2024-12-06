@@ -21,13 +21,12 @@ class Train_Controller_HW_UI(QMainWindow):
         self.init_ui()
         #self.open_serial_port()
         self.timer = QTimer(self)
-        self.timer_to_track_model = QTimer(self)
+        #self.timer_to_track_model = QTimer(self)
 
         self.timer.timeout.connect(self.read_serial)
-        self.timer_to_track_model.timeout.connect(self.send_to_track_model)
-
         self.timer.start(90)  # Read every 90ms
-        self.timer.start(2000) # Send data every 2 seconds
+        
+        #self.timer.start(2000) # Send data every 2 seconds
 
     ###################################
     #       CLASS VARIABLES           #
@@ -53,7 +52,6 @@ class Train_Controller_HW_UI(QMainWindow):
         self.current_beacon_identifier = ""
         self.previous_beacon_identifier = ""
         self.station_name = ""
-
 
     #Data to be sent to train model (converting state variables to individual bools)
         self.emergency_brake_state = False
@@ -81,6 +79,9 @@ class Train_Controller_HW_UI(QMainWindow):
         self.beacon_identifier = ""
         self.at_stop = 0
         self.in_tunnel = False
+        self.manual_mode = False
+        self.difference_in_authority = 0.0
+        self.counter_authority = 1
         #used for door timing
 
     #Inputs from world clock class
@@ -91,7 +92,7 @@ class Train_Controller_HW_UI(QMainWindow):
         self.T = .09 #Represents the period at which current_authority and commanded_power are calculated - Changes in relation to clock speed
         self.counter = 1
     #Output dictionaries
-        self.authority_dict = {
+        self.auth_diff_dict = {
             "auth_diff": self.current_authority,
             "train_id": 0
         }
@@ -347,7 +348,7 @@ class Train_Controller_HW_UI(QMainWindow):
             #Line comes in the form of "commanded_temperature, brake_state, door_state, light_state, commanded_power"
             if line:
                 values = line.split(',')
-                if len(values) == 7:  # Ensure we have 7 values
+                if len(values) == 8:  # Ensure we have 8 values
                     temp = int(values[0])
                     self.compare_and_set(temp, self.commanded_temperature, self.set_commanded_temperature)
                     
@@ -368,6 +369,8 @@ class Train_Controller_HW_UI(QMainWindow):
                     self.compare_and_set(float(values[5]), self.ki_value, self.set_ki_value)
 
                     self.compare_and_set(float(values[6]), self.kp_value, self.set_kp_value)
+
+                    self.manual_mode = bool(values[7])
                     
                     self.calculate_commanded_power()
                     self.update_current_authority()
@@ -388,9 +391,10 @@ class Train_Controller_HW_UI(QMainWindow):
                     self.setpoint_velocity_tb.setText(f"Setpoint Velocity: {values[4]}")
                     self.commanded_power_tb.setText(f"Commanded Power: {self.commanded_power}  Watts")   
 
-    def send_to_track_model(self):
-        self.authority_dict["auth_diff"] = self.current_authority
-        response = requests.post(URL + "/track-model/get-data/auth_difference", json=self.authority_dict)
+    def send_to_track_model(self, input):
+        self.auth_diff_dict["auth_diff"] = input
+        response = requests.post(URL + "/track-model/get-data/auth_difference", json=self.auth_diff_dict)
+        print (f"UPDATED AUTHORITY: {self.current_authority}")
                                 
     def write_to_serial(self):
         #self.decode_beacon_info(self.beacon_info)
@@ -405,8 +409,8 @@ class Train_Controller_HW_UI(QMainWindow):
             str(self.get_engine_failure()) + "," +                           #4
             str(self.get_signal_failure()) + "," +                           #5
             str(self.meters_to_feet(self.get_current_authority())) + "," +   #6
-            str(self.mps_to_mph(self.get_actual_velocity())) + "," +         #7
-            str(self.get_commanded_velocity()) + "," +      #8
+            "{:.1f}".format(self.mps_to_mph(self.get_actual_velocity())) + "," +         #7
+            "{:.1f}".format(self.mps_to_mph(self.get_commanded_velocity())) + "," +      #8
             str(self.get_required_doors()) + "," +                           #9
             str(self.get_T()) + "," + 
             str(self.get_commanded_power()) + "," +      
@@ -426,17 +430,8 @@ class Train_Controller_HW_UI(QMainWindow):
             values = encoded_beacon_info.split(',')
             #this decodes the 3 segments of information
             if len(values) == 3:
-                
-                #B31
-                #check if tunnel beacon
-                if values[0][0] == "T" or values[0][0] == "t":
-                    self.current_beacon_identifier = values[0]
-                    if (self.current_beacon_identifier != self.previous_beacon_identifier):
-                        self.in_tunnel = not(self.in_tunnel)    #flip in_tunnel bool
-                        self.previous_beacon_dentifier = self.current_beacon_identifier
-
                 #checks if station beacon
-                elif values[0][0] == "B" or "b":
+                if values[0][0] == "B" or "b":
                     self.current_beacon_identifier = values[0]
 
                     if (self.current_beacon_identifier != self.previous_beacon_identifier):
@@ -447,32 +442,31 @@ class Train_Controller_HW_UI(QMainWindow):
                             self.previous_beacon_dentifier = self.current_beacon_identifier
                 
                 if self.at_stop:
-                    self.doors_can_open = True
-
                     #check which doors open
                     self.required_doors = values[1]
 
                     #set pa announcement string
                     self.station_name = values[2]
-                    self.set_pa_announcement("Arriving at " + self.station_name)
+                    self.set_pa_announcement(self.station_name)
+                    #self.set_pa_announcement("Arriving at " + self.station_name)
 
-        '''
-        if encoded_beacon_info:
-            values = encoded_beacon_info.split(',')
-            #Assign variables for the case of a beacon at a station
-            if len(values) == 3:  
-                self.set_beacon_identifier(values[0])
-                self.set_required_doors(int(values[1]))
-                self.set_pa_announcement(values[2])
-                self.set_at_stop(1)
-            if len(values) == 1:
-                self.set_beacon_identifier(values[0])
-        else:
-            self.set_beacon_identifier("")
-            self.set_at_stop(0)
-            self.set_required_doors(0)
-            self.set_pa_announcement("")
-        '''
+            elif len(values) == 1:
+                #check if tunnel beacon
+                if values[0][0] == "T" or values[0][0] == "t":
+                    self.current_beacon_identifier = values[0]
+                    if (self.current_beacon_identifier != self.previous_beacon_identifier):
+                        self.in_tunnel = not(self.in_tunnel)    #flip in_tunnel bool
+                        self.previous_beacon_dentifier = self.current_beacon_identifier
+
+                
+                if self.at_stop:
+                    #check which doors open
+                    self.required_doors = values[1]
+
+                    #set pa announcement string
+                    self.station_name = values[2]
+                    self.set_pa_announcement(self.station_name)
+                    #self.set_pa_announcement("Arriving at " + self.station_name)
 
     def kmph_to_mph(self, input):
         return (float(input)/1.609344)
@@ -489,12 +483,25 @@ class Train_Controller_HW_UI(QMainWindow):
     def meters_to_feet(self, input):
         return (float(input)*3.28084)
 
+    def feet_to_meters(self, input):
+        return (float(input)/3.28084)
+
     def update_current_authority(self):
         if(self.current_authority <= 0 and self.actual_velocity == 0):
             self.set_current_authority(self.commanded_authority + self.current_authority) 
         else:
             self.current_authority -= self.actual_velocity*self.T
+            self.difference_in_authority += self.actual_velocity*self.T
+
+        if self.counter_authority >= 40:
+            self.send_to_track_model(self.difference_in_authority)
+            self.difference_in_authority = 0
+            self.counter_authority = 1
+        else:
+            self.counter_authority += 1
         
+        
+
         self.write_to_serial()
 
     def calculate_commanded_power(self):
@@ -515,6 +522,8 @@ class Train_Controller_HW_UI(QMainWindow):
         elif self.commanded_power < 0.0:
             self.commanded_power = 0.0
         elif self.door_state > 0:
+            self.commanded_power = 0.0
+        elif self.manual_mode and (self.mph_to_mps(self.setpoint_velocity) < self.actual_velocity):
             self.commanded_power = 0.0
 
         self.set_commanded_power(self.commanded_power)
@@ -647,7 +656,8 @@ class Train_Controller_HW_UI(QMainWindow):
         #self.write_to_serial()
 
     def set_commanded_velocity(self, input):
-        self.commanded_velocity = self.mps_to_mph(input)
+        #self.commanded_velocity = self.mps_to_mph(input)
+        self.commanded_velocity = input
         #self.write_to_serial()
 
     def set_beacon_information(self, input):
@@ -680,6 +690,11 @@ class Train_Controller_HW_UI(QMainWindow):
 
     def set_kp_value(self, input):
         self.kp_value = input
+
+    def set_manual_mode(self, input):
+        #place holder
+        pass
+
 
 #Get Functions:
 #========================================================
