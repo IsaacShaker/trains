@@ -349,7 +349,7 @@ class Train_Controller_HW_UI(QMainWindow):
             #Line comes in the form of "commanded_temperature, brake_state, door_state, light_state, commanded_power"
             if line:
                 values = line.split(',')
-                if len(values) == 8:  # Ensure we have 8 values
+                if len(values) == 9:  # Ensure we have 9 values
                     temp = int(values[0])
                     self.compare_and_set(temp, self.commanded_temperature, self.set_commanded_temperature)
                     
@@ -372,6 +372,8 @@ class Train_Controller_HW_UI(QMainWindow):
                     self.compare_and_set(float(values[6]), self.kp_value, self.set_kp_value)
 
                     self.manual_mode = bool(values[7])
+
+                    self.first_time_opening_doors = bool(values[8])
                     
                     self.calculate_commanded_power()
                     self.update_current_authority()
@@ -405,7 +407,7 @@ class Train_Controller_HW_UI(QMainWindow):
         command = (         
             str(self.get_hour()) + "," +                                     #0
             str(self.get_seconds()) + "," +                                  #1
-            self.get_pa_announcement() + "," +                               #2
+            self.station_name() + "," +                                      #2
             str(self.get_brake_failure()) + "," +                            #3
             str(self.get_engine_failure()) + "," +                           #4
             str(self.get_signal_failure()) + "," +                           #5
@@ -413,10 +415,10 @@ class Train_Controller_HW_UI(QMainWindow):
             "{:.1f}".format(self.mps_to_mph(self.get_actual_velocity())) + "," +         #7
             "{:.1f}".format(self.mps_to_mph(self.get_commanded_velocity())) + "," +      #8
             str(self.get_required_doors()) + "," +                           #9
-            str(self.get_T()) + "," + 
-            str(self.get_commanded_power()) + "," +      
-            str(self.get_in_tunnel()) + "," +                                                                             
-            str(self.get_at_stop()) + "\n"                                   #11
+            str(self.get_T()) + "," +                                        #10
+            str(self.get_commanded_power()) + "," +                          #11
+            str(self.get_in_tunnel()) + "," +                                #12                                             
+            str(self.get_at_stop()) + "\n"                                   #13
         )
         self.ser.write(command.encode())
 
@@ -440,17 +442,15 @@ class Train_Controller_HW_UI(QMainWindow):
 
                         if(self.previous_beacon_identifier == "T2"):
                             self.in_tunnel = not(self.in_tunnel)
-                            self.previous_beacon_dentifier = self.current_beacon_identifier
-                
-                if self.at_stop:
-                    #check which doors open
+                    
+                    self.previous_beacon_dentifier = self.current_beacon_identifier
                     self.required_doors = values[1]
 
                     #set pa announcement string
-                    self.station_name = values[2]
-                    self.set_pa_announcement(self.station_name)
-                    #self.set_pa_announcement("Arriving at " + self.station_name)
-
+                    if self.current_authority < 180:
+                        self.station_name = values[2]
+                        self.set_pa_announcement(self.station_name, self.at_stop)
+                
             elif len(values) == 1:
                 #check if tunnel beacon
                 if values[0][0] == "T" or values[0][0] == "t":
@@ -459,15 +459,12 @@ class Train_Controller_HW_UI(QMainWindow):
                         self.in_tunnel = not(self.in_tunnel)    #flip in_tunnel bool
                         self.previous_beacon_dentifier = self.current_beacon_identifier
 
-                
-                if self.at_stop:
-                    #check which doors open
                     self.required_doors = values[1]
 
                     #set pa announcement string
-                    self.station_name = values[2]
-                    self.set_pa_announcement(self.station_name)
-                    #self.set_pa_announcement("Arriving at " + self.station_name)
+                    if self.current_authority < 180:
+                        self.station_name = values[2]
+                        self.set_pa_announcement(self.station_name, self.at_stop)
 
     def kmph_to_mph(self, input):
         return (float(input)/1.609344)
@@ -488,7 +485,7 @@ class Train_Controller_HW_UI(QMainWindow):
         return (float(input)/3.28084)
 
     def update_current_authority(self):
-        if(self.current_authority <= 0 and self.actual_velocity == 0):
+        if(self.current_authority <= 0 and self.actual_velocity == 0 and self.first_time_opening_doors == False):
             self.set_current_authority(self.commanded_authority + self.current_authority) 
         else:
             self.current_authority -= self.actual_velocity*self.T
@@ -501,8 +498,6 @@ class Train_Controller_HW_UI(QMainWindow):
         else:
             self.counter_authority += 1
         
-        
-
         self.write_to_serial()
 
     def calculate_commanded_power(self):
@@ -670,11 +665,14 @@ class Train_Controller_HW_UI(QMainWindow):
     def set_beacon_identifier(self, input):
         self.beacon_identifier = input  
 
-    def set_pa_announcement(self, input):
-        self.pa_announcement = input    
+    def set_pa_announcement(self, input, entering):
+        if entering:
+            self.pa_announcement = "Arriving at:" + input
+        else: 
+            self.pa_announcement = "Deaparting from " + input
+        
         self.pa_announcement_dict["pa_announcement"] = self.pa_announcement
         response = requests.post(URL + "/train-model/receive-announcement", json=self.pa_announcement_dict)
-        #self.write_to_serial()
 
     def set_at_stop(self, input):
         self.at_stop = input
