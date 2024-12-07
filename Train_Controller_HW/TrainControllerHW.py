@@ -7,7 +7,7 @@ import serial
 URL = 'http://127.0.0.1:5000'
 
 class Train_Controller_HW_UI(QMainWindow):
-    def __init__(self):
+    def __init__(self, model_list, tc_list):
         super().__init__()
 
     #Required information for pyserial to read from arduino
@@ -74,7 +74,7 @@ class Train_Controller_HW_UI(QMainWindow):
         self.signal_failure = False
         self.commanded_authority = 0.0
         self.current_authority = 0.0
-        self.actual_velocity = 0.0
+        self.actual_velocity = tc_list[0]
         self.commanded_velocity = 0.0
         self.beacon_identifier = ""
         self.at_stop = 0
@@ -82,6 +82,7 @@ class Train_Controller_HW_UI(QMainWindow):
         self.manual_mode = False
         self.difference_in_authority = 0.0
         self.counter_authority = 1
+        self.train_model_list = model_list
         #used for door timing
 
     #Inputs from world clock class
@@ -616,8 +617,9 @@ class Train_Controller_HW_UI(QMainWindow):
 
     def set_commanded_power(self, input):
         self.commanded_power = float(input)
-        self.commanded_power_dict["commanded_power"] = self.commanded_power
-        response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
+        #self.commanded_power_dict["commanded_power"] = self.commanded_power
+        #response = requests.post(URL + "/train-model/receive-commanded-power", json=self.commanded_power_dict)
+        self.train_model_list[0].set_commanded_power(self.commanded_power)
         #self.update_current_authority()
 
     def set_required_doors(self, input):
