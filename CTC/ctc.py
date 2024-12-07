@@ -187,9 +187,9 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         }
 
         #               Timer Stuff                 #
-        self.request_block_occupancies_timer = QTimer(self)
-        self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
-        self.request_block_occupancies_timer.start(1000)
+        # self.request_block_occupancies_timer = QTimer(self)
+        # self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
+        # self.request_block_occupancies_timer.start(1000)
 
     # Create the Home and Test Bench tab for the window
     def create_tabs(self):
@@ -878,11 +878,11 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         # self.sim_speed_dict["sim_speed"] = 0.10
         # print(self.sim_speed)
 
-        # while(1):
-        #     response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
-        #     if response.status_code == 200:
-        #         print('simulation running at', myClock.sim_speed)
-        #         break
+        while(1):
+            response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
+            if response.status_code == 200:
+                print('simulation running at', myClock.sim_speed)
+                break
 
     # The functionality of the user starting the simulation
     def operational_clicked(self):
@@ -1143,6 +1143,9 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             # Populate the stations
             self.yard.add_authority(auth_list[0])
             new_train.route_authorities.popleft()
+            del auth_list[0]
+
+            print('Authority list is', auth_list)
 
             for stop in new_train.station_stops:
                 for station in self.green_stations:
@@ -1338,26 +1341,26 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             new_block = ("Green", 0)
             if new_block in self.occupied_blocks:
                 self.yard_was_occupied = False
-            # if new_block not in self.occupied_blocks and self.yard_was_occupied == False:
-            #     station.set_popped(False)
-            #     self.wayside_vision_dict["line"] = "Green"
-            #     self.wayside_vision_dict["index"] = 2
-            #     self.wayside_vision_dict["output_block"] = 62
-            #     try:
-            #         response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
-            #         response.raise_for_status()  # This will raise an error for 4xx/5xx responses
+            if new_block not in self.occupied_blocks and self.yard_was_occupied == False:
+                station.set_popped(False)
+                self.wayside_vision_dict["line"] = "Green"
+                self.wayside_vision_dict["index"] = 2
+                self.wayside_vision_dict["output_block"] = 62
+                try:
+                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
+                    response.raise_for_status()  # This will raise an error for 4xx/5xx responses
 
-            #         if response.status_code == 200:
-            #             break
+                    if response.status_code == 200:
+                        break
 
-            #     except requests.exceptions.HTTPError as http_err:
-            #         # Print the HTTP error response
-            #         print(f"HTTP error occurred: {http_err}")  # HTTP error details
-            #         print("Response content:", response.text)   # Full response content
+                except requests.exceptions.HTTPError as http_err:
+                    # Print the HTTP error response
+                    print(f"HTTP error occurred: {http_err}")  # HTTP error details
+                    print("Response content:", response.text)   # Full response content
 
-            #     except Exception as err:
-            #         # Catch any other exceptions
-            #         print(f"Other error occurred: {err}")
+                except Exception as err:
+                    # Catch any other exceptions
+                    print(f"Other error occurred: {err}")
 
 
         # Speed Stuff 
