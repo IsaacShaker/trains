@@ -65,7 +65,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.next_train_id = 0
         self.train_list = tc_list
         self.train_model_list = model_list
-        self.var_from_mitch = 5
+        self.var_from_mitch = 10
 
 
 
@@ -1062,8 +1062,7 @@ class Train_Controller_SW_UI(QMainWindow):
     #this function handles when the l_door_button is pressed
     def open_l_door(self):
         #updates signal to tell train model to open door
-        self.train_list[self.current_train].set_l_door(True)
-        self.train_list[self.current_train].set_doors_can_open(False)
+        self.train_list[self.current_train].open_l_door(self.var_from_mitch)
 
         #disables button
         self.l_door_button.setEnabled(False)
@@ -1072,11 +1071,11 @@ class Train_Controller_SW_UI(QMainWindow):
         self.l_door_button.setText("Opened")
 
         #start 60s timer
-        self.l_door_timer.start(int(60000/self.var_from_mitch))
+        #self.l_door_timer.start(int(60000/self.var_from_mitch))
 
         print(f"The current train is {self.current_train}")
 
-    #activates door button again
+    ####################################MOVED TO BACK END ###################################################
     def close_l_door(self):
         #door is now closed
         self.train_list[self.current_train].set_l_door(False)
@@ -1090,13 +1089,13 @@ class Train_Controller_SW_UI(QMainWindow):
 
 
         #print(f"The current train is {self.current_train}")
+    #########################################################################################################
     
 
     #this function handles when the l_door_button is pressed
     def open_r_door(self):
         #updates signal to tell train model to open door
-        self.train_list[self.current_train].set_r_door(True)
-        self.train_list[self.current_train].set_doors_can_open(False)
+        self.train_list[self.current_train].open_r_door(self.var_from_mitch)
 
         #disables button
         self.r_door_button.setEnabled(False)
@@ -1105,9 +1104,9 @@ class Train_Controller_SW_UI(QMainWindow):
         self.r_door_button.setText("Opened")
 
         #start 60s timer
-        self.r_door_timer.start(int(60000/self.var_from_mitch))
+        #self.r_door_timer.start(int(60000/self.var_from_mitch))
 
-    #activates door button again
+    ####################################MOVED TO BACK END ###################################################
     def close_r_door(self):
         #door is now closed
         self.train_list[self.current_train].set_r_door(False)
@@ -1118,6 +1117,7 @@ class Train_Controller_SW_UI(QMainWindow):
         #activates door button again if in manual mode
         if self.train_list[self.current_train].get_manual_mode():
             self.r_door_button.setEnabled(True)
+    #########################################################################################################
 
     #handles when manual mode is turned on or off
     def manual_widget_changed(self, state):
