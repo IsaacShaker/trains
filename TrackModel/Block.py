@@ -199,6 +199,8 @@ class Block:
         return self.station
     def get_closed(self):
         return self.closed
+    def get_grade(self):
+        return self.grade
 
     def change_broken(self):
         if (self.brokenTrack):
