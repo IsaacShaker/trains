@@ -462,8 +462,8 @@ class Train_Controller:
                             self.set_o_light(False)
 
 
-                #checks if station is reached and authority is low enough
-                if self.station_reached and self.authority < 180:
+                #checks if station is reached and authority is low enough (166.1m: put in 200 m for error for now)
+                if self.station_reached and self.authority < 200:
                     self.doors_can_open = True
 
                     #check which doors open
