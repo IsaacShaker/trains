@@ -1,0 +1,57 @@
+/* styles.qss */
+QComboBox {
+    /* Keep the dropdown style as default */
+    padding: 5px; /* Optional: You can adjust padding if needed */
+}
+
+QPushButton {
+    background-color: purple; /* Purple background */
+    color: black;             /* Black text */
+    border: none;             /* No border */
+    border-radius: 5px;      /* Rounded corners */
+    padding: 10px;           /* Padding */
+}
+
+QPushButton:hover {
+    background-color: #800080; /* Darker purple on hover */
+}
+
+/* Specific styles for traffic light buttons */
+QPushButton#trafficLightButton {
+    background-color: red;  /* Default color for traffic light buttons */
+    color: white;           /* White text */
+}
+
+QPushButton#trafficLightButton:hover {
+    background-color: darkred; /* Darker red on hover */
+}
+
+/* When the traffic light is green */
+QPushButton#trafficLightButton[active="true"] {
+    background-color: green; /* Green background when active */
+}
+
+QPushButton#trafficLightButton2 {
+    background-color: red;  /* Default color for traffic light buttons */
+    color: white;           /* White text */
+}
+
+QPushButton#trafficLightButton2:hover {
+    background-color: darkred; /* Darker red on hover */
+}
+
+/* When the second traffic light is green */
+QPushButton#trafficLightButton2[active="true"] {
+    background-color: green; /* Green background when active */
+}
+
+/* Styles for the "Up/Down" button */
+QPushButton#upDownButton[active="true"] {
+    background-color: yellow;
+    color: black;
+}
+
+QPushButton#upDownButton {
+    background-color: purple;
+    color: black;
+}

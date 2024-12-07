@@ -24,7 +24,6 @@ class Station():
 
     def pop_authority(self):
         if (len(self.authorities) > 0) and self.popped == False:
-            print('Popping authority')
             return self.authorities.popleft()
         else:
             print('No authority left in', self.name)

@@ -58,12 +58,13 @@ from PyQt6.QtWidgets import (
 
 class Train_Controller_SW_UI(QMainWindow):
 
-    def __init__(self):
+    def __init__(self, model_list, tc_list):
         super(Train_Controller_SW_UI, self).__init__()
 
         self.auth_counter = 0
         self.next_train_id = 0
-        self.train_list =[]
+        self.train_list = tc_list
+        self.train_model_list = model_list
         self.var_from_mitch = 10
 
 
@@ -1061,8 +1062,7 @@ class Train_Controller_SW_UI(QMainWindow):
     #this function handles when the l_door_button is pressed
     def open_l_door(self):
         #updates signal to tell train model to open door
-        self.train_list[self.current_train].set_l_door(True)
-        self.train_list[self.current_train].set_doors_can_open(False)
+        self.train_list[self.current_train].open_l_door(self.var_from_mitch)
 
         #disables button
         self.l_door_button.setEnabled(False)
@@ -1071,11 +1071,11 @@ class Train_Controller_SW_UI(QMainWindow):
         self.l_door_button.setText("Opened")
 
         #start 60s timer
-        self.l_door_timer.start(int(60000/self.var_from_mitch))
+        #self.l_door_timer.start(int(60000/self.var_from_mitch))
 
         print(f"The current train is {self.current_train}")
 
-    #activates door button again
+    ####################################MOVED TO BACK END ###################################################
     def close_l_door(self):
         #door is now closed
         self.train_list[self.current_train].set_l_door(False)
@@ -1089,13 +1089,13 @@ class Train_Controller_SW_UI(QMainWindow):
 
 
         #print(f"The current train is {self.current_train}")
+    #########################################################################################################
     
 
     #this function handles when the l_door_button is pressed
     def open_r_door(self):
         #updates signal to tell train model to open door
-        self.train_list[self.current_train].set_r_door(True)
-        self.train_list[self.current_train].set_doors_can_open(False)
+        self.train_list[self.current_train].open_r_door(self.var_from_mitch)
 
         #disables button
         self.r_door_button.setEnabled(False)
@@ -1104,9 +1104,9 @@ class Train_Controller_SW_UI(QMainWindow):
         self.r_door_button.setText("Opened")
 
         #start 60s timer
-        self.r_door_timer.start(int(60000/self.var_from_mitch))
+        #self.r_door_timer.start(int(60000/self.var_from_mitch))
 
-    #activates door button again
+    ####################################MOVED TO BACK END ###################################################
     def close_r_door(self):
         #door is now closed
         self.train_list[self.current_train].set_r_door(False)
@@ -1117,6 +1117,7 @@ class Train_Controller_SW_UI(QMainWindow):
         #activates door button again if in manual mode
         if self.train_list[self.current_train].get_manual_mode():
             self.r_door_button.setEnabled(True)
+    #########################################################################################################
 
     #handles when manual mode is turned on or off
     def manual_widget_changed(self, state):
@@ -1368,11 +1369,10 @@ class Train_Controller_SW_UI(QMainWindow):
             #If in auto, sets setpoint velocity to commanded and automatically brakes if setpoint velocity is below actual velocity
             if train.get_manual_mode() == False:
                 train.set_setpoint_velocity(train.get_commanded_velocity())            #set setpoint equal to commanded
-
+                
+                print(f"Train {train.train_id}: {train.get_s_brake()}")
                 #first we check if train has to brake to stop at a station
                 if train.stop_at_station() == True:
-                    train.set_s_brake(True)
-
                     if train == self.current_train:
                         self.s_brake_button.setCheckable(True)
                         self.s_brake_button.setChecked(True)
@@ -1489,7 +1489,7 @@ class Train_Controller_SW_UI(QMainWindow):
     
 
     def add_train(self):
-        new_train = Train_Controller(self.next_train_id)
+        new_train = Train_Controller(self.next_train_id, self.train_model_list)
 
         if self.next_train_id > 0:
             self.train_selection.addItems(["Train " + str(self.next_train_id)])

@@ -65,7 +65,11 @@ class Train_UI(QMainWindow):
         # Instantiate TrainList globally
         self.train_list = TrainList()
 
-        self.train_list.add_train()
+        self.train_controller_list = []
+
+        self.train_list.add_train(self.train_controller_list)
+        self.train_list.add_train(self.train_controller_list)
+        self.train_list.add_train(self.train_controller_list)
 
         self.setWindowTitle("Train Model")
         self.setGeometry(100, 100, 800, 600)
@@ -127,6 +131,10 @@ class Train_UI(QMainWindow):
         self.selected_train.power_changed.connect(self.update_speeds_label)
         self.selected_train.passengers_changed.connect(self.update_beacon_label)
         self.selected_train.ui_refresh.connect(self.train_select_update)
+
+    def getTrainControllerList(self, tc_list):
+        self.train_controller_list=tc_list
+        print(f"tc index: {len(self.train_controller_list)}")
 
     def create_user_mode_page(self):
         user_mode_widget = QWidget()

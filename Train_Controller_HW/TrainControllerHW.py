@@ -683,7 +683,13 @@ class Train_Controller_HW_UI(QMainWindow):
         #self.write_to_serial()
 
     def set_setpoint_velocity(self, input):
-        self.setpoint_velocity = input
+        commanded = self.mps_to_mph(self.commanded_velocity)
+        if input > commanded:
+            self.setpoint_velocity = commanded
+        elif input < 0:
+            self.setpoint_velocity = 0
+        else:
+            self.setpoint_velocity = input
 
     def set_ki_value(self, input):
         self.ki_value = input
@@ -802,4 +808,12 @@ class Train_Controller_HW_UI(QMainWindow):
 
     def get_setpoint_velocity(self):
         return self.setpoint_velocity
+    
+    def get_manual_mode(self):
+        return self.manual_mode
 
+    def get_ki_value(self):
+        return self.ki_value
+    
+    def get_kp_value(self):
+        return self.kp_value
