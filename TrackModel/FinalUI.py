@@ -231,10 +231,7 @@ class TrackUI(QMainWindow):
         
             
         #Train (temporary until we figure out how to initialize a train)
-        
-
-
-        tempTrain = Train(10, greenBlocks[0], 32.2, 0, "Green")
+        tempTrain = Train(10, greenBlocks[87], 32.2, 0, "Green")
         greenTrains.addTrain(tempTrain)
         greenAuth.append(0.0)
         greenCmd.append(0.0)
