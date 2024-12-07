@@ -37,8 +37,8 @@ class Train_Controller:
         self.can_get_authority = True
 
         #Floats
-        self.k_p = 7000 # reset these to 0 after testing
-        self.k_i = 30 # reset these to 0 after testing
+        self.k_p = 7000
+        self.k_i = 50
         self.time_world = 0.0
         self.commanded_power = 0.0
         self.ek = 0.0
@@ -462,8 +462,8 @@ class Train_Controller:
                             self.set_o_light(False)
 
 
-
-                if self.station_reached:
+                #checks if station is reached and authority is low enough (166.1m: put in 200 m for error for now)
+                if self.station_reached and self.authority < 200:
                     self.doors_can_open = True
 
                     #check which doors open
