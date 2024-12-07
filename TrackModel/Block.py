@@ -1,6 +1,6 @@
 import requests
 URL = 'http://127.0.0.1:5000'
-launcher = False
+launcher = True
 if launcher:
     from TrackModel.Beacon import Beacon
     from TrackModel.RailroadCrossing import RailroadCrossing

@@ -80,12 +80,6 @@ class MyApp(QWidget):
         self.plc_managers = {}
         self.plc_num = 0
 
-        # preset PLCs for convenience 
-        self.preset_plc("Green", "SW", 0, f"{base_path}/PLCs/Green_line_SW_PLC_0.py")
-        self.preset_plc("Green", "SW", 1, f"{base_path}/PLCs/Green_line_SW_PLC_1.py")
-        self.preset_plc("Green", "SW", 2, f"{base_path}/PLCs/Green_line_SW_PLC_2.py")
-        self.preset_plc("Green", "HW", 0, f"{base_path}/PLCs/Green_line_HW_PLC_0.py")
-
         with open(f"{base_path}/styles.qss", "r") as f:
             style = f.read()
         self.setStyleSheet(style)
@@ -102,6 +96,12 @@ class MyApp(QWidget):
         self.create_main_tab()
         self.create_test_tab()
         self.tabs.currentChanged.connect(self.update_content)
+
+        # preset PLCs for convenience 
+        self.preset_plc("Green", "SW", 0, f"{base_path}/PLCs/Green_line_SW_PLC_0.py")
+        self.preset_plc("Green", "SW", 1, f"{base_path}/PLCs/Green_line_SW_PLC_1.py")
+        self.preset_plc("Green", "SW", 2, f"{base_path}/PLCs/Green_line_SW_PLC_2.py")
+        self.preset_plc("Green", "HW", 0, f"{base_path}/PLCs/Green_line_HW_PLC_0.py")
 
         # Create a QTimer instance
         self.update_ui_timer = QTimer(self)

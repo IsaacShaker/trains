@@ -1,4 +1,4 @@
-launcher = False
+launcher = True
 import sys
 import requests
 URL = 'http://127.0.0.1:5000'
