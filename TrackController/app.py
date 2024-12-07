@@ -79,8 +79,12 @@ class MyApp(QWidget):
 
         self.plc_managers = {}
         self.plc_num = 0
-        # self.blue_line_plc_manager = PLCManager(self.data_test["Blue"]["SW"], self.auto)
-        # self.blue_line_plc_manager_HW = PLCManager(self.data_test["Blue"]["HW"], self.auto)
+
+        # preset PLCs for convenience 
+        self.preset_plc("Green", "SW", 0, f"{base_path}/PLCs/Green_line_SW_PLC_0.py")
+        self.preset_plc("Green", "SW", 1, f"{base_path}/PLCs/Green_line_SW_PLC_1.py")
+        self.preset_plc("Green", "SW", 2, f"{base_path}/PLCs/Green_line_SW_PLC_2.py")
+        self.preset_plc("Green", "HW", 0, f"{base_path}/PLCs/Green_line_HW_PLC_0.py")
 
         with open(f"{base_path}/styles.qss", "r") as f:
             style = f.read()
@@ -413,14 +417,15 @@ class MyApp(QWidget):
 
         self.tabs.addTab(self.test_tab, "Test")
 
-    def upload_file(self, file_label):
+    def upload_file(self, file_label=None, file_path=None):
         """Handles the file upload process, saves the file to a folder, and restarts the PLC program."""
         global plc_thread, plc_stop_event
         
         tab = self.tabs.tabText(self.tabs.currentIndex())
 
         # Open a file dialog to select a Python script
-        file_path, _ = QFileDialog.getOpenFileName(None, "Select Python Script", "", "Python Files (*.py)")
+        if file_path is None:
+            file_path, _ = QFileDialog.getOpenFileName(None, "Select Python Script", "", "Python Files (*.py)")
 
         # Check if a file was selected
         if file_path:
@@ -438,7 +443,8 @@ class MyApp(QWidget):
             shutil.copy(file_path, destination)
 
             # Update the label to show the uploaded file path
-            file_label.setText(f"Uploaded: {file_name}")
+            if file_label is not None:
+                file_label.setText(f"Uploaded: {file_name}")
 
             # check if there is already a plc manager for it. If not create one
             if f"{self.line}_{self.mode}_{tab}_{self.plc_num}" not in self.plc_managers:
@@ -450,6 +456,24 @@ class MyApp(QWidget):
             # Start the new PLC program
             plc_manager = self.plc_managers[f"{self.line}_{self.mode}_{tab}_{self.plc_num}"]
             plc_manager.start_new_plc(destination)
+    
+    def preset_plc(self, line, mode, num, file_path):
+        # save previous state
+        temp_line = self.line
+        temp_mode = self.mode
+        temp_num = self.plc_num
+
+        # update to desired state
+        self.line = line
+        self.mode = mode
+        self.plc_num = num
+
+        self.upload_file(None, file_path)
+
+        # set to previous state
+        self.line = temp_line
+        self.mode = temp_mode
+        self.plc_num = temp_num
     
     # Function to update content when switching lines, mode, or Auto/Manual
     def update_content(self):
