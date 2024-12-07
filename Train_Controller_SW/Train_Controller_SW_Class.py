@@ -37,8 +37,8 @@ class Train_Controller:
         self.can_get_authority = True
 
         #Floats
-        self.k_p = 0.0
-        self.k_i = 0.0
+        self.k_p = 7000 # reset these to 0 after testing
+        self.k_i = 30 # reset these to 0 after testing
         self.time_world = 0.0
         self.commanded_power = 0.0
         self.ek = 0.0
@@ -199,7 +199,7 @@ class Train_Controller:
         self.s_brake = status
         self.brakes_dict["s_brake"] = self.s_brake
 
-        print(f"Different: {old_brake != self.s_brake}")
+        #print(f"Different: {old_brake != self.s_brake}")
         #only sends a new state if a change occurs
         #if self.is_micah and old_brake != self.s_brake:
         if self.is_micah and old_brake != self.s_brake:
@@ -229,11 +229,11 @@ class Train_Controller:
     def send_auth_diff(self):
         try:
             if self.is_micah:
-                print("")
+                #print("")
                 response = requests.post(URL + "/track-model/get-data/auth_difference", json=self.auth_diff_dict)
                 response.raise_for_status()  # This will raise an error for 4xx/5xx responses
 
-                print("Success:", response.json())
+                #print("Success:", response.json())
 
         except requests.exceptions.HTTPError as http_err:
             # Print the HTTP error response
@@ -244,8 +244,8 @@ class Train_Controller:
         # Catch any other exceptions
             print(f"Other error occurred: {err}")
 
-        print(f"Difference: {self.auth_diff}")
-        print(f"Current Authority: {self.authority}")
+        # print(f"Difference: {self.auth_diff}")
+        # print(f"Current Authority: {self.authority}")
         self.set_auth_diff(0)
         
 
@@ -513,7 +513,7 @@ class Train_Controller:
         #calculate commaneded power (kp*ek + ki*uk)
         self.set_commanded_power(self.k_p*self.ek + self.k_i*self.uk)
 
-        print(f"Commanded Power: {self.commanded_power}")
+        #print(f"Commanded Power: {self.commanded_power}")
 
         # if self.is_micah:
         #     try:

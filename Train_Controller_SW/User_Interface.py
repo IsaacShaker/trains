@@ -65,7 +65,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.next_train_id = 0
         self.train_list = tc_list
         self.train_model_list = model_list
-        self.var_from_mitch = 10
+        self.var_from_mitch = 25 # Simulation Speed
 
 
 
@@ -151,8 +151,8 @@ class Train_Controller_SW_UI(QMainWindow):
         self.train_selection.setEditable(True)
 
         self.add_train()
-        self.add_train()
-        self.add_train()
+        #self.add_train()
+        #self.add_train()
 
         #self.train_list[1].commanded_velocity = 7
         #self.train_list[2].commanded_velocity = 20
@@ -813,11 +813,11 @@ class Train_Controller_SW_UI(QMainWindow):
             self.input_authority.setText("")
 
 
-            print(f"authority: {self.train_list[self.current_train].get_authority()} meters")
+            #print(f"authority: {self.train_list[self.current_train].get_authority()} meters")
 
         except ValueError:
             # Print a message or update a label in the UI to inform the user of invalid input
-            print("Please enter a valid authority.")
+            #print("Please enter a valid authority.")
             self.input_authority.setText("")
 
     #called when actual velocity input is confirmed
@@ -833,11 +833,11 @@ class Train_Controller_SW_UI(QMainWindow):
             self.input_actual_velocity.setPlaceholderText(input_value)
             self.input_actual_velocity.setText("")
 
-            print(f"actual velocity: {self.train_list[self.current_train].get_actual_velocity()} m/s")
+            #print(f"actual velocity: {self.train_list[self.current_train].get_actual_velocity()} m/s")
 
         except ValueError:
             # Print a message or update a label in the UI to inform the user of invalid input
-            print("Please enter a valid actual velocity.")
+            #print("Please enter a valid actual velocity.")
             self.input_actual_velocity.setText("")
         
 
@@ -854,11 +854,11 @@ class Train_Controller_SW_UI(QMainWindow):
             self.input_commanded_velocity.setPlaceholderText(input_value)
             self.input_commanded_velocity.setText("")
 
-            print(f"commanded velocity: {self.train_list[self.current_train].get_commanded_velocity()} m/s")
+            #print(f"commanded velocity: {self.train_list[self.current_train].get_commanded_velocity()} m/s")
 
         except ValueError:
             # Print a message or update a label in the UI to inform the user of invalid input
-            print("Please enter a valid commanded velocity.")
+            #print("Please enter a valid commanded velocity.")
             self.input_commanded_velocity.setText("")
 
     #called when beacon info input is confirmed
@@ -874,8 +874,8 @@ class Train_Controller_SW_UI(QMainWindow):
         self.train_list[self.current_train].set_beacon_info(input_value)
 
         #test
-        print(self.train_list[self.current_train].get_pa_announcement())
-        print("fries")
+        #print(self.train_list[self.current_train].get_pa_announcement())
+        #print("fries")
 
         #update display on test bench
         self.update_outputs()
@@ -886,7 +886,7 @@ class Train_Controller_SW_UI(QMainWindow):
 
     #This function will update all other information in UI to match the train which was selected
     def index_changed(self, i): # i is an int which represent the index of the train
-        print(f"Train {i} has been selected")
+        #print(f"Train {i} has been selected")
 
         self.current_train = i
 
@@ -1018,7 +1018,7 @@ class Train_Controller_SW_UI(QMainWindow):
             #update label
             self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{int(self.mps_to_mph(self.train_list[self.current_train].get_setpoint_velocity()))} MPH</span>')
         except ValueError:
-            print("Please enter a valid setpoint velocity.")
+            #print("Please enter a valid setpoint velocity.")
             self.input_setpoint_velocity.setText("")
 
 
@@ -1029,7 +1029,7 @@ class Train_Controller_SW_UI(QMainWindow):
         #update train temperature
         self.train_list[self.train_selection.currentIndex()].set_temperature(temperature)
 
-        print(temperature)
+        #print(temperature)
 
     #this function will be called anytime inside lights button is pressed 
     def i_light_pressed(self):
@@ -1073,7 +1073,7 @@ class Train_Controller_SW_UI(QMainWindow):
         #start 60s timer
         #self.l_door_timer.start(int(60000/self.var_from_mitch))
 
-        print(f"The current train is {self.current_train}")
+        #print(f"The current train is {self.current_train}")
 
     ####################################MOVED TO BACK END ###################################################
     def close_l_door(self):
@@ -1264,7 +1264,7 @@ class Train_Controller_SW_UI(QMainWindow):
             #set kp in train list
             self.train_list[self.current_train].set_k_p(input_value)
         except ValueError:
-            print("Please enter a valid kp.")
+            #print("Please enter a valid kp.")
             self.input_kp.setText("")  # Clear the input field if invalid
 
     def confirm_ki(self):
@@ -1279,7 +1279,7 @@ class Train_Controller_SW_UI(QMainWindow):
             #set kp in train list
             self.train_list[self.current_train].set_k_i(input_value)
         except ValueError:
-            print("Please enter a valid ki.")
+            #print("Please enter a valid ki.")
             self.input_ki.setText("")  # Clear the input field if invalid
 
     #switches to test bench screen
@@ -1370,7 +1370,7 @@ class Train_Controller_SW_UI(QMainWindow):
             if train.get_manual_mode() == False:
                 train.set_setpoint_velocity(train.get_commanded_velocity())            #set setpoint equal to commanded
                 
-                print(f"Train {train.train_id}: {train.get_s_brake()}")
+                #print(f"Train {train.train_id}: {train.get_s_brake()}")
                 #first we check if train has to brake to stop at a station
                 if train.stop_at_station() == True:
                     if train == self.current_train:
@@ -1408,7 +1408,7 @@ class Train_Controller_SW_UI(QMainWindow):
                 #checks which doors to open
                 doors = train.get_doors_to_open()
 
-                print(doors)
+                #print(doors)
 
                 #opens correct doors based off decoded beacon info
                 if doors == "3":
@@ -1476,8 +1476,8 @@ class Train_Controller_SW_UI(QMainWindow):
             self.r_door_button.setText("Closed")
 
 
-        print(f"right door:{self.train_list[self.current_train].get_r_door()}")
-        print(f"left door:{self.train_list[self.current_train].get_l_door()}")
+        # print(f"right door:{self.train_list[self.current_train].get_r_door()}")
+        # print(f"left door:{self.train_list[self.current_train].get_l_door()}")
 
         #keeps doors unable to be used until velocity is 0 and in manual mode
         if self.train_list[self.current_train].get_actual_velocity() == 0 and self.train_list[self.current_train].get_manual_mode():

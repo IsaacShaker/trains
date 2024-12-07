@@ -1,6 +1,6 @@
 import requests
 URL = 'http://127.0.0.1:5000'
-launcher = True
+launcher = False
 if launcher:
     from TrackModel.Beacon import Beacon
     from TrackModel.RailroadCrossing import RailroadCrossing
@@ -199,6 +199,8 @@ class Block:
         return self.station
     def get_closed(self):
         return self.closed
+    def get_grade(self):
+        return self.grade
 
     def change_broken(self):
         if (self.brokenTrack):

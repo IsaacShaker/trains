@@ -1,4 +1,4 @@
-launcher = True
+launcher = False
 import requests
 URL = 'http://127.0.0.1:5000'
 if launcher:
@@ -58,7 +58,7 @@ class Train:
                 self.fBackwards = False
             elif self.fBlock.get_num() == 28 and self.fBlockPrevious.get_num() == 150:
                 self.fBackwards = True
-            elif self.fBlock.get_num() == 1 and self.fBlockPrevious.get_num() == 13:
+            elif self.fBlock.get_num() == 12 and self.fBlockPrevious.get_num() == 13:
                 self.fBackwards = False
         else:
             if self.fBlock.get_num() == 0 and self.fBlockPrevious.get_num() == 9:

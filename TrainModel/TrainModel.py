@@ -126,32 +126,32 @@ class TrainModel(QObject):
     #Setters
     def set_headLights(self, state: bool):
         self.headLights = state
-        print(f"Headlights set to {'on' if state else 'off'}.")
+        #print(f"Headlights set to {'on' if state else 'off'}.")
         self.ui_refresh.emit()
 
     def set_insideLights(self, state: bool):
         self.insideLights = state
-        print(f"Inside lights set to {'on' if state else 'off'}.")
+       # print(f"Inside lights set to {'on' if state else 'off'}.")
         self.ui_refresh.emit()
 
     def set_announcements(self, message: str):
         self.announcements = message
-        print(f"Announcement set to: {message}")
+        #print(f"Announcement set to: {message}")
         self.ui_refresh.emit()
 
     def set_rightDoor(self, state: bool):
         self.rightDoor = state
-        print(f"Right door set to {'open' if state else 'closed'}.")
+       # print(f"Right door set to {'open' if state else 'closed'}.")
         self.ui_refresh.emit()
 
     def set_leftDoor(self, state: bool):
         self.leftDoor = state
-        print(f"Left door set to {'open' if state else 'closed'}.")
+        #print(f"Left door set to {'open' if state else 'closed'}.")
         self.ui_refresh.emit()
 
     def set_commandedTemperature(self, temp: float):
         self.commandedTemperature = temp
-        print(f"Commanded temperature set to {temp}°F.")
+        #print(f"Commanded temperature set to {temp}°F.")
         self.start_temperature_adjustment_signal.emit(temp)
         self.ui_refresh.emit()
 
@@ -159,7 +159,7 @@ class TrainModel(QObject):
         self.commandedSpeed = self.kmh_to_ms(speed)
         self.commanded_velocity_dict["train_id"]=self.ID
         self.commanded_velocity_dict["commanded_velocity"]=self.commandedSpeed
-        print(f"Commanded speed set to {speed} km/hr.")
+        #print(f"Commanded speed set to {speed} km/hr.")
         response = requests.post(URL + "/train-controller/receive-commanded-velocity", json=self.commanded_velocity_dict)
         self.ui_refresh.emit()
 
@@ -168,7 +168,7 @@ class TrainModel(QObject):
         self.authority = authority
         self.authority_dict["train_id"]=self.ID
         self.authority_dict["authority"]=self.authority
-        print(f"Authority set to {authority}.")
+        #print(f"Authority set to {authority}.")
         if(authority is not None):
             response = requests.post(URL + "/train-controller/receive-authority", json=self.authority_dict)
         self.ui_refresh.emit()
@@ -177,7 +177,7 @@ class TrainModel(QObject):
         self.beaconInfo = info
         self.beacon_info_dict["train_id"]=self.ID
         self.beacon_info_dict["beacon_info"]=self.beaconInfo
-        print(f"Beacon info set to {info}.")
+        #print(f"Beacon info set to {info}.")
         response = requests.post(URL + "/train-controller/receive-beacon-info", json=self.beacon_info_dict)
         self.ui_refresh.emit()
 
@@ -224,7 +224,7 @@ class TrainModel(QObject):
 
     def set_commanded_power(self, cmd: float):
         self.currPower=cmd
-        print(f"Power set to {cmd}.")
+        #print(f"Power set to {cmd}.")
         self.receive_power()
         self.ui_refresh.emit()
 
@@ -275,11 +275,11 @@ class TrainModel(QObject):
         if abs(self.temperature - self.commandedTemperature) > 0.01:
             # First-order differential equation update
             self.temperature += 0.1 * (self.commandedTemperature - self.temperature)
-            print(f"Current Temperature: {self.temperature:.2f}°C")
+            #print(f"Current Temperature: {self.temperature:.2f}°C")
             # Update the temperature label in the UI
             self.temperature_changed.emit(self.temperature)
         else:
-            print("Target temperature reached.")
+            #print("Target temperature reached.")
             self.adjust_timer.stop()  # Stop the timer when the target is reached
 
     def calc_total_mass(self):
@@ -298,7 +298,7 @@ class TrainModel(QObject):
         # Convert total weight to tons
         total_weight_tons = total_weight_pounds / 2204.623  # Convert back to tons
 
-        print (total_weight_tons)
+        #print (total_weight_tons)
 
         self.totalMass=total_weight_tons
         
@@ -307,7 +307,7 @@ class TrainModel(QObject):
     def calc_total_length(self):
         if(self.numberOfCars<5):
             self.trainLength=32.2-((5-self.numberOfCars)*6.6)
-        print(f"Length: {self.trainLength}")
+        #print(f"Length: {self.trainLength}")
 
     def limit_force(self):
         max_force = self.tons_to_kg(self.totalMass) * 0.5
@@ -339,18 +339,18 @@ class TrainModel(QObject):
         # If the doors are open and the train was not at a station in the previous loop
         #if (not self.leftDoor or not self.rightDoor) and not self.atStation:
             self.atStation = True  # Set variable to indicate the train is at a station
-            print(f"Current Passengers: {self.passCount}")
+            #print(f"Current Passengers: {self.passCount}")
             # Randomly generate the number of passengers leaving the train
             if self.passCount > 0:
                 passengers_depart = random.randint(0, self.passCount)  # Random number of departing passengers
                 self.passCount -= passengers_depart
-            print(f"Passengers after departure: {self.passCount}")
+            #print(f"Passengers after departure: {self.passCount}")
             # Pick up passengers through track model
             max_pickup = self.MAX_PASSENGERS - self.passCount  # Calculate maximum possible entries
             passengers_enter = random.randint(0, max_pickup)  # Random number of passengers entering
             #passengers_board = self.block.get_passengers(random_pass_entry)  # Assuming this method is defined
             self.passCount += passengers_enter
-            print(f"Passengers after board: {self.passCount}")
+            #print(f"Passengers after board: {self.passCount}")
 
             # Calculate new mass based on passenger count
             self.calc_total_mass()
@@ -373,18 +373,18 @@ class TrainModel(QObject):
         else:
              #Force to 0 if velocity is 0 to avoid divide by zero error
             self.currForce = 0
-        print(self.currForce)
+        #print(self.currForce)
         self.limit_force()
-        print(self.currForce)
+       # print(self.currForce)
         #Acceleration calc
         if self.totalMass != 0:
             self.currAccel = self.currForce / (self.tons_to_kg(self.totalMass)) 
         # Ensure totalMass is not zero
         else:
             self.currAccel = 0
-        print(self.currAccel)
+        #print(self.currAccel)
         self.limit_accel()
-        print(self.currAccel)
+        #print(self.currAccel)
 
         #Velocity acceleration
         velocityNew = self.currentVelocity + (((self.samplePeriod / 2)/self.mitch_var) * (self.currAccel + previousAcceleration))
