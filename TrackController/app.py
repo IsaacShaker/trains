@@ -64,6 +64,19 @@ class MyApp(QWidget):
             }
         }
 
+        self.hw_signal_data = {
+            "Green": {
+                "switches": self.data_main["Green"]["HW"]["switches"],
+                "traffic_lights": self.data_main["Green"]["HW"]["traffic_lights"],
+                "crossings": self.data_main["Green"]["HW"]["crossings"]
+            },
+            "Red": {
+                "switches": self.data_main["Red"]["HW"]["switches"],
+                "traffic_lights": self.data_main["Red"]["HW"]["traffic_lights"],
+                "crossings": self.data_main["Red"]["HW"]["crossings"]
+            }
+        }
+
         self.plc_managers = {}
         self.plc_num = 0
         # self.blue_line_plc_manager = PLCManager(self.data_test["Blue"]["SW"], self.auto)
@@ -125,7 +138,20 @@ class MyApp(QWidget):
         #     block["toggled"] = data_dict['Red'][block["block"]]
     
     def give_signals(self):
-        response = requests.post("http://127.0.0.1:5000/track-model/recieve-signals", json=self.sw_signal_data)
+        self.all_signal_data = {
+            "Green": {
+                "switches": self.data_main["Green"]["SW"]["switches"] + self.data_main["Green"]["HW"]["switches"],
+                "traffic_lights": self.data_main["Green"]["SW"]["traffic_lights"] + self.data_main["Green"]["HW"]["traffic_lights"],
+                "crossings": self.data_main["Green"]["SW"]["crossings"] + self.data_main["Green"]["HW"]["crossings"]
+            },
+            "Red": {
+                "switches": self.data_main["Red"]["HW"]["switches"],
+                "traffic_lights": self.data_main["Red"]["HW"]["traffic_lights"],
+                "crossings": self.data_main["Red"]["HW"]["crossings"]
+            }
+        }
+
+        response = requests.post("http://127.0.0.1:5000/track-model/recieve-signals", json=self.all_signal_data)
         if response.status_code != 200:
             print("Failed to give signals to Track Model")
 

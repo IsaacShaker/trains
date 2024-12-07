@@ -228,410 +228,410 @@
   "Red": {
     "HW": {
       "blocks": [
-          {
-            "block": 1,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 2,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 3,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 4,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 5,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 6,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 7,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 8,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 9,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 10,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 11,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 12,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 13,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 14,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 15,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 16,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 17,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 18,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 19,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 20,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 21,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 22,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 23,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 24,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 25,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 26,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 27,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 28,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 29,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 30,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 31,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 32,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 33,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 34,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 35,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 36,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 37,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 38,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 39,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 40,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 41,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 42,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 43,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 44,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 45,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 46,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 47,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 48,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 49,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 50,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 51,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 52,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 53,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 54,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 55,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 56,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 57,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 58,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 59,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 60,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 61,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 62,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 63,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 64,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 65,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 66,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 67,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 68,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 69,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 70,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 71,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 72,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 73,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 74,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 75,
-            "occupied": false,
-            "speed_hazard": false
-          },
-          {
-            "block": 76,
-            "occupied": false,
-            "speed_hazard": false
-          }
+        {
+          "block": 1,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 2,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 3,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 4,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 5,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 6,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 7,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 8,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 9,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 10,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 11,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 12,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 13,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 14,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 15,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 16,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 17,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 18,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 19,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 20,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 21,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 22,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 23,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 24,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 25,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 26,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 27,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 28,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 29,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 30,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 31,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 32,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 33,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 34,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 35,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 36,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 37,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 38,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 39,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 40,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 41,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 42,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 43,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 44,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 45,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 46,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 47,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 48,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 49,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 50,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 51,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 52,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 53,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 54,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 55,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 56,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 57,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 58,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 59,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 60,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 61,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 62,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 63,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 64,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 65,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 66,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 67,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 68,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 69,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 70,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 71,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 72,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 73,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 74,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 75,
+          "occupied": false,
+          "speed_hazard": false
+        },
+        {
+          "block": 76,
+          "occupied": false,
+          "speed_hazard": false
+        }
       ],
       "switches": [
         {
           "id": 0,
           "plc_num": 1,
-          "name_1": "9 to YARD",
-          "name_2": "10 to YARD",
-          "from": 10,
-          "to": [9, "Yard"],
+          "name_1": "9 to 10",
+          "name_2": "9 to Yard",
+          "from": 9,
+          "to": [10, "Yard"],
           "suggested_toggle": false,
           "toggled": false
         },
         {
           "id": 1,
           "plc_num": 1,
-          "name_1": "1 to 16",
-          "name_2": "15 to 16",
+          "name_1": "16 to 15",
+          "name_2": "16 to 1",
           "from": 16,
-          "to": [1, 15],
+          "to": [15, 1],
           "suggested_toggle": false,
           "toggled": false
         },
         {
-          "id": 2,
+          "id": 6,
           "plc_num": 1,
           "name_1": "52 to 53",
           "name_2": "52 to 66",
@@ -649,9 +649,27 @@
           "toggled": false
         },
         {
+          "id": 0,
+          "name_1": "Block YARD - Red",
+          "name_2": "Block YARD - Green",
+          "toggled": false
+        },
+        {
           "id": 1,
           "name_1": "Block 15 - Red",
           "name_2": "Block 15 - Green",
+          "toggled": false
+        },
+        {
+          "id": 1,
+          "name_1": "Block 53 - Red",
+          "name_2": "Block 53 - Green",
+          "toggled": false
+        },
+        {
+          "id": 1,
+          "name_1": "Block 66 - Red",
+          "name_2": "Block 66 - Green",
           "toggled": false
         }
       ],
@@ -1050,7 +1068,7 @@
       "switches": [
         {
           "id": 0,
-          "plc_num": 1,
+          "plc_num": 2,
           "name_1": "27 to 28",
           "name_2": "27 to 76",
           "from": 27,
@@ -1059,17 +1077,17 @@
           "toggled": false
         },
         {
-          "id": 1,
+          "id": 3,
           "plc_num": 1,
-          "name_1": "32 to 33",
-          "name_2": "33 to 72",
+          "name_1": "33 to 72",
+          "name_2": "33 to 32",
           "from": 33,
-          "to": [32, 72],
+          "to": [72, 32],
           "suggested_toggle": false,
           "toggled": false
         },
         {
-          "id": 2,
+          "id": 4,
           "plc_num": 1,
           "name_1": "38 to 39",
           "name_2": "38 to 71",
@@ -1079,37 +1097,43 @@
           "toggled": false
         },
         {
-          "id": 3,
+          "id": 5,
           "plc_num": 1,
-          "name_1": "43 to 44",
-          "name_2": "44 to 67",
+          "name_1": "44 to 67",
+          "name_2": "44 to 43",
           "from": 44,
-          "to": [43, 67],
+          "to": [67, 43],
           "suggested_toggle": false,
           "toggled": false
         }
       ],
       "traffic_lights": [
         {
-          "id": 0,
+          "id": 2,
+          "name_1": "Block 2 - Red",
+          "name_2": "Block 27 - Green",
+          "toggled": false
+        },
+        {
+          "id": 2,
           "name_1": "Block 27 - Red",
           "name_2": "Block 27 - Green",
           "toggled": false
         },
         {
-          "id": 1,
+          "id": 3,
           "name_1": "Block 32 - Red",
           "name_2": "Block 32 - Green",
           "toggled": false
         },
         {
-          "id": 2,
+          "id": 4,
           "name_1": "Block 38 - Red",
           "name_2": "Block 38 - Green",
           "toggled": false
         },
         {
-          "id": 3,
+          "id": 5,
           "name_1": "Block 43 - Red",
           "name_2": "Block 43 - Green",
           "toggled": false
@@ -1117,7 +1141,7 @@
       ],
       "crossings": [
         {
-          "id": 0,
+          "id": 1,
           "name_1": "Block 47 - UP",
           "name_2": "Block 47 - DOWN",
           "toggled": false
