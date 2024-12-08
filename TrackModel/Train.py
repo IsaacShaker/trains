@@ -93,38 +93,38 @@ class Train:
         if diff == None:
             diff = 0
         self.moveFront(diff)
-        self.syncBack()
+        self.syncBack(diff)
 
     def moveFront(self, authDiff):
         if self.fLocOnBlock > 0:
             self.fLocOnBlock -= authDiff
-            self.fBlock.set_train(self, False)
+            self.fBlock.set_train(self, False, authDiff)
         else:
             self.fBlock.train_set_beacon(self)
             remainingDistance = self.fLocOnBlock
             if self.fBackwards:
-                self.fBlock.set_train(None, False)
+                self.fBlock.set_train(None, False, authDiff)
                 self.fBlockPrevious = self.fBlock
                 self.fBlock, self.fLocOnBlock = self.fBlock.get_previous_block()
                 self.fLocOnBlock += remainingDistance
                 self.fLocOnBlock -= authDiff
-                self.fBlock.set_train(self, False)
+                self.fBlock.set_train(self, False, authDiff)
             else:
-                self.fBlock.set_train(None, False)
+                self.fBlock.set_train(None, False, authDiff)
                 self.fBlockPrevious = self.fBlock
                 self.fBlock, self.fLocOnBlock = self.fBlock.get_next_block()
                 self.fLocOnBlock += remainingDistance
                 self.fLocOnBlock -= authDiff
-                self.fBlock.set_train(self, False)
+                self.fBlock.set_train(self, False, authDiff)
         self.grade_info["id"]=self.id
         self.grade_info["grade_info"]=self.fBlock.get_grade()
         response = requests.post(URL + "/train-model/get-data/grade-info", json=self.grade_info)
             
 
-    def syncBack(self):
+    def syncBack(self, authDiff):
         self.bLocOnBlock = self.fLocOnBlock + self.length
         if self.bLocOnBlock > self.fBlock.get_length():
-            self.bBlock.set_train(None, True)
+            self.bBlock.set_train(None, True, authDiff)
             if self.bBackwards:
                 if self.bLocOnBlock <= 0:
                     self.bBlock, self.bLocOnBlock = self.bBlock.get_previous_block()
@@ -133,11 +133,11 @@ class Train:
                     self.bBlock, self.bLocOnBlock = self.bBlock.get_next_block()
 
             self.bLocOnBlock = self.length - (self.fBlock.get_length() - self.fLocOnBlock)
-            self.bBlock.set_train(self, True)
+            self.bBlock.set_train(self, True, authDiff)
         else:
-            self.bBlock.set_train(None, True)
+            self.bBlock.set_train(None, True, authDiff)
             self.bBlock = self.fBlock
-            self.bBlock.set_train(self, True)
+            self.bBlock.set_train(self, True, authDiff)
             
     def set_info(self, authority, speed):
         self.authority = authority
