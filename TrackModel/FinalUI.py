@@ -474,7 +474,7 @@ class TrackUI(QMainWindow):
     #initialize green line table
     def make_green_track_table(self, tab):
         self.green_block_table = QStandardItemModel(len(greenBlocks), 18)
-        self.green_block_table.setHorizontalHeaderLabels(["Section", "Occupied", "Authority", "Commanded Speed", "Beacon", "Station", "Railroad", "Switch", "Next Block", "Previous Block", "Length", "Grade", "Speed Limit", "Elevation", "Cum. Elevation", "Underground", "Broken Track", "Circuit Failure", "Power Failure"])
+        self.green_block_table.setHorizontalHeaderLabels(["Number", "Occupied", "Authority", "Commanded Speed", "Beacon", "Station", "Railroad", "Switch", "Next Block", "Previous Block", "Length", "Grade", "Speed Limit", "Elevation", "Cum. Elevation", "Underground", "Broken Track", "Circuit Failure", "Power Failure"])
         self.populate_green_track_table()
 
         green_block_table_view = QTableView()

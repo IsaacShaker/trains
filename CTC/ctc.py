@@ -187,9 +187,9 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         }
 
         #               Timer Stuff                 #
-        # self.request_block_occupancies_timer = QTimer(self)
-        # self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
-        # self.request_block_occupancies_timer.start(1000)
+        self.request_block_occupancies_timer = QTimer(self)
+        self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
+        self.request_block_occupancies_timer.start(1000)
 
     # Create the Home and Test Bench tab for the window
     def create_tabs(self):

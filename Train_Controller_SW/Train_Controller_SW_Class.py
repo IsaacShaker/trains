@@ -450,7 +450,7 @@ class Train_Controller:
                 if len(values[0]) == 3:
 
 
-                    if values[0][1] == "3" or values[0][2] == "1":
+                    if values[0][1] == "3" and values[0][2] == "1":
                         self.in_tunnel = not(self.in_tunnel)
 
                         #turn lights on if in tunnel
@@ -526,7 +526,7 @@ class Train_Controller:
 
     def open_l_door(self, sim_speed):
         self.set_l_door(True)
-        self.set_doors_can_open(False)
+        #self.set_doors_can_open(False)
 
         #JUST IN CURRENT
         # self.l_door_button.setEnabled(False)
@@ -537,7 +537,7 @@ class Train_Controller:
 
     def open_r_door(self, sim_speed):
         self.set_r_door(True)
-        self.set_doors_can_open(False)
+        #self.set_doors_can_open(False)
 
         #JUST IN CURRENT
         # self.r_door_button.setEnabled(False)
