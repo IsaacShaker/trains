@@ -38,35 +38,42 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
     def set_J_hazard(truth_val):
         for i in range(58, 63):
             speed_hazard[i] = truth_val
+        
+    def reset_hazard():
+        for i in range(0, len(speed_hazard)):
+            speed_hazard[i] = False
     
     while 1:
-        # J_hazard = J_is_hazard()
-        # # Sections I - M
-        # for i in range(36, 77):
-        #     if block_occupancies[i]:
-        #         # trailing 4 blocks so other trains don't get too close
-        #         for j in range(1, 5):
-        #             speed_hazard[i-j] = True
-        #     speed_hazard[i] = False
-
-        # if J_hazard == True:
-        #     set_J_hazard(True)
+        J_hazard = J_is_hazard()
         
-        # # Sections O - Q
-        # for i in range(86, 101):
-        #     if block_occupancies[i]:
-        #         # trailing 4 blocks so other trains don't get too close
-        #         for j in range(1, 5):
-        #             speed_hazard[i-j] = True
-        #     speed_hazard[i] = False
+        reset_hazard()
 
-        # # Sections S -  U
-        # for i in range(105, 117):
-        #     if block_occupancies[i]:
-        #         # trailing 4 blocks so other trains don't get too close
-        #         for j in range(1, 5):
-        #             speed_hazard[i-j] = True
-        #     speed_hazard[i] = False
+        # Sections I - M
+        for i in range(36, 77):
+            if block_occupancies[i]:
+                # trailing 4 blocks so other trains don't get too close
+                for j in range(1, 5):
+                    speed_hazard[i-j] = True
+            speed_hazard[i] = False
+
+        if J_hazard == True:
+            set_J_hazard(True)
+        
+        # Sections O - Q
+        for i in range(86, 101):
+            if block_occupancies[i]:
+                # trailing 4 blocks so other trains don't get too close
+                for j in range(1, 5):
+                    speed_hazard[i-j] = True
+            speed_hazard[i] = False
+
+        # Sections S -  U
+        for i in range(105, 117):
+            if block_occupancies[i]:
+                # trailing 4 blocks so other trains don't get too close
+                for j in range(1, 5):
+                    speed_hazard[i-j] = True
+            speed_hazard[i] = False
         
         if N_occupied() == False:
             switches[4] = False
