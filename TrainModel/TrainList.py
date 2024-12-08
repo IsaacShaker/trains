@@ -7,7 +7,6 @@ class TrainList:
 
     def add_train(self, tc_list):
         """Add a new TrainModel to the list."""
-        
         train_model = TrainModel(tc_list)
         train_model.ID = len(self.train_list)
         self.train_list.append(train_model)
