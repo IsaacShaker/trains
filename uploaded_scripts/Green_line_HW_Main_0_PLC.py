@@ -28,23 +28,30 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
     def set_YorZ_hazard(truth_val):
         for i in range(147, 151):
             speed_hazard[i] = truth_val
+
+    def reset_hazard():
+        for i in range(0, len(speed_hazard)):
+            speed_hazard[i] = False
     
     while not stop_event.is_set():
+        
+        reset_hazard()
+
         # A through C
-        # for i in range(1, 13):
-        #     if block_occupancies[i]:
-        #         # trailing 4 blocks so other trains don't get too close
-        #         for j in range(1, 5):
-        #             speed_hazard[i-j] = True
-        #     speed_hazard[i] = False
+        for i in range(1, 9):
+            if block_occupancies[i]:
+                # trailing 4 blocks so other trains don't get too close
+                for j in range(1, 5):
+                    speed_hazard[i+j] = True
+            speed_hazard[i] = False
 
         # # Sections V - Z
-        # for i in range(117, 151):
-        #     if block_occupancies[i]:
-        #         # trailing 4 blocks so other trains don't get too close
-        #         for j in range(1, 5):
-        #             speed_hazard[i-j] = True
-        #     speed_hazard[i] = False
+        for i in range(117, 151):
+            if block_occupancies[i]:
+                # trailing 4 blocks so other trains don't get too close
+                for j in range(1, 5):
+                    speed_hazard[i-j] = True
+            speed_hazard[i] = False
     
         if DEF_occupied() == False:
             switches[0] = True
