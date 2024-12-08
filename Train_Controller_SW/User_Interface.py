@@ -66,7 +66,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.next_train_id = 0
         self.train_list = tc_list
         self.train_model_list = model_list
-        self.var_from_mitch = 10 # Simulation Speed
+        self.var_from_mitch = 35 # Simulation Speed
 
 
 
@@ -1455,6 +1455,8 @@ class Train_Controller_SW_UI(QMainWindow):
         if self.train_list[self.current_train].get_e_brake() == True:
             if self.train_list[self.current_train].check_any_failures() == False:
                 self.e_brake_button.setEnabled(True)
+            else:
+                self.e_brake_button.setEnabled(False)
                 #print(self.train_list[self.current_train].get_e_brake())
 
         self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[self.current_train].get_setpoint_velocity())} MPH</span>') #update setpoint 
