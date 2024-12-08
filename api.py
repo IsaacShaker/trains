@@ -3,7 +3,7 @@ from flask import Flask, render_template_string, jsonify, request
 app = Flask(__name__)
 app.qt_app_instance = None
 
-is_micah = True
+is_micah = False
 
 ###################################
 #Train Contoller Input Functions
