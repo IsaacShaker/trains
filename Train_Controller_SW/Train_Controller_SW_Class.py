@@ -427,9 +427,8 @@ class Train_Controller:
         #split signal in 3 segments
         values = self.beacon_info.split(',')
 
-        #this decodes the 3 segments of information
-        if len(values) == 3:
 
+        if len(values) == 1:
             #check if tunnel beacon
             if values[0][0] == "T" or values[0][0] == "t":
                 self.in_tunnel = not(self.in_tunnel)    #flip in_tunnel bool
@@ -441,9 +440,11 @@ class Train_Controller:
                 else:
                     self.set_i_light(False)
                     self.set_o_light(False)
+        #this decodes the 3 segments of information
+        elif len(values) == 3:
 
             #checks if station beacon
-            elif values[0][0] == "B" or "b":
+            if values[0][0] == "B" or "b":
                 self.station_reached = not(self.station_reached)
 
                 #checks if it is shared tunnel station block
