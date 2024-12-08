@@ -52,7 +52,7 @@ class Block:
 
     def get_table_data(self, index):
         if index == 0:
-            return str(self.section)
+            return str(self.number)
         elif index == 1:
             return str(isinstance(self.train, Train))
         elif index == 2:
@@ -111,9 +111,9 @@ class Block:
             return ""    
     def display_info(self, index):
         if self.nextBlock == 0:
-            return f"Block {index}:\n\tLine: {self.line} \n\tSection: {self.section} \n\tBlock Number: {self.number} \n\tBlock Length: {self.length} \n\tBlock Grade: {self.grade} \n\tSpeed Limit: {self.speedLimit} \n\tElevation: {self.elevation} \n\tCumulative Elevation: {self.cumElevation} \n\tOccupied: {self.occupied}\n\tBroken Track: {self.brokenTrack}\n\tTrack Circuit Failure: {self.circuitFailure}\n\tPower Failure: {self.powerFailure}"
+            return f"Block {index}:\n\tLine: {self.line}\n\tBlock Number: {self.number} \n\tBlock Length: {self.length} \n\tBlock Grade: {self.grade} \n\tSpeed Limit: {self.speedLimit} \n\tElevation: {self.elevation} \n\tCumulative Elevation: {self.cumElevation} \n\tOccupied: {self.occupied}\n\tBroken Track: {self.brokenTrack}\n\tTrack Circuit Failure: {self.circuitFailure}\n\tPower Failure: {self.powerFailure}"
         else:
-            return f"Block {index}:\n\tLine: {self.line} \n\tSection: {self.section} \n\tBlock Number: {self.number} \n\tNext Block: {self.nextBlock.display_num()} \n\tBlock Length: {self.length} \n\tBlock Grade: {self.grade} \n\tSpeed Limit: {self.speedLimit} \n\tElevation: {self.elevation} \n\tCumulative Elevation: {self.cumElevation} \n\tOccupied: {self.occupied}\n\tBroken Track: {self.brokenTrack}\n\tTrack Circuit Failure: {self.circuitFailure}\n\tPower Failure: {self.powerFailure}"
+            return f"Block {index}:\n\tLine: {self.line}\n\tBlock Number: {self.number} \n\tNext Block: {self.nextBlock.display_num()} \n\tBlock Length: {self.length} \n\tBlock Grade: {self.grade} \n\tSpeed Limit: {self.speedLimit} \n\tElevation: {self.elevation} \n\tCumulative Elevation: {self.cumElevation} \n\tOccupied: {self.occupied}\n\tBroken Track: {self.brokenTrack}\n\tTrack Circuit Failure: {self.circuitFailure}\n\tPower Failure: {self.powerFailure}"
     def display_num(self):
         return f"{self.number}"  
     def get_if_train(self):
@@ -121,7 +121,7 @@ class Block:
             return True
         return False
 
-    def set_train(self, train, FOrB):
+    def set_train(self, train, FOrB, diff):
         if isinstance(train, Train):
             
             self.train = train
@@ -129,7 +129,7 @@ class Block:
                 self.train.set_auth(self.authority)
             if self.commandedSpeed != None and not FOrB and self.train.get_auth() != 0:
                 self.train.set_speed(self.commandedSpeed)
-            if isinstance(self.station, Station) and (self.train.get_fLocOnBlock() > (self.length/2) - 17.1) and (self.train.get_fLocOnBlock() < (self.length/2) - 15.1):
+            if isinstance(self.station, Station) and (self.train.get_fLocOnBlock() > (self.length/2) - 17.1) and (self.train.get_fLocOnBlock() < (self.length/2) - 15.1) and diff == 0:
                 self.station.set_trainIn(True)
             else:
                 if isinstance(self.station, Station):
