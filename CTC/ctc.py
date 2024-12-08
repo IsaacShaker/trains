@@ -187,9 +187,9 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         }
 
         #               Timer Stuff                 #
-        # self.request_block_occupancies_timer = QTimer(self)
-        # self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
-        # self.request_block_occupancies_timer.start(1000)
+        self.request_block_occupancies_timer = QTimer(self)
+        self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
+        self.request_block_occupancies_timer.start(1000)
 
     # Create the Home and Test Bench tab for the window
     def create_tabs(self):
@@ -235,9 +235,19 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         wayside_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the label
         wayside_layout.addWidget(wayside_label)
 
+        # Add layout for occupancies
+        occupancies_layout = QHBoxLayout()
+
         # Create the QListWidget for the wayside occupancies checklist
-        self.wayside_occupancies = QListWidget()
-        self.wayside_occupancies.setStyleSheet("""
+        self.green_wayside_occupancies = QListWidget()
+        self.green_wayside_occupancies.setStyleSheet("""
+            QListWidget::item {
+                padding: 1px;  /* Add padding to increase item size */
+                font-size: 20px;  /* Increase font size to make items larger */
+            }
+        """)
+        self.red_wayside_occupancies = QListWidget()
+        self.red_wayside_occupancies.setStyleSheet("""
             QListWidget::item {
                 padding: 1px;  /* Add padding to increase item size */
                 font-size: 20px;  /* Increase font size to make items larger */
@@ -245,14 +255,23 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         """)
 
         # Create the wayside blocks list
-        self.wayside_blocks = [f'Green {i}' for i in range(1, 17)]  # Create block labels dynamically
+        self.green_wayside_blocks = [f'Green {i}' for i in range(1, 151)]
+        self.red_wayside_blocks  = [f'Red {i}' for i in range(1,76)]
 
         # Add the wayside blocks as options for the checklist
-        for block in self.wayside_blocks:
+        for block in self.green_wayside_blocks:
             block_option = QListWidgetItem(block)
             block_option.setFlags(block_option.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             block_option.setCheckState(Qt.CheckState.Unchecked)  # Initial status is unchecked
-            self.wayside_occupancies.addItem(block_option)
+            self.green_wayside_occupancies.addItem(block_option)
+        occupancies_layout.addWidget(self.green_wayside_occupancies)
+
+        for block in self.red_wayside_blocks:
+            block_option = QListWidgetItem(block)
+            block_option.setFlags(block_option.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            block_option.setCheckState(Qt.CheckState.Unchecked)  # Initial status is unchecked
+            self.red_wayside_occupancies.addItem(block_option)
+        occupancies_layout.addWidget(self.red_wayside_occupancies)
 
         # Add submit button
         self.submit_button = QPushButton("Submit")
@@ -261,103 +280,14 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         self.submit_button.clicked.connect(self.submit_test_bench)
 
         # Add the QListWidget to the layout
-        wayside_layout.addWidget(self.wayside_occupancies)
-
+        wayside_layout.addLayout(occupancies_layout)
         wayside_layout.addWidget(self.submit_button)
-
         # Set the final layout for the frame and add it to the grid layout
         wayside_frame.setLayout(wayside_layout)
         grid_layout.addWidget(wayside_frame, 0, 0, 1, 2)
-
-        # Layout for buttons
-        signals_frame = self.create_section_frame(250, 200)
-
-        # Layout for bottom half
-        signals_big_layout = QVBoxLayout()
-
-        # Label for Signals
-        signals_label = QLabel('Traffic Signals')
-        signals_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        signals_label.setStyleSheet("color: white; font-size: 20px;")
-        signals_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the label
-        signals_big_layout.addWidget(signals_label)
-
-        # Layout for the interactives
-        signals_small_layout = QHBoxLayout()
-
-        # Button for railway crossing
-        self.crossing_button = QPushButton("Railway Crossing")
-        self.crossing_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.crossing_button.setStyleSheet("background-color: green; color: white; font-size: 20px;")
-        self.crossing_button.clicked.connect(self.crossing_clicked)
-        signals_small_layout.addWidget(self.crossing_button)
-
-        # Button for switch
-        self.switch_button = QPushButton("5-->6")
-        self.switch_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px;")
-        self.switch_button.clicked.connect(self.switch_clicked)
-        signals_small_layout.addWidget(self.switch_button)
-
-        # Light on Blue #6
-        self.top_light = QPushButton("Top Track Light")
-        self.top_light.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.top_light.setStyleSheet("background-color: green; color: white; font-size: 20px;")
-        self.top_light.clicked.connect(self.top_light_clicked)
-        signals_small_layout.addWidget(self.top_light)        
-
-        # Light on Blue #11
-        self.bottom_light = QPushButton("Bottom Track Light")
-        self.bottom_light.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.bottom_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
-        self.bottom_light.clicked.connect(self.bottom_light_clicked)
-        signals_small_layout.addWidget(self.bottom_light)
-
-        signals_big_layout.addLayout(signals_small_layout)
-        signals_frame.setLayout(signals_big_layout)
-        grid_layout.addWidget(signals_frame, 1, 0, 1, 2)
         
         # Add the grid layout to the main layout provided as a parameter
         layout.addLayout(grid_layout)
-
-    # Handle what happend when the crossing is changed
-    def crossing_clicked(self):
-        self.crossing_status = not(self.crossing_status)
-        if self.crossing_status == False:
-            self.crossing_button.setStyleSheet("background-color: red; color: white; font-size: 20px")
-        else:
-            self.crossing_button.setStyleSheet("background-color: green; color: white; font-size: 20px")
-
-    # Handle what happens when the switch is changed
-    def switch_clicked(self):
-        self.switch_status = not(self.switch_status)
-
-        if self.switch_status == False:
-            self.switch_button.setText('5-->12')
-            self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
-        else:
-            self.switch_button.setText('5-->6')
-            self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
-
-    # Handle what happens when the top light changes states
-    def top_light_clicked(self):
-        self.top_light_status = not(self.top_light_status)
-        if self.top_light_status == False:
-            self.top_light.setText('Top Track Light')
-            self.top_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
-        else:
-            self.top_light.setText('Top Track Light')
-            self.top_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
-
-    # Handle what happens when the bottom light changes states
-    def bottom_light_clicked(self):
-        self.bottom_light_status = not(self.bottom_light_status)
-        if self.bottom_light_status == False:
-            self.bottom_light.setText('Bottom Track Light')
-            self.bottom_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
-        else:
-            self.bottom_light.setText('Bottom Track Light')
-            self.bottom_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
 
     # Handle the user confirming their Test Bench selection for occupancies
     def submit_test_bench(self):
@@ -488,7 +418,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         self.upload_dispatch_layout = QHBoxLayout()
 
         # Add the upload button
-        self.upload_button = QPushButton('Upload a Schedule')
+        self.upload_button = QPushButton('Upload a Schedule for Green Line')
         self.upload_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.upload_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 18px")
         self.upload_button.clicked.connect(self.upload_clicked)
