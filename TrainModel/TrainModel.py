@@ -189,7 +189,8 @@ class TrainModel(QObject):
         self.actual_velocity_dict["train_id"]=self.ID
         self.actual_velocity_dict["actual_velocity"]=self.currentVelocity
         # response = requests.post(URL + "/train-controller/receive-actual-velocity", json=self.actual_velocity_dict)
-        self.train_controller_list[self.ID].set_actual_velocity(self.currentVelocity)
+        if self.ID != 0:
+            self.train_controller_list[self.ID].set_actual_velocity(self.currentVelocity)
         #response = requests.post(URL + "/track-model/get-data/current-speed", json=self.actual_velocity_dict)
         self.ui_refresh.emit()
 

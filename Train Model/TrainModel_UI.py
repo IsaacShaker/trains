@@ -27,9 +27,9 @@ def addTrain():
     train_list.append(new_train)
 
 # Call addTrain to populate the list
-addTrain()
-addTrain()
-addTrain()
+addTrain() #Add one for Train Controller HW
+#addTrain()
+#addTrain()
 
 
 #train_list[1].atStation=False
