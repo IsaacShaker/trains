@@ -52,7 +52,7 @@ class Block:
 
     def get_table_data(self, index):
         if index == 0:
-            return str(self.section)
+            return str(self.number)
         elif index == 1:
             return str(isinstance(self.train, Train))
         elif index == 2:
@@ -123,7 +123,6 @@ class Block:
 
     def set_train(self, train, FOrB):
         if isinstance(train, Train):
-            
             self.train = train
             if self.authority != None and not FOrB:
                 self.train.set_auth(self.authority)

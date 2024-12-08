@@ -37,8 +37,8 @@ class MapReader():
                     start = current_stop_index[0]
                     end = next_stop_index[0]
                     # Sum the block lengths from start to end
-                    authority = df.loc[start:end - 1, 'Block Length (m)'].sum()
-                    authority += df.loc[end, 'Block Length (m)']/2 + 13 + 10
+                    authority = df.loc[start + 1:end - 1, 'Block Length (m)'].sum()
+                    authority += df.loc[end, 'Block Length (m)']/2 + 16 + 10
                     self.route_authorities_list.append(float(authority))
                 else:
                     start = current_stop_index[0]
