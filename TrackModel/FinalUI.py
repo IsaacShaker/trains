@@ -38,26 +38,17 @@ greenBeacons = []
 greenStations = []
 greenSections = []
 #Initialize train global variables
-greenTrains = Trains()
-redTrains = Trains()
+trains = Trains()
 #Initialize global occupation variables for Wayside
 greenOccs = [False] * 151
 redOccs = [False] * 77
 #Initialize global variables for trains to recieve
-greenAuth = []
-greenCmd = []
-
-redAuth = []
-redCmd = []
+auth = []
+cmd = []
 
 initialized = False
 
-greenAuthAndSpeed = {
-        'authorities' : None,
-        'commandedSpeeds' : None
-    }
-
-redAuthAndSpeed = {
+authAndSpeed = {
         'authorities' : None,
         'commandedSpeeds' : None
     }
@@ -126,11 +117,11 @@ class TrackUI(QMainWindow):
 
         #Train movement function, called every ms
         self.train_timer = QTimer()
-        self.train_timer.timeout.connect(greenTrains.get_info)
+        self.train_timer.timeout.connect(trains.get_info)
         self.train_timer.start(10)
 
         self.send_timer = QTimer()
-        self.send_timer.timeout.connect(self.green_post_auth_and_cmd_speed)
+        self.send_timer.timeout.connect(self.post_auth_and_cmd_speed)
         self.send_timer.start(1000)
 
     def initialize_track(self):
@@ -138,7 +129,7 @@ class TrackUI(QMainWindow):
         initialized = True
         global redYard, redBlocks, redSwitches, redRailroadCrossings, redBeacons, redStations, redSections
         global greenYard, greenBlocks, greenSwitches, greenRailroadCrossings, greenBeacons, greenStations, greenSections
-        global greenTrains
+        global trains
         # Store text entry values in separate variables
         self.input_value1 = "trackData/RedLine.xlsx"
         self.input_value2 = "trackData/GreenLine.xlsx"
@@ -232,9 +223,9 @@ class TrackUI(QMainWindow):
             
         #Train (temporary until we figure out how to initialize a train)
         tempTrain = Train(10, greenBlocks[0], 32.2, 0, "Green")
-        greenTrains.addTrain(tempTrain)
-        greenAuth.append(0.0)
-        greenCmd.append(0.0)
+        trains.addTrain(tempTrain)
+        auth.append(0.0)
+        cmd.append(0.0)
     
     #For Wayside
     def get_occupancies(self):
@@ -243,12 +234,12 @@ class TrackUI(QMainWindow):
         return occ_data
 
     #For Train Model
-    def green_get_track_to_train(self):
+    def get_track_to_train(self):
         for i in range(len(Trains)):
-            greenAuth[i] = Trains[i].trainAuth
-            greenCmd[i] = Trains[i].trainCmd
-        data = { "authority" : greenAuth, 
-                 "commandedSpeed" : greenCmd}
+            auth[i] = Trains[i].trainAuth
+            cmd[i] = Trains[i].trainCmd
+        data = { "authority" : auth, 
+                 "commandedSpeed" : cmd}
         return data
     
     #From Wayside
@@ -288,33 +279,27 @@ class TrackUI(QMainWindow):
         if data['line'] == 'Green':
             greenBlocks[data['index']].set_cmd_speed(data['speed'])
 
-
-    # def set_train_speed(self, data):
-    #     for i in range(len(data)):
-    #         greenTrains[].set_train_speed(data[''])
-
-    # def set_indexed_train_speed(self,index,speed):
-    #     if initialized == False:
-    #         return
-    #     greenTrains.set_indexed_speed(index, speed)
-
     def set_indexed_train_auth_diff(self,index,diff):
         if initialized == False:
             return
-        greenTrains.trainList[index].moveTrain(diff)
-        #greenTrains.set_indexed_speed(index, diff)
+        trains.trainList[index].moveTrain(diff)
 
-    def green_post_auth_and_cmd_speed(self):
-        greenAuthAndSpeed["authorities"]=greenTrains.authorities
-        greenAuthAndSpeed["commandedSpeeds"]=greenTrains.commandedSpeeds
+    def train_in_station(self, index):
+        if initialized == False:
+            return
+        trains.trainList[index].get_people()
+
+    def post_auth_and_cmd_speed(self):
+        authAndSpeed["authorities"]=trains.authorities
+        authAndSpeed["commandedSpeeds"]=trains.commandedSpeeds
         if launcher:
-            response = requests.post(URL + "/train-model/get-data/authority-cmd-speed", json=greenAuthAndSpeed)
+            response = requests.post(URL + "/train-model/get-data/authority-cmd-speed", json=authAndSpeed)
         
     def red_post_auth_and_cmd_speed(self):
-        redAuthAndSpeed["authorities"]=redTrains.authorities
-        redAuthAndSpeed["commandedSpeeds"]=redTrains.commandedSpeeds
+        authAndSpeed["authorities"]=trains.authorities
+        authAndSpeed["commandedSpeeds"]=trains.commandedSpeeds
         if launcher:
-            response = requests.post(URL + "/train-model/get-data/authority-cmd-speed", json=redAuthAndSpeed)
+            response = requests.post(URL + "/train-model/get-data/authority-cmd-speed", json=authAndSpeed)
 
     #initializes all maps, tables, test benches
     def create_tabs(self):
@@ -340,10 +325,10 @@ class TrackUI(QMainWindow):
         self.make_green_track_table(tab2)
 
         tab3 = QWidget()
-        self.tab_widget.addTab(tab3, "Green Train Info")
+        self.tab_widget.addTab(tab3, "Train Info")
         self.tab_widget.setStyleSheet("background-color: #444444; color: white;")
         
-        self.make_green_train_table(tab3)
+        self.make_train_table(tab3)
 
 
 
@@ -376,12 +361,6 @@ class TrackUI(QMainWindow):
 
         self.make_red_track_table(tab6)
 
-        tab7 = QWidget()
-        self.tab_widget.addTab(tab7, "Red Train Info")
-        self.tab_widget.setStyleSheet("background-color: #444444; color: white;")
-        
-        self.make_red_train_table(tab7)
-
 
 
         #Tab 3 for test bench
@@ -395,7 +374,7 @@ class TrackUI(QMainWindow):
     #initializes red line table
     def make_red_track_table(self, tab):
         self.red_block_table = QStandardItemModel(len(redBlocks), 15)
-        self.red_block_table.setHorizontalHeaderLabels(["Section", "Occupied", "Authority", "Cmd. Speed", "Beacon", "Station", "Railroad", "Switch", "Traffic Light", "Next Block", "Previous Block", "Length", "Grade", "Speed Limit", "Elevation", "Cum. Elevation", "Underground", "Broken Track", "Circuit Failure", "Power Failure"])
+        self.red_block_table.setHorizontalHeaderLabels(["Block", "Occupied", "Authority", "Cmd. Speed", "Beacon", "Station", "Railroad", "Switch", "Traffic Light", "Next Block", "Previous Block", "Length", "Grade", "Speed Limit", "Elevation", "Cum. Elevation", "Underground", "Broken Track", "Circuit Failure", "Power Failure"])
         self.populate_red_track_table()
 
         red_block_table_view = QTableView()
@@ -403,18 +382,6 @@ class TrackUI(QMainWindow):
 
         layout = QVBoxLayout()
         layout.addWidget(red_block_table_view)
-        tab.setLayout(layout)
-    
-    def make_red_train_table(self, tab):
-        self.red_train_table = QStandardItemModel(len(redTrains.trainList), 8)
-        self.red_train_table.setHorizontalHeaderLabels(["ID", "Cmd. Speed", "Authority", "Cmd. Speed", "Front Block", "Location", "Back Block", "Location"])
-        self.populate_red_train_table()
-
-        red_train_table_view = QTableView()
-        red_train_table_view.setModel(self.red_train_table)
-
-        layout = QVBoxLayout()
-        layout.addWidget(red_train_table_view)
         tab.setLayout(layout)
 
     #red table update function
@@ -452,24 +419,6 @@ class TrackUI(QMainWindow):
                         item.setBackground(Qt.GlobalColor.darkGray)
                 else:
                     item.setBackground(Qt.GlobalColor.darkGray)
-
-    def populate_red_train_table(self):
-        # Ensure the table has the correct number of rows
-        current_row_count = self.red_train_table.rowCount()
-        required_row_count = len(redTrains.trainList)
-        
-        # Add rows if trainList has grown
-        if required_row_count > current_row_count:
-            for _ in range(required_row_count - current_row_count):
-                self.red_train_table.appendRow([QStandardItem("") for _ in range(8)])
-
-        # Populate the table with data
-        for row in range(required_row_count):
-            for col in range(8):
-                value = str(redTrains.trainList[row].get_table_data(col))
-                item = QStandardItem(value)
-                self.red_train_table.setItem(row, col, item)
-                item.setBackground(Qt.GlobalColor.darkGray)
                 
     #initialize green line table
     def make_green_track_table(self, tab):
@@ -484,10 +433,10 @@ class TrackUI(QMainWindow):
         layout.addWidget(green_block_table_view)
         tab.setLayout(layout)
 
-    def make_green_train_table(self, tab):
-        self.green_train_table = QStandardItemModel(len(greenTrains.trainList), 8)
+    def make_train_table(self, tab):
+        self.green_train_table = QStandardItemModel(len(trains.trainList), 8)
         self.green_train_table.setHorizontalHeaderLabels(["ID", "Cmd. Speed", "Authority", "Commanded Speed", "Front Block", "Location", "Back Block", "Location"])
-        self.populate_green_train_table()
+        self.populate_train_table()
 
         green_train_table_view = QTableView()
         green_train_table_view.setModel(self.green_train_table)
@@ -531,10 +480,10 @@ class TrackUI(QMainWindow):
                 else:
                     item.setBackground(Qt.GlobalColor.darkGray)
 
-    def populate_green_train_table(self):
+    def populate_train_table(self):
         # Ensure the table has the correct number of rows
         current_row_count = self.green_train_table.rowCount()
-        required_row_count = len(greenTrains.trainList)
+        required_row_count = len(trains.trainList)
         
         # Add rows if trainList has grown
         if required_row_count > current_row_count:
@@ -544,7 +493,7 @@ class TrackUI(QMainWindow):
         # Populate the table with data
         for row in range(required_row_count):
             for col in range(8):
-                value = greenTrains.trainList[row].get_table_data(col)
+                value = trains.trainList[row].get_table_data(col)
                 item = QStandardItem(value)
                 self.green_train_table.setItem(row, col, item)
                 item.setBackground(Qt.GlobalColor.darkGray)
@@ -641,7 +590,7 @@ class TrackUI(QMainWindow):
             self.greenGreenCrossings[i].setToolTip(greenRailroadCrossings[i].display_info(i))
             self.greenRedCrossings[i].setToolTip(greenRailroadCrossings[i].display_info(i))
 
-        self.trainLabel.setToolTip(greenTrains.trainList[0].display_info(0))
+        self.trainLabel.setToolTip(trains.trainList[0].display_info(0))
 
         for i in range(18):
             if greenStations[i].get_trainIn():
