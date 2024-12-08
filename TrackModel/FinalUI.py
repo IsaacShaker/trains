@@ -311,7 +311,6 @@ class TrackUI(QMainWindow):
         self.make_green_sections(tab1, -100, 50)
         self.make_green_switches(tab1, -100, 50)
         self.make_green_crossings(tab1, 0, 0)
-        self.make_train(tab1)
         self.make_green_stations(tab1, 0, 0)
         self.make_green_lights(tab1, 0)
         self.make_green_failure_buttons(tab1)
@@ -324,14 +323,6 @@ class TrackUI(QMainWindow):
         
         self.make_green_track_table(tab2)
 
-        tab3 = QWidget()
-        self.tab_widget.addTab(tab3, "Train Info")
-        self.tab_widget.setStyleSheet("background-color: #444444; color: white;")
-        
-        self.make_train_table(tab3)
-
-
-
         #Tab 4 for test bench
         #input track changes here
         tab4 = QWidget()
@@ -339,6 +330,12 @@ class TrackUI(QMainWindow):
         self.tab_widget.setStyleSheet("background-color: #444444; color: white;")
         
         self.make_green_test_bench(tab4, -30)
+
+        tab3 = QWidget()
+        self.tab_widget.addTab(tab3, "Train Info")
+        self.tab_widget.setStyleSheet("background-color: #444444; color: white;")
+        
+        self.make_train_table(tab3)
 
         #Create Tab 1 red line
         tab5 = QWidget()
@@ -501,6 +498,7 @@ class TrackUI(QMainWindow):
     #red map update function         
     def update_red_ui(self):
         self.populate_red_track_table()
+        self.populate_train_table()
         #All "setToolTip" functions are updating the hover information for all objects
         #Constantly update block color based on occupied variable
         for i in range(11):
@@ -590,7 +588,7 @@ class TrackUI(QMainWindow):
             self.greenGreenCrossings[i].setToolTip(greenRailroadCrossings[i].display_info(i))
             self.greenRedCrossings[i].setToolTip(greenRailroadCrossings[i].display_info(i))
 
-        self.trainLabel.setToolTip(trains.trainList[0].display_info(0))
+        #self.trainLabel.setToolTip(trains.trainList[0].display_info(0))
 
         for i in range(18):
             if greenStations[i].get_trainIn():
@@ -1462,10 +1460,10 @@ class TrackUI(QMainWindow):
             [block.heater_off() for block in redBlocks[:77]]
 
     #initialize temp train information label     
-    def make_train(self, tab3):
-        self.trainLabel = QPushButton("Train Info", tab3)
-        self.trainLabel.setStyleSheet("background-color: white; color: black;")
-        self.trainLabel.setGeometry(50,40, 80, 25)
+    # def make_train(self, tab3):
+    #     self.trainLabel = QPushButton("Train Info", tab3)
+    #     self.trainLabel.setStyleSheet("background-color: white; color: black;")
+    #     self.trainLabel.setGeometry(50,40, 80, 25)
 
 # Main entry to start the application
 if __name__ == "__main__":
