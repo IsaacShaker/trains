@@ -124,7 +124,7 @@ class Train:
     def syncBack(self, authDiff):
         self.bLocOnBlock = self.fLocOnBlock + self.length
         if self.bLocOnBlock > self.fBlock.get_length():
-            self.bBlock.set_train(None, True)
+            self.bBlock.set_train(None, True, authDiff)
             if self.bBackwards:
                 if self.bLocOnBlock <= 0:
                     self.bBlock, self.bLocOnBlock = self.bBlock.get_previous_block()

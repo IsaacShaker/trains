@@ -66,7 +66,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.next_train_id = 0
         self.train_list = tc_list
         self.train_model_list = model_list
-        self.var_from_mitch = 35 # Simulation Speed
+        self.var_from_mitch = 10 # Simulation Speed
 
 
 
