@@ -1,6 +1,6 @@
 import sys
 from threading import Thread
-from TrackController.app import MyApp
+# from TrackController.app import MyApp
 import requests
 from api import start_api
 from CTC.ctc import MyWindow
@@ -23,7 +23,7 @@ class MainApp(QApplication):
         self.track_model = TrackUI()
 
 
-        self.track_controller.show()
+        # self.track_controller.show()
         self.ctc.show()
         self.train_model.show()
         self.train_controller_sw.show()

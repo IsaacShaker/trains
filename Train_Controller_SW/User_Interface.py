@@ -66,7 +66,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.next_train_id = 0
         self.train_list = tc_list
         self.train_model_list = model_list
-        self.var_from_mitch = 25 # Simulation Speed
+        self.var_from_mitch = 35 # Simulation Speed
 
 
 
@@ -1354,6 +1354,16 @@ class Train_Controller_SW_UI(QMainWindow):
     
     #function that calculates power and does all other timed function
     def calculate_power(self):
+
+        #print(f"Can get authority: {self.train_list[0].can_get_authority}")
+        #print(f"Received Authority: {self.train_list[0].received_authority}")\\
+        #print(f"Beacon Info: {self.train_list[0].beacon_info}")
+
+
+        #if self.train_list[0].get_received_authority() > 10000:
+            #self.train_list[0].set_e_brake(True)
+            #self.train_list[0].set_temperature(66)
+            #print(f"Received Authority: {self.train_list[0].received_authority}")
         
         self.auth_counter +=1
 
@@ -1364,6 +1374,9 @@ class Train_Controller_SW_UI(QMainWindow):
             if train.get_received_authority() > 0 and train.get_can_get_authority():
                 train.set_authority_to_received()
                 train.set_can_get_authority(False)                                                    #COMMENT THIS OUT TO TEST WITHOUT THIS FUNCTION
+
+
+                #train.set_e_brake(True)
 
 
                 #checks if train is in manual mode
@@ -1405,7 +1418,12 @@ class Train_Controller_SW_UI(QMainWindow):
 
             #check if doors have to open if train has stopped, auhority is 0, and doors haven't opened
             if train.get_authority() <= 0.0 and train.get_actual_velocity() == 0.0 and train.get_doors_can_open():
+
+                # force auth difference to get updated authority
+                train.send_auth_diff()
                 
+                train.set_doors_can_open(False)
+
                 #checks which doors to open
                 doors = train.get_doors_to_open()
 
@@ -1437,6 +1455,8 @@ class Train_Controller_SW_UI(QMainWindow):
         if self.train_list[self.current_train].get_e_brake() == True:
             if self.train_list[self.current_train].check_any_failures() == False:
                 self.e_brake_button.setEnabled(True)
+            else:
+                self.e_brake_button.setEnabled(False)
                 #print(self.train_list[self.current_train].get_e_brake())
 
         self.setpoint_velocity_widget.setText(f'<span style="color: #C598FF;"> &nbsp; Setpoint Velocity: </span> <span style="color: white;">{self.mps_to_mph(self.train_list[self.current_train].get_setpoint_velocity())} MPH</span>') #update setpoint 

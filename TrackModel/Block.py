@@ -123,7 +123,6 @@ class Block:
 
     def set_train(self, train, FOrB, diff):
         if isinstance(train, Train):
-            
             self.train = train
             if self.authority != None and not FOrB:
                 self.train.set_auth(self.authority)
