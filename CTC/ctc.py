@@ -80,6 +80,8 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         self.south_bank = Station("STATION; SOUTH BANK", [31])
         self.green_stations.append(self.south_bank)
 
+        # Bool for helping switch the occupancies grid
+        self.viewing_green = True
 
         # Dictionary for block labels in block occupancy tab
         self.block_labels = {}
@@ -235,9 +237,19 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         wayside_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the label
         wayside_layout.addWidget(wayside_label)
 
+        # Add layout for occupancies
+        occupancies_layout = QHBoxLayout()
+
         # Create the QListWidget for the wayside occupancies checklist
-        self.wayside_occupancies = QListWidget()
-        self.wayside_occupancies.setStyleSheet("""
+        self.green_wayside_occupancies = QListWidget()
+        self.green_wayside_occupancies.setStyleSheet("""
+            QListWidget::item {
+                padding: 1px;  /* Add padding to increase item size */
+                font-size: 20px;  /* Increase font size to make items larger */
+            }
+        """)
+        self.red_wayside_occupancies = QListWidget()
+        self.red_wayside_occupancies.setStyleSheet("""
             QListWidget::item {
                 padding: 1px;  /* Add padding to increase item size */
                 font-size: 20px;  /* Increase font size to make items larger */
@@ -245,14 +257,23 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         """)
 
         # Create the wayside blocks list
-        self.wayside_blocks = [f'Green {i}' for i in range(1, 17)]  # Create block labels dynamically
+        self.green_wayside_blocks = [f'Green {i}' for i in range(1, 151)]
+        self.red_wayside_blocks  = [f'Red {i}' for i in range(1,76)]
 
         # Add the wayside blocks as options for the checklist
-        for block in self.wayside_blocks:
+        for block in self.green_wayside_blocks:
             block_option = QListWidgetItem(block)
             block_option.setFlags(block_option.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             block_option.setCheckState(Qt.CheckState.Unchecked)  # Initial status is unchecked
-            self.wayside_occupancies.addItem(block_option)
+            self.green_wayside_occupancies.addItem(block_option)
+        occupancies_layout.addWidget(self.green_wayside_occupancies)
+
+        for block in self.red_wayside_blocks:
+            block_option = QListWidgetItem(block)
+            block_option.setFlags(block_option.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            block_option.setCheckState(Qt.CheckState.Unchecked)  # Initial status is unchecked
+            self.red_wayside_occupancies.addItem(block_option)
+        occupancies_layout.addWidget(self.red_wayside_occupancies)
 
         # Add submit button
         self.submit_button = QPushButton("Submit")
@@ -261,103 +282,14 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         self.submit_button.clicked.connect(self.submit_test_bench)
 
         # Add the QListWidget to the layout
-        wayside_layout.addWidget(self.wayside_occupancies)
-
+        wayside_layout.addLayout(occupancies_layout)
         wayside_layout.addWidget(self.submit_button)
-
         # Set the final layout for the frame and add it to the grid layout
         wayside_frame.setLayout(wayside_layout)
         grid_layout.addWidget(wayside_frame, 0, 0, 1, 2)
-
-        # Layout for buttons
-        signals_frame = self.create_section_frame(250, 200)
-
-        # Layout for bottom half
-        signals_big_layout = QVBoxLayout()
-
-        # Label for Signals
-        signals_label = QLabel('Traffic Signals')
-        signals_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        signals_label.setStyleSheet("color: white; font-size: 20px;")
-        signals_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the label
-        signals_big_layout.addWidget(signals_label)
-
-        # Layout for the interactives
-        signals_small_layout = QHBoxLayout()
-
-        # Button for railway crossing
-        self.crossing_button = QPushButton("Railway Crossing")
-        self.crossing_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.crossing_button.setStyleSheet("background-color: green; color: white; font-size: 20px;")
-        self.crossing_button.clicked.connect(self.crossing_clicked)
-        signals_small_layout.addWidget(self.crossing_button)
-
-        # Button for switch
-        self.switch_button = QPushButton("5-->6")
-        self.switch_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px;")
-        self.switch_button.clicked.connect(self.switch_clicked)
-        signals_small_layout.addWidget(self.switch_button)
-
-        # Light on Blue #6
-        self.top_light = QPushButton("Top Track Light")
-        self.top_light.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.top_light.setStyleSheet("background-color: green; color: white; font-size: 20px;")
-        self.top_light.clicked.connect(self.top_light_clicked)
-        signals_small_layout.addWidget(self.top_light)        
-
-        # Light on Blue #11
-        self.bottom_light = QPushButton("Bottom Track Light")
-        self.bottom_light.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.bottom_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
-        self.bottom_light.clicked.connect(self.bottom_light_clicked)
-        signals_small_layout.addWidget(self.bottom_light)
-
-        signals_big_layout.addLayout(signals_small_layout)
-        signals_frame.setLayout(signals_big_layout)
-        grid_layout.addWidget(signals_frame, 1, 0, 1, 2)
         
         # Add the grid layout to the main layout provided as a parameter
         layout.addLayout(grid_layout)
-
-    # Handle what happend when the crossing is changed
-    def crossing_clicked(self):
-        self.crossing_status = not(self.crossing_status)
-        if self.crossing_status == False:
-            self.crossing_button.setStyleSheet("background-color: red; color: white; font-size: 20px")
-        else:
-            self.crossing_button.setStyleSheet("background-color: green; color: white; font-size: 20px")
-
-    # Handle what happens when the switch is changed
-    def switch_clicked(self):
-        self.switch_status = not(self.switch_status)
-
-        if self.switch_status == False:
-            self.switch_button.setText('5-->12')
-            self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
-        else:
-            self.switch_button.setText('5-->6')
-            self.switch_button.setStyleSheet("background-color: blue; color: white; font-size: 20px")
-
-    # Handle what happens when the top light changes states
-    def top_light_clicked(self):
-        self.top_light_status = not(self.top_light_status)
-        if self.top_light_status == False:
-            self.top_light.setText('Top Track Light')
-            self.top_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
-        else:
-            self.top_light.setText('Top Track Light')
-            self.top_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
-
-    # Handle what happens when the bottom light changes states
-    def bottom_light_clicked(self):
-        self.bottom_light_status = not(self.bottom_light_status)
-        if self.bottom_light_status == False:
-            self.bottom_light.setText('Bottom Track Light')
-            self.bottom_light.setStyleSheet("background-color: red; color: white; font-size: 20px")
-        else:
-            self.bottom_light.setText('Bottom Track Light')
-            self.bottom_light.setStyleSheet("background-color: green; color: white; font-size: 20px")
 
     # Handle the user confirming their Test Bench selection for occupancies
     def submit_test_bench(self):
@@ -487,57 +419,19 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         # Add Hbox for upload/dispatch buttons
         self.upload_dispatch_layout = QHBoxLayout()
 
-        # Add the upload button
-        self.upload_button = QPushButton('Upload a Schedule')
-        self.upload_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.upload_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 18px")
-        self.upload_button.clicked.connect(self.upload_clicked)
-        self.upload_dispatch_layout.addWidget(self.upload_button)
+        # Add the upload button for green line
+        self.green_upload_button = QPushButton('Upload a Schedule for Green Line')
+        self.green_upload_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.green_upload_button.setStyleSheet("background-color: green; color: white; font-size: 18px")
+        self.green_upload_button.clicked.connect(self.green_upload_clicked)
+        self.upload_dispatch_layout.addWidget(self.green_upload_button)
 
-        # Add a Vbox Layout for all of the sub buttons for dispatching
-        self.dispatch_options_layout = QVBoxLayout()
-
-        # Add the label for Green Line
-        self.green_line_label = QLabel('Green Line')
-        self.green_line_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.green_line_label.setStyleSheet("background-color: gray; color: white; font-size: 18px")
-        self.green_line_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-        self.dispatch_options_layout.addWidget(self.green_line_label)
-
-        # Add the label for train selection when in auto mode
-        self.schedule_train_label = QLabel('Select Train')
-        self.schedule_train_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.schedule_train_label.setStyleSheet("background-color: gray; color: white; font-size: 18px")
-        self.schedule_train_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-        self.dispatch_options_layout.addWidget(self.schedule_train_label)
-
-        # Add Hbox for for station selection and time enterance
-        self.station_and_time_layout = QHBoxLayout()
-
-        # Add the label for station selection when in auto mode
-        self.station_select_label = QLabel('Select Station')
-        self.station_select_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.station_select_label.setStyleSheet("background-color: gray; color: white; font-size: 18px")
-        self.station_select_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-        self.station_and_time_layout.addWidget(self.station_select_label)
-
-        # Add the label for time entrance when in auto mode
-        self.time_select_label = QLabel('Arrival Time')
-        self.time_select_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.time_select_label.setStyleSheet("background-color: gray; color: white; font-size: 18px")
-        self.time_select_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-        self.station_and_time_layout.addWidget(self.time_select_label)
-
-        # Add station and time sections to layout
-        self.dispatch_options_layout.addLayout(self.station_and_time_layout)
-
-        # Add a confirm button for dispatching a train
-        self.confirm_dispatch_button = QPushButton("Confirm")
-        self.confirm_dispatch_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.confirm_dispatch_button.setStyleSheet("background-color: gray; color: white; font-size: 18px;")
-        self.dispatch_options_layout.addWidget(self.confirm_dispatch_button)
-
-        self.upload_dispatch_layout.addLayout(self.dispatch_options_layout)
+        # Add the upload button for red line
+        self.red_upload_button = QPushButton('Upload a Schedule for Red Line')
+        self.red_upload_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.red_upload_button.setStyleSheet("background-color: red; color: white; font-size: 18px")
+        self.red_upload_button.clicked.connect(self.red_upload_clicked)
+        self.upload_dispatch_layout.addWidget(self.red_upload_button)
 
         # Add upload/dispatch button to QHBoxLayout
         mode_layout.addLayout(self.upload_dispatch_layout)
@@ -559,12 +453,19 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         dispatch_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         dispatch_layout.addWidget(dispatch_label)
 
-        # Add widgets for dispatch rate (placeholders)
-        self.rate_label = QLabel("Trains/hr")
-        self.rate_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.rate_label.setStyleSheet("background-color: green; color: white; font-size: 16px;")
-        self.rate_label.setAlignment(Qt.AlignmentFlag.AlignCenter) # Center the text
-        dispatch_layout.addWidget(self.rate_label)
+        # Add widgets for dispatch rate
+        self.green_rate_label = QLabel("Trains/hr")
+        self.green_rate_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.green_rate_label.setStyleSheet("background-color: green; color: white; font-size: 16px;")
+        self.green_rate_label.setAlignment(Qt.AlignmentFlag.AlignCenter) # Center the text
+        dispatch_layout.addWidget(self.green_rate_label)
+
+        self.red_rate_label = QLabel("Trains/hr")
+        self.red_rate_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.red_rate_label.setStyleSheet("background-color: red; color: white; font-size: 16px;")
+        self.red_rate_label.setAlignment(Qt.AlignmentFlag.AlignCenter) # Center the text
+        dispatch_layout.addWidget(self.red_rate_label)
+
         dispatch_frame.setLayout(dispatch_layout)
         grid_layout.addWidget(dispatch_frame, 2, 0)
 
@@ -616,27 +517,59 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         blocks_frame = self.create_section_frame(650, 225)
         blocks_layout = QVBoxLayout()
 
+        self.label_and_switch_layout = QHBoxLayout()
+
         # Label for Block Occupancies
         block_occupancies_label = QLabel("Block Occupancies")
         block_occupancies_label.setStyleSheet("color: white; font-size: 20px;")
         block_occupancies_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-        blocks_layout.addWidget(block_occupancies_label)
+        self.label_and_switch_layout.addWidget(block_occupancies_label)
 
-        # Create grid for the blocks
-        self.blocks_grid_layout = QGridLayout()
+        # Switch for toggling view
+        block_occupancies_toggle = QPushButton("Toggle View")
+        block_occupancies_toggle.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        block_occupancies_toggle.setStyleSheet("background-color: #772ce8; color: white; font-size: 12px")
+        block_occupancies_toggle.clicked.connect(self.occupancies_view_clicked)
+        self.label_and_switch_layout.addWidget(block_occupancies_toggle)
 
+        blocks_layout.addLayout(self.label_and_switch_layout)
+
+        # Create green blocks grid
+        self.green_blocks_widget = QWidget()
+        self.green_blocks_grid_layout = QGridLayout(self.green_blocks_widget)
         number = 1
-        # Create 10x15 grid
+        # Create 10x15 grid for green
         for row in range(10):
             for col in range(15):
                 block_label = QLabel(str(number))  # Convert number to string for QLabel text
                 block_label.setStyleSheet("background-color: green; color: white; font-size: 10px;")
                 block_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-                self.blocks_grid_layout.addWidget(block_label, row, col)
+                self.green_blocks_grid_layout.addWidget(block_label, row, col)
                 self.block_labels['Green', number] = block_label
                 number += 1
+        blocks_layout.addWidget(self.green_blocks_widget)
 
-        blocks_layout.addLayout(self.blocks_grid_layout)
+        # Create red blocks grid
+        self.red_blocks_widget = QWidget()
+        self.red_blocks_grid_layout = QGridLayout(self.red_blocks_widget)
+        number = 1
+        # Create 7x11 grid for red
+        for row in range(7):
+            for col in range(11):
+                # Skip the last cell (row 6, column 10)
+                if row == 6 and col == 10:
+                    continue
+                block_label = QLabel(str(number))  # Convert number to string for QLabel text
+                block_label.setStyleSheet("background-color: red; color: white; font-size: 14px;")
+                block_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
+                self.red_blocks_grid_layout.addWidget(block_label, row, col)
+                self.block_labels['Red', number] = block_label
+                number += 1
+        blocks_layout.addWidget(self.red_blocks_widget)
+
+        # Initially show green grid and hide red grid
+        self.red_blocks_widget.hide()
+
         blocks_frame.setLayout(blocks_layout)
         grid_layout.addWidget(blocks_frame, 3, 0, 1, 2)
         layout.addLayout(grid_layout)
@@ -927,7 +860,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         else:
             # Switch to Manual Mode
             self.mode_button.setText('Current Mode: Manual Mode')
-            self.mode_button.setStyleSheet("background-color: green; color: white; font-size: 18px")
+            self.mode_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 18px")
 
         # Update the button states based on the new mode
         self.update_mode_button_state()
@@ -936,141 +869,168 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
     def update_mode_button_state(self):
         # No need to disconnect any signals, just update the state
         if self.automatic_mode:
-            # Enable upload button
-            self.upload_button.setEnabled(True)
-            self.upload_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 18px")
             
             # Delete all previous widgets to turn them into labels
-            self.dispatch_options_layout.removeWidget(self.green_line_label)
+            self.green_dispatch_options_layout.removeWidget(self.green_line_label)
             self.green_line_label.deleteLater()
-            self.dispatch_options_layout.removeWidget(self.schedule_train_combo_box)
-            self.schedule_train_combo_box.deleteLater()
-            self.station_and_time_layout.removeWidget(self.station_select_combo_box)
-            self.station_select_combo_box.deleteLater()
-            self.station_and_time_layout.removeWidget(self.time_select_edit)
-            self.time_select_edit.deleteLater()
-            self.dispatch_options_layout.removeWidget(self.confirm_dispatch_button)
-            self.confirm_dispatch_button.deleteLater()
-            self.dispatch_options_layout.deleteLater()
-            self.station_and_time_layout.deleteLater()
+            self.green_dispatch_options_layout.removeWidget(self.green_schedule_train_combo_box)
+            self.green_schedule_train_combo_box.deleteLater()
+            self.green_station_and_time_layout.removeWidget(self.green_station_select_combo_box)
+            self.green_station_select_combo_box.deleteLater()
+            self.green_station_and_time_layout.removeWidget(self.green_time_select_edit)
+            self.green_time_select_edit.deleteLater()
+            self.green_dispatch_options_layout.removeWidget(self.green_confirm_dispatch_button)
+            self.green_confirm_dispatch_button.deleteLater()
+            self.green_dispatch_options_layout.deleteLater()
+            self.green_station_and_time_layout.deleteLater()
 
-            # Add a Vbox Layout for all of the sub buttons for dispatching
-            self.dispatch_options_layout = QVBoxLayout()
+            self.red_dispatch_options_layout.removeWidget(self.red_line_label)
+            self.red_line_label.deleteLater()
+            self.red_dispatch_options_layout.removeWidget(self.red_schedule_train_combo_box)
+            self.red_schedule_train_combo_box.deleteLater()
+            self.red_station_and_time_layout.removeWidget(self.red_station_select_combo_box)
+            self.red_station_select_combo_box.deleteLater()
+            self.red_station_and_time_layout.removeWidget(self.red_time_select_edit)
+            self.red_time_select_edit.deleteLater()
+            self.red_dispatch_options_layout.removeWidget(self.red_confirm_dispatch_button)
+            self.red_confirm_dispatch_button.deleteLater()
+            self.red_dispatch_options_layout.deleteLater()
+            self.red_station_and_time_layout.deleteLater()
 
-            # Add the label for Green Line
-            self.green_line_label = QLabel('Green Line')
-            self.green_line_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            self.green_line_label.setStyleSheet("background-color: gray; color: white; font-size: 18px")
-            self.green_line_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-            self.dispatch_options_layout.addWidget(self.green_line_label)
+            # Add Hbox for upload/dispatch buttons
+            self.upload_buttons_layout = QHBoxLayout()
 
-            # Add the label for train selection when in auto mode
-            self.schedule_train_label = QLabel('Select Train')
-            self.schedule_train_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            self.schedule_train_label.setStyleSheet("background-color: gray; color: white; font-size: 18px")
-            self.schedule_train_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-            self.dispatch_options_layout.addWidget(self.schedule_train_label)
+            # Add the upload button for green line
+            self.green_upload_button = QPushButton('Upload a Schedule for Green Line')
+            self.green_upload_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            self.green_upload_button.setStyleSheet("background-color: green; color: white; font-size: 18px")
+            self.green_upload_button.clicked.connect(self.green_upload_clicked)
+            self.upload_dispatch_layout.addWidget(self.green_upload_button)
 
-            # Add Hbox for station selection and time enterance
-            self.station_and_time_layout = QHBoxLayout()
+            # Add the upload button for red line
+            self.red_upload_button = QPushButton('Upload a Schedule for Red Line')
+            self.red_upload_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            self.red_upload_button.setStyleSheet("background-color: red; color: white; font-size: 18px")
+            self.red_upload_button.clicked.connect(self.red_upload_clicked)
+            self.upload_dispatch_layout.addWidget(self.red_upload_button)
 
-            # Add the label for station selection when in auto mode
-            self.station_select_label = QLabel('Select Station')
-            self.station_select_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            self.station_select_label.setStyleSheet("background-color: gray; color: white; font-size: 18px")
-            self.station_select_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-            self.station_and_time_layout.addWidget(self.station_select_label)
-
-            # Add the label for time entrance when in auto mode
-            self.time_select_label = QLabel('Arrival Time')
-            self.time_select_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            self.time_select_label.setStyleSheet("background-color: gray; color: white; font-size: 18px")
-            self.time_select_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-            self.station_and_time_layout.addWidget(self.time_select_label)
-
-            # Add station and time sections to layout
-            self.dispatch_options_layout.addLayout(self.station_and_time_layout)
-
-            # Add a confirm button for dispatching a train
-            self.confirm_dispatch_button = QPushButton("Confirm")
-            self.confirm_dispatch_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            self.confirm_dispatch_button.setStyleSheet("background-color: gray; color: white; font-size: 18px;")
-            self.dispatch_options_layout.addWidget(self.confirm_dispatch_button)
-
-            self.upload_dispatch_layout.addLayout(self.dispatch_options_layout)
+            self.upload_dispatch_layout.addLayout(self.upload_buttons_layout)
 
         else:
-            # Disable upload button
-            self.upload_button.setEnabled(False)
-            self.upload_button.setStyleSheet("background-color: gray; color: white; font-size: 18px")
+            # Delete upload buttons
+            self.upload_dispatch_layout.removeWidget(self.green_upload_button)
+            self.green_upload_button.deleteLater()
+            self.upload_dispatch_layout.removeWidget(self.red_upload_button)
+            self.red_upload_button.deleteLater()
 
-            # Delete all previous labels to turn them into widgets
-            self.dispatch_options_layout.removeWidget(self.green_line_label)
-            self.green_line_label.deleteLater()
-            self.dispatch_options_layout.removeWidget(self.schedule_train_label)
-            self.schedule_train_label.deleteLater()
-            self.station_and_time_layout.removeWidget(self.station_select_label)
-            self.station_select_label.deleteLater()
-            self.station_and_time_layout.removeWidget(self.time_select_label)
-            self.time_select_label.deleteLater()
-            self.dispatch_options_layout.removeWidget(self.confirm_dispatch_button)
-            self.confirm_dispatch_button.deleteLater()
-            self.dispatch_options_layout.deleteLater()
-            self.station_and_time_layout.deleteLater()
+            self.dispatch_layout = QHBoxLayout()
 
-            # Add a Vbox Layout for all of the sub buttons for dispatching
-            self.dispatch_options_layout = QVBoxLayout()
+            # Add a Vbox Layout for all of the sub buttons for dispatching green
+            self.green_dispatch_options_layout = QVBoxLayout()
 
             # Add the label for Green Line
             self.green_line_label = QLabel('Green Line')
             self.green_line_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             self.green_line_label.setStyleSheet("background-color: green; color: white; font-size: 18px")
             self.green_line_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
-            self.dispatch_options_layout.addWidget(self.green_line_label)
+            self.green_dispatch_options_layout.addWidget(self.green_line_label)
 
             # Add combo box for train select
-            self.schedule_train_combo_box = QComboBox()
-            self.schedule_train_combo_box.setPlaceholderText('Select Train')
-            self.schedule_train_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            self.schedule_train_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
-            self.schedule_train_combo_box.addItem('New Train')
+            self.green_schedule_train_combo_box = QComboBox()
+            self.green_schedule_train_combo_box.setPlaceholderText('Select Train')
+            self.green_schedule_train_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            self.green_schedule_train_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+            self.green_schedule_train_combo_box.addItem('New Train')
             for train in self.trains:
-                self.schedule_train_combo_box.addItem(train.name)
-            self.dispatch_options_layout.addWidget(self.schedule_train_combo_box)
+                self.green_schedule_train_combo_box.addItem(train.name)
+            self.green_dispatch_options_layout.addWidget(self.green_schedule_train_combo_box)
 
             # Add Hbox for for station selection and time enterance
-            self.station_and_time_layout = QHBoxLayout()
+            self.green_station_and_time_layout = QHBoxLayout()
 
             # Add combo box for station selection
-            self.station_select_combo_box = QComboBox()
-            self.station_select_combo_box.setPlaceholderText('Select Station')
-            self.station_select_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            self.station_select_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
-            self.station_select_combo_box.addItems(["GLENBURY", "DORMONT", "MT LEBANON", "POPLAR", "CASTLE SHANNON","OVERBROOK", "INGLEWOOD", "CENTRAL", "WHITED", "EDGEBROOK", "PIONEER", "LEBRON", "SOUTH BANK"])
-            self.station_and_time_layout.addWidget(self.station_select_combo_box)
+            self.green_station_select_combo_box = QComboBox()
+            self.green_station_select_combo_box.setPlaceholderText('Select Station')
+            self.green_station_select_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            self.green_station_select_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+            self.green_station_select_combo_box.addItems(["GLENBURY", "DORMONT", "MT LEBANON", "POPLAR", "CASTLE SHANNON","OVERBROOK", "INGLEWOOD", "CENTRAL", "WHITED", "EDGEBROOK", "PIONEER", "LEBRON", "SOUTH BANK"])
+            self.green_station_and_time_layout.addWidget(self.green_station_select_combo_box)
 
             # Add time entrance
-            self.time_select_edit = QLineEdit()
+            self.green_time_select_edit = QLineEdit()
             time_regex = QRegularExpression(r"^(2[0-3]|[01]\d):([0-5]\d):([0-5]\d)$")
             validator = QRegularExpressionValidator(time_regex)
-            self.time_select_edit.setValidator(validator)
-            self.time_select_edit.setPlaceholderText("Arrival Time")
-            self.station_and_time_layout.addWidget(self.time_select_edit)
+            self.green_time_select_edit.setValidator(validator)
+            self.green_time_select_edit.setPlaceholderText("Arrival Time")
+            self.green_station_and_time_layout.addWidget(self.green_time_select_edit)
 
             # Add station and time sections to layout
-            self.dispatch_options_layout.addLayout(self.station_and_time_layout)
+            self.green_dispatch_options_layout.addLayout(self.green_station_and_time_layout)
 
             # Enable Confirm button
-            self.confirm_dispatch_button = QPushButton("Confirm")
-            self.confirm_dispatch_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            self.confirm_dispatch_button.setStyleSheet("background-color: green; color: white; font-size: 18px;")
-            self.confirm_dispatch_button.clicked.connect(self.submit_dispatch)
-            self.dispatch_options_layout.addWidget(self.confirm_dispatch_button)
+            self.green_confirm_dispatch_button = QPushButton("Confirm")
+            self.green_confirm_dispatch_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            self.green_confirm_dispatch_button.setStyleSheet("background-color: green; color: white; font-size: 18px;")
+            self.green_confirm_dispatch_button.clicked.connect(self.green_submit_dispatch)
+            self.green_dispatch_options_layout.addWidget(self.green_confirm_dispatch_button)
 
-            self.upload_dispatch_layout.addLayout(self.dispatch_options_layout)
+            self.dispatch_layout.addLayout(self.green_dispatch_options_layout)
 
-    # Open file explorer on the user's device
-    def upload_clicked(self):        
+            # Add a Vbox Layout for all of the sub buttons for dispatching green
+            self.red_dispatch_options_layout = QVBoxLayout()
+
+            # Add the label for Red Line
+            self.red_line_label = QLabel('Red Line')
+            self.red_line_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            self.red_line_label.setStyleSheet("background-color: red; color: white; font-size: 18px")
+            self.red_line_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
+            self.red_dispatch_options_layout.addWidget(self.red_line_label)
+
+            # Add combo box for train select
+            self.red_schedule_train_combo_box = QComboBox()
+            self.red_schedule_train_combo_box.setPlaceholderText('Select Train')
+            self.red_schedule_train_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            self.red_schedule_train_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+            self.red_schedule_train_combo_box.addItem('New Train')
+            for train in self.trains:
+                self.red_schedule_train_combo_box.addItem(train.name)
+            self.red_dispatch_options_layout.addWidget(self.red_schedule_train_combo_box)
+
+            # Add Hbox for for station selection and time enterance
+            self.red_station_and_time_layout = QHBoxLayout()
+
+            # Add combo box for station selection
+            self.red_station_select_combo_box = QComboBox()
+            self.red_station_select_combo_box.setPlaceholderText('Select Station')
+            self.red_station_select_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            self.red_station_select_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+            self.red_station_select_combo_box.addItems(["SHADYSIDE", "HERRON AVE", "SWISSVILLE", "PENN STATION", "STEEL PLAZA", "FIRST AVE", "STATION SQUARE", "SOUTH HILLS JUNCTION"])
+            self.red_station_and_time_layout.addWidget(self.red_station_select_combo_box)
+
+            # Add time entrance
+            self.red_time_select_edit = QLineEdit()
+            time_regex = QRegularExpression(r"^(2[0-3]|[01]\d):([0-5]\d):([0-5]\d)$")
+            validator = QRegularExpressionValidator(time_regex)
+            self.red_time_select_edit.setValidator(validator)
+            self.red_time_select_edit.setPlaceholderText("Arrival Time")
+            self.red_station_and_time_layout.addWidget(self.red_time_select_edit)
+
+            # Add station and time sections to layout
+            self.red_dispatch_options_layout.addLayout(self.red_station_and_time_layout)
+
+            # Enable Confirm button
+            self.red_confirm_dispatch_button = QPushButton("Confirm")
+            self.red_confirm_dispatch_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            self.red_confirm_dispatch_button.setStyleSheet("background-color: green; color: white; font-size: 18px;")
+            self.red_confirm_dispatch_button.clicked.connect(self.red_submit_dispatch)
+            self.red_dispatch_options_layout.addWidget(self.red_confirm_dispatch_button)
+
+            self.dispatch_layout.addLayout(self.red_dispatch_options_layout)
+
+            self.upload_dispatch_layout.addLayout(self.dispatch_layout)
+
+    # Allow user to upload a schedule for green line
+    def green_upload_clicked(self):        
         # Open file explorer on the user's device
         file_path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Microsoft Excel Worksheet (*.xlsx);")
         if file_path:
@@ -1101,8 +1061,161 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         # Add the QComboBox to the layout
         self.train_data_big_layout.addWidget(self.train_data_combo_box)
 
-    # Create the train object
-    def submit_dispatch(self):
+    # Allow user to upload a schedule for red line
+    def red_upload_clicked(self):        
+        # Open file explorer on the user's device
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Microsoft Excel Worksheet (*.xlsx);")
+        if file_path:
+            pass            
+            try:
+                # Read the Excel file
+                new_trains = myScheduleReader.get_green_routes(file_path)
+                for i in new_trains:
+                    self.trains.append(i)
+            
+            except Exception as e:
+                print(f"Error reading the Excel file: {e}")
+        else:
+            print("No file selected.")
+
+        self.train_data_big_layout.removeWidget(self.train_label)
+        self.train_label.deleteLater()
+
+        # Create the QComboBox
+        self.train_data_combo_box = QComboBox()
+        self.train_data_combo_box.setPlaceholderText('Train')
+        self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+        for train in self.trains:
+            self.train_data_combo_box.addItem(train.name)
+        self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
+
+        # Add the QComboBox to the layout
+        self.train_data_big_layout.addWidget(self.train_data_combo_box)
+
+    # Process manual dispatch for green line
+    def green_submit_dispatch(self):
+        print('------------------------------------------------------')
+        selected_name = self.green_schedule_train_combo_box.currentText()
+        if selected_name == 'New Train': # Create a new train
+            if len(self.trains) == 0:
+                new_train = 'Train 1'
+            else:
+                new_train = 'Train '+str(len(self.trains) + 1)
+
+            new_train = Train(new_train, 'Green')
+            print(new_train.name, 'on the Green line will arrive at', self.green_station_select_combo_box.currentText() ,'at', self.green_time_select_edit.text())
+            rate_string = str(len(self.trains) + 1) +' Trains/hr'
+            self.green_rate_label.setText(rate_string)
+            self.green_schedule_train_combo_box.addItem(new_train.name)
+            
+            new_train.add_stop(self.green_station_select_combo_box.currentText())
+            new_train.get_authority_from_map()
+
+            # Set time to release train from yard
+            time = self.green_time_select_edit.text()
+            # Split the time string into hours, minutes, and seconds
+            hours, minutes, seconds = map(int, time.split(":"))
+            time_in_seconds = hours * 3600 + minutes * 60 + seconds
+            hours = int(time_in_seconds // 3600)
+            minutes = int((time_in_seconds % 3600) //60)
+            seconds = int(time_in_seconds % 60)
+            print('arrival time =', hours, minutes, seconds)
+            new_train.set_first_arrival_time(time_in_seconds)
+            hours = new_train.dispatch_time // 3600
+            minutes = (new_train.dispatch_time % 3600) //60
+            seconds = new_train.dispatch_time % 60
+            print('dispatch time =', hours, minutes, seconds)
+
+            # Convert authorities to tuples for a list
+            auth_list = []
+            for authority in new_train.route_authorities:
+                auth_list.append([new_train.name, authority])
+            
+            # Populate the stations
+            self.yard.add_authority(auth_list[0])
+            new_train.route_authorities.popleft()
+            del auth_list[0]
+
+            print('Authority list is', auth_list)
+
+            for stop in new_train.station_stops:
+                for station in self.green_stations:
+                    if station.name == stop:
+                        station.add_authority(auth_list[0])
+                    elif station.name in ('STATION; POPLAR', 'STATION; CASTLE SHANNON', 'STATION; EDGEBROOK', 'STATION; PIONEER', 'STATION; SOUTH BANK'):
+                        station.add_authority([new_train.name, -1])
+                    elif station.name == 'STATION; YARD':
+                        pass
+                    else:
+                        station.add_authority([new_train.name, -1])
+                        station.add_authority([new_train.name, -1])
+
+            if len(self.trains) == 0: # If we are adding the first train, delete the label
+                # Remove the current QLabel
+                self.train_data_big_layout.removeWidget(self.train_label)
+                self.train_label.deleteLater()  # Delete QLabel
+            else:
+                # Remove the QComboBox
+                self.train_data_big_layout.removeWidget(self.train_data_combo_box)
+                self.train_data_combo_box.deleteLater() # Delete QComboBox
+
+            self.trains.append(new_train)
+
+            # Create the QComboBox
+            self.train_data_combo_box = QComboBox()
+            self.train_data_combo_box.setPlaceholderText('Train')
+            self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+            self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+            for train in self.trains:
+                self.train_data_combo_box.addItem(train.name)
+            self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
+
+            # Add the QComboBox to the layout
+            self.train_data_big_layout.addWidget(self.train_data_combo_box)   
+
+            print('dispatching a train')
+            # Tell train controller to exist
+
+            # Put authority on the YARD block
+            self.authority_dict["line"] = "Green"
+            self.authority_dict["index"] = 0
+            popped_auth = self.yard.pop_authority()
+            self.authority_dict["authority"] = popped_auth[1]
+            while(1):
+                    response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                    if response.status_code == 200:
+                        break
+            self.wayside_vision_dict["line"] = "Green"
+            self.wayside_vision_dict["index"] = 2
+            self.wayside_vision_dict["output_block"] = 0
+            while(1):
+                try:
+                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
+                    response.raise_for_status()  # This will raise an error for 4xx/5xx responses
+
+                    # If successful, print the response data
+                    print("Success:", response.json())
+                    if response.status_code == 200:
+                        break
+
+                except requests.exceptions.HTTPError as http_err:
+                    # Print the HTTP error response
+                    print(f"HTTP error occurred: {http_err}")  # HTTP error details
+                    print("Response content:", response.text)   # Full response content
+
+                except Exception as err:
+                    # Catch any other exceptions
+                    print(f"Other error occurred: {err}")
+            self.trains[0].on_track = True
+        else: # Add a stop to the train
+            selected_train = next((train for train in self.trains if train.name == selected_name), None)
+            #selected_train.route_authorities.clear()
+            selected_train.add_stop(self.green_station_select_combo_box.currentText())
+            selected_train.get_authority_from_map()
+
+    # Process manual dispatch for red line
+    def red_submit_dispatch(self):
         print('------------------------------------------------------')
         selected_name = self.schedule_train_combo_box.currentText()
         if selected_name == 'New Train': # Create a new train
@@ -1271,6 +1384,19 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             block_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.recently_opened.clear()
+
+    # Switch the occupancies view to the other line
+    def occupancies_view_clicked(self):
+        self.viewing_green = not self.viewing_green
+        if self.viewing_green:  # Show green, hide red
+            self.green_blocks_widget.show()
+            self.red_blocks_widget.hide()
+        else:  # Show red, hide green
+            self.green_blocks_widget.hide()
+            self.red_blocks_widget.show()
+
+    
+
     
     # Function for receicing block occupancies from wayside
     def receive_block_occupancies(self):
