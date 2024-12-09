@@ -55,22 +55,32 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         self.green_stations = []
         self.yard = Station("STATION; YARD", [0])
         self.green_stations.append(self.yard)
-        self.glenbury = Station("STATION; GLENBURY", [65,114])
-        self.green_stations.append(self.glenbury)
-        self.dormont = Station("STATION; DORMONT", [73,105])
-        self.green_stations.append(self.dormont)
+        self.glenbury_out = Station("STATION; GLENBURY OUT", [65])
+        self.green_stations.append(self.glenbury_out)
+        self.glenbury_in = Station("STATION; GLENBURY IN", [114])
+        self.green_stations.append(self.glenbury_in)
+        self.dormont_out = Station("STATION; DORMONT OUT", [73])
+        self.green_stations.append(self.dormont_out)
+        self.dormont_in = Station("STATION; DORMONT IN", [105])
+        self.green_stations.append(self.dormont_in)
         self.mt_lebanon = Station("STATION; MT LEBANON", [77])
         self.green_stations.append(self.mt_lebanon)
         self.poplar = Station("STATION; POPLAR", [88])
         self.green_stations.append(self.poplar)
         self.castle_shannon = Station("STATION; CASTLE SHANNON", [96])
         self.green_stations.append(self.castle_shannon)
-        self.overbrook = Station("STATION; OVERBROOK", [123, 57])
-        self.green_stations.append(self.overbrook)
-        self.inglewood = Station("STATION; INGLEWOOD", [132, 48])
-        self.green_stations.append(self.inglewood)
-        self.central = Station("STATION; CENTRAL", [141, 39])
-        self.green_stations.append(self.central)
+        self.overbrook_out = Station("STATION; OVERBROOK OUT", [123])
+        self.green_stations.append(self.overbrook_out)
+        self.overbrook_in = Station("STATION; OVERBROOK IN", [57])
+        self.green_stations.append(self.overbrook_in)
+        self.inglewood_out = Station("STATION; INGLEWOOD OUT", [132])
+        self.green_stations.append(self.inglewood_out)
+        self.inglewood_in = Station("STATION; INGLEWOOD IN", [48])
+        self.green_stations.append(self.inglewood_in)
+        self.central_out = Station("STATION; CENTRAL OUT", [141])
+        self.green_stations.append(self.central_out)
+        self.central_in = Station("STATION; CENTRAL IN", [39])
+        self.green_stations.append(self.central_in)
         self.whited = Station("STATION; WHITED", [22])
         self.green_stations.append(self.whited)
         self.edgebrook = Station("STATION; EDGEBROOK", [9])
@@ -959,11 +969,12 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             self.green_station_select_combo_box.setPlaceholderText('Select Station')
             self.green_station_select_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             self.green_station_select_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
-            self.green_station_select_combo_box.addItems(["GLENBURY", "DORMONT", "MT LEBANON", "POPLAR", "CASTLE SHANNON","OVERBROOK", "INGLEWOOD", "CENTRAL", "WHITED", "EDGEBROOK", "PIONEER", "LEBRON", "SOUTH BANK"])
+            self.green_station_select_combo_box.addItems(["GLENBURY OUT", "DORMONT OUT", "MT LEBANON", "POPLAR", "CASTLE SHANNON","DORMONT IN", "OVERBROOK OUT", "INGLEWOOD OUT", "CENTRAL OUT", "WHITED", "EDGEBROOK", "PIONEER", "LEBRON", "SOUTH BANK", "CENTRAL IN", "INGLEWOOD IN", "OVERBROOK IN"])
             self.green_station_and_time_layout.addWidget(self.green_station_select_combo_box)
 
             # Add time entrance
             self.green_time_select_edit = QLineEdit()
+            self.green_time_select_edit.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
             time_regex = QRegularExpression(r"^(2[0-3]|[01]\d):([0-5]\d):([0-5]\d)$")
             validator = QRegularExpressionValidator(time_regex)
             self.green_time_select_edit.setValidator(validator)
@@ -1015,6 +1026,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
 
             # Add time entrance
             self.red_time_select_edit = QLineEdit()
+            self.red_time_select_edit.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
             time_regex = QRegularExpression(r"^(2[0-3]|[01]\d):([0-5]\d):([0-5]\d)$")
             validator = QRegularExpressionValidator(time_regex)
             self.red_time_select_edit.setValidator(validator)
@@ -1144,18 +1156,13 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             new_train.route_authorities.popleft()
             del auth_list[0]
 
-            print('Authority list is', auth_list)
-
             for stop in new_train.station_stops:
                 for station in self.green_stations:
-                    if station.name == stop:
-                        station.add_authority(auth_list[0])
-                    elif station.name in ('STATION; POPLAR', 'STATION; CASTLE SHANNON', 'STATION; EDGEBROOK', 'STATION; PIONEER', 'STATION; SOUTH BANK'):
-                        station.add_authority([new_train.name, -1])
-                    elif station.name == 'STATION; YARD':
+                    if station.name == 'STATION; YARD':
                         pass
+                    elif station.name == stop:
+                        station.add_authority(auth_list[0])
                     else:
-                        station.add_authority([new_train.name, -1])
                         station.add_authority([new_train.name, -1])
             
             if len(self.trains) == 0: # If we are adding the first train, delete the label
