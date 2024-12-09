@@ -412,7 +412,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         # Add the Mode button
         self.mode_button = QPushButton('Current Mode: Automatic Mode')
         self.mode_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.mode_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 18px")
+        self.mode_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 30px")
         self.mode_button.clicked.connect(self.mode_clicked)
         mode_layout.addWidget(self.mode_button)
 
@@ -855,12 +855,12 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         if self.automatic_mode:
             # Switch to Automatic Mode
             self.mode_button.setText('Current Mode: Automatic Mode')
-            self.mode_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 18px")
+            self.mode_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 30px")
 
         else:
             # Switch to Manual Mode
             self.mode_button.setText('Current Mode: Manual Mode')
-            self.mode_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 18px")
+            self.mode_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 30px")
 
         # Update the button states based on the new mode
         self.update_mode_button_state()
