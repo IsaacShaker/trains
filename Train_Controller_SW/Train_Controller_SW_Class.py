@@ -1,7 +1,7 @@
 import sys
 import time
 import requests
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, QElapsedTimer
 
 URL = 'http://127.0.0.1:5000'
 
@@ -58,6 +58,9 @@ class Train_Controller:
         self.beacon_info = 0
         self.train_id = id
         self.doors_to_open = "0"
+
+        self.sim_speed = 1
+        self.elapsed_timer = QElapsedTimer()  #To track elapsed time
 
         #Strings
         self.pa_announcement = ""
@@ -527,6 +530,8 @@ class Train_Controller:
 
     def open_l_door(self, sim_speed):
         self.set_l_door(True)
+        self.elapsed_timer.start()
+        self.sim_speed = sim_speed
         #self.set_doors_can_open(False)
 
         #JUST IN CURRENT
@@ -538,6 +543,8 @@ class Train_Controller:
 
     def open_r_door(self, sim_speed):
         self.set_r_door(True)
+        self.elapsed_timer.start()
+        self.sim_speed = sim_speed
         #self.set_doors_can_open(False)
 
         #JUST IN CURRENT
@@ -570,9 +577,26 @@ class Train_Controller:
         #     self.r_door_button.setEnabled(True)
 
 
+    #called when sim_speed is changed
+    def adjust_door_timer(self, new_sim_speed):
+        if self.r_door_timer.isActive() or self.l_door_timer.isActive():
 
+            #Stop the timer and calculate elapsed time in simulation
+            elapsed_real_time = self.elapsed_timer.elapsed() 
+            elapsed_sim_time = elapsed_real_time * self.sim_speed  
 
-    # To get the number of seconds that have passed since the start
-    #def get_seconds_since_start():
-        #return int(time.time() - start_time)
+            #Calculate remaining time in real-time
+            remaining_time = max(0, 60000 - elapsed_sim_time)
+
+            #Update simulation speed and restart the timer with adjusted time
+            self.sim_speed = new_sim_speed
+
+            #checks which door is active
+            if self.r_door_timer.isActive():
+                self.r_door_timer.start(int(remaining_time / self.sim_speed))
+            
+            if self.l_door_timer.isActive():
+                self.l_door_timer.start(int(remaining_time / self.sim_speed))
+
+            self.elapsed_timer.restart()
 

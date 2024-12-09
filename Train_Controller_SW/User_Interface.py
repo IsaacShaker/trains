@@ -66,7 +66,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.next_train_id = 0
         self.train_list = tc_list
         self.train_model_list = model_list
-        self.var_from_mitch = 25 # Simulation Speed
+        self.var_from_mitch = 10 # Simulation Speed
 
 
 
@@ -1034,6 +1034,10 @@ class Train_Controller_SW_UI(QMainWindow):
 
     #this function will be called anytime inside lights button is pressed 
     def i_light_pressed(self):
+
+        #testing changing sim speed
+        #self.change_timer(10)
+
         #checks if light is currently on or off
         if self.train_list[self.current_train].get_i_light() == False:
             #light must turn on
@@ -1048,6 +1052,10 @@ class Train_Controller_SW_UI(QMainWindow):
 
     #this function will be called anytime inside headlights button is pressed 
     def o_light_pressed(self):
+        
+        #testing changing sim speed
+        #self.change_timer(1)
+
         #checks if light is currently on or off
         if self.train_list[self.current_train].get_o_light() == False:
             #light must turn on
@@ -1523,7 +1531,11 @@ class Train_Controller_SW_UI(QMainWindow):
         self.var_from_mitch = sim_speed
         #change timer
         self.power_timer.setInterval(int(90/sim_speed))
-        self.train_list[self.current_train].set_T(sim_speed)
+
+        #adjust T
+        for train in self.train_list:
+            train.adjust_door_timer(sim_speed)
+            train.set_T(sim_speed)
 
 
 
