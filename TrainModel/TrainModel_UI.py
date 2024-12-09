@@ -68,7 +68,7 @@ class Train_UI(QMainWindow):
         self.train_controller_list = []
 
         self.train_list.add_train(self.train_controller_list)
-        # self.train_list.add_train(self.train_controller_list)
+        self.train_list.add_train(self.train_controller_list)
         # self.train_list.add_train(self.train_controller_list)
 
         self.setWindowTitle("Train Model")
@@ -135,6 +135,10 @@ class Train_UI(QMainWindow):
     def getTrainControllerList(self, tc_list):
         self.train_controller_list=tc_list
         print(f"tc index: {len(self.train_controller_list)}")
+
+    def update_train_list(self):
+        self.train_list.add_train(self.train_controller_list)
+        self.train_dropdown.addItem(f"Train {len(self.train_controller_list)}")
 
     def create_user_mode_page(self):
         user_mode_widget = QWidget()
