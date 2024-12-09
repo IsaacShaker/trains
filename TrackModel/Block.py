@@ -126,7 +126,7 @@ class Block:
             self.train = train
             if self.authority != None and not FOrB:
                 self.train.set_auth(self.authority)
-            if self.commandedSpeed != None and not FOrB and self.train.get_auth() != 0:
+            if self.commandedSpeed != None and not FOrB:
                 self.train.set_speed(self.commandedSpeed)
             if isinstance(self.station, Station) and (self.train.get_fLocOnBlock() > (self.length/2) - 17.1) and (self.train.get_fLocOnBlock() < (self.length/2) - 15.1) and diff == 0:
                 self.station.set_trainIn(True)

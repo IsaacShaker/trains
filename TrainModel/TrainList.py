@@ -10,6 +10,8 @@ class TrainList:
         train_model = TrainModel(tc_list)
         train_model.ID = len(self.train_list)
         self.train_list.append(train_model)
+        print("successfully added a train")
+        print("Num trains: ", len(self.train_list))
     
 
     def remove_train(self, train_name):
@@ -33,5 +35,4 @@ class TrainList:
 
     def __getitem__(self, index):
         """Allow indexing like train_list[0]."""
-
         return self.train_list[index]

@@ -63,7 +63,7 @@ class Train_Controller_SW_UI(QMainWindow):
         super(Train_Controller_SW_UI, self).__init__()
 
         self.auth_counter = 0
-        self.next_train_id = 0
+        self.next_train_id = 1
         self.train_list = tc_list
         self.train_model_list = model_list
         self.var_from_mitch = 25 # Simulation Speed
@@ -140,7 +140,7 @@ class Train_Controller_SW_UI(QMainWindow):
 
         #create dropdown menu with 3 trains in it already
         self.train_selection = QComboBox(self)
-        self.train_selection.addItems(["Train 0"])
+        self.train_selection.addItems(["Train 1"])
 
         # Sends the current index (position) of the selected item.
         self.train_selection.currentIndexChanged.connect( self.index_changed )
@@ -1412,7 +1412,8 @@ class Train_Controller_SW_UI(QMainWindow):
 
             #once counter reaches 40, sends updated amount moved to track model
             if self.auth_counter == 40:
-                self.auth_counter = 0
+                if train.get_train_id() == len(self.train_list):
+                    self.auth_counter = 0
                 train.send_auth_diff()
 
 
@@ -1512,7 +1513,7 @@ class Train_Controller_SW_UI(QMainWindow):
     def add_train(self):
         new_train = Train_Controller(self.next_train_id, self.train_model_list)
 
-        if self.next_train_id > 0:
+        if self.next_train_id > 1:
             self.train_selection.addItems(["Train " + str(self.next_train_id)])
 
         #increment

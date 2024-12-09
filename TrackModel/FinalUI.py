@@ -222,10 +222,10 @@ class TrackUI(QMainWindow):
         
             
         #Train (temporary until we figure out how to initialize a train)
-        tempTrain = Train(10, greenBlocks[0], 32.2, 0, "Green")
-        trains.addTrain(tempTrain)
-        auth.append(0.0)
-        cmd.append(0.0)
+        # tempTrain = Train(10, greenBlocks[0], 32.2, 0, "Green")
+        # trains.addTrain(tempTrain)
+        # auth.append(0.0)
+        # cmd.append(0.0)
     
     #For Wayside
     def get_occupancies(self):
@@ -282,6 +282,7 @@ class TrackUI(QMainWindow):
     def set_indexed_train_auth_diff(self,index,diff):
         if initialized == False:
             return
+        print(str(index))
         trains.trainList[index].moveTrain(diff)
 
     def train_in_station(self, index):
@@ -294,12 +295,12 @@ class TrackUI(QMainWindow):
         authAndSpeed["commandedSpeeds"]=trains.commandedSpeeds
         if launcher:
             response = requests.post(URL + "/train-model/get-data/authority-cmd-speed", json=authAndSpeed)
-        
-    def red_post_auth_and_cmd_speed(self):
-        authAndSpeed["authorities"]=trains.authorities
-        authAndSpeed["commandedSpeeds"]=trains.commandedSpeeds
-        if launcher:
-            response = requests.post(URL + "/train-model/get-data/authority-cmd-speed", json=authAndSpeed)
+
+    def make_train(self, line):
+        tempTrain = Train(10, greenBlocks[0], 32.2, 0, line)
+        trains.addTrain(tempTrain)
+        auth.append(0.0)
+        cmd.append(0.0)
 
     #initializes all maps, tables, test benches
     def create_tabs(self):

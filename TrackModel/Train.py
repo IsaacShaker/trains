@@ -142,6 +142,7 @@ class Train:
     def set_info(self, authority, speed):
         self.authority = authority
         self.speed = speed
+        
     def set_auth(self, auth):
         self.authority = auth
     def set_speed(self, speed):
