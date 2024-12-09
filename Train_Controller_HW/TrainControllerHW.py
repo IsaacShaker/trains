@@ -6,6 +6,7 @@ import serial
 
 URL = 'http://127.0.0.1:5000'
 
+sim_speed = 10
 class Train_Controller_HW_UI(QMainWindow):
     def __init__(self, model_list):
         super().__init__()
@@ -18,13 +19,12 @@ class Train_Controller_HW_UI(QMainWindow):
         self.ser = None
         self.connection_status = "Not Connected"
 
-        self.init_ui()
-        #self.open_serial_port()
         self.timer = QTimer(self)
-        #self.timer_to_track_model = QTimer(self)
-
+        self.timer.setInterval(90)
         self.timer.timeout.connect(self.read_serial)
-        self.timer.start(90)  # Read every 90ms
+        self.timer.start()  # Read every 90ms
+        
+        self.init_ui()
         
         self.train_model_list = model_list
 
@@ -85,10 +85,10 @@ class Train_Controller_HW_UI(QMainWindow):
         self.train_instantion = True
 
     #Inputs from world clock class
-        self.sim_speed = 1
+        self.sim_speed = sim_speed
     
     #Other Timing Variables
-        self.T = .09 * 10 #Represents the period at which current_authority and commanded_power are calculated - Changes in relation to clock speed
+        self.T = .09 * self.sim_speed #Represents the period at which current_authority and commanded_power are calculated - Changes in relation to clock speed
         self.counter = 1
     #Output dictionaries
         self.auth_diff_dict = {
@@ -379,6 +379,7 @@ class Train_Controller_HW_UI(QMainWindow):
                     self.calculate_commanded_power()
                     self.update_current_authority()
                     self.write_to_serial()
+                    #self.timer.setInterval(int(90/self.sim_speed))
 
                     #self.set_commanded_temperature(int(values[0]))
                     #self.set_brake_state(int(values[1]))
@@ -413,7 +414,7 @@ class Train_Controller_HW_UI(QMainWindow):
             "{:.1f}".format(self.mps_to_mph(self.get_actual_velocity())) + "," +         #7
             "{:.1f}".format(self.mps_to_mph(self.get_commanded_velocity())) + "," +      #8
             str(self.get_required_doors()) + "," +                                       #9
-            str(self.get_T()) + "," +                                                    #10
+            str(self.sim_speed) + "," +                                                    #10
             "{:.3f}".format(self.get_commanded_power()) + "," +                          #11
             str(self.get_in_tunnel()) + "," +                                            #12                                             
             str(self.get_at_stop()) + "\n"                                               #13
@@ -423,7 +424,7 @@ class Train_Controller_HW_UI(QMainWindow):
     def send_to_track_model(self, input):
         self.auth_diff_dict["auth_diff"] = input
         response = requests.post(URL + "/track-model/get-data/auth_difference", json=self.auth_diff_dict)
-        print (f"UPDATED AUTHORITY: {self.current_authority}")
+        print (f"UPDATED AUTHORITY: {input}")
 
     def compare_and_set(self, read_value, backend_value, set_function):
         if(read_value != backend_value):
