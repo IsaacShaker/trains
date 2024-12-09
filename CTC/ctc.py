@@ -55,22 +55,32 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         self.green_stations = []
         self.yard = Station("STATION; YARD", [0])
         self.green_stations.append(self.yard)
-        self.glenbury = Station("STATION; GLENBURY", [65,114])
-        self.green_stations.append(self.glenbury)
-        self.dormont = Station("STATION; DORMONT", [73,105])
-        self.green_stations.append(self.dormont)
+        self.glenbury_out = Station("STATION; GLENBURY OUT", [65])
+        self.green_stations.append(self.glenbury_out)
+        self.glenbury_in = Station("STATION; GLENBURY IN", [114])
+        self.green_stations.append(self.glenbury_in)
+        self.dormont_out = Station("STATION; DORMONT OUT", [73])
+        self.green_stations.append(self.dormont_out)
+        self.dormont_in = Station("STATION; DORMONT IN", [105])
+        self.green_stations.append(self.dormont_in)
         self.mt_lebanon = Station("STATION; MT LEBANON", [77])
         self.green_stations.append(self.mt_lebanon)
         self.poplar = Station("STATION; POPLAR", [88])
         self.green_stations.append(self.poplar)
         self.castle_shannon = Station("STATION; CASTLE SHANNON", [96])
         self.green_stations.append(self.castle_shannon)
-        self.overbrook = Station("STATION; OVERBROOK", [123, 57])
-        self.green_stations.append(self.overbrook)
-        self.inglewood = Station("STATION; INGLEWOOD", [132, 48])
-        self.green_stations.append(self.inglewood)
-        self.central = Station("STATION; CENTRAL", [141, 39])
-        self.green_stations.append(self.central)
+        self.overbrook_out = Station("STATION; OVERBROOK OUT", [123])
+        self.green_stations.append(self.overbrook_out)
+        self.overbrook_in = Station("STATION; OVERBROOK IN", [57])
+        self.green_stations.append(self.overbrook_in)
+        self.inglewood_out = Station("STATION; INGLEWOOD OUT", [132])
+        self.green_stations.append(self.inglewood_out)
+        self.inglewood_in = Station("STATION; INGLEWOOD IN", [48])
+        self.green_stations.append(self.inglewood_in)
+        self.central_out = Station("STATION; CENTRAL OUT", [141])
+        self.green_stations.append(self.central_out)
+        self.central_in = Station("STATION; CENTRAL IN", [39])
+        self.green_stations.append(self.central_in)
         self.whited = Station("STATION; WHITED", [22])
         self.green_stations.append(self.whited)
         self.edgebrook = Station("STATION; EDGEBROOK", [9])
@@ -189,9 +199,9 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         }
 
         #               Timer Stuff                 #
-        self.request_block_occupancies_timer = QTimer(self)
-        self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
-        self.request_block_occupancies_timer.start(1000)
+        # self.request_block_occupancies_timer = QTimer(self)
+        # self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
+        # self.request_block_occupancies_timer.start(1000)
 
     # Create the Home and Test Bench tab for the window
     def create_tabs(self):
@@ -412,7 +422,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         # Add the Mode button
         self.mode_button = QPushButton('Current Mode: Automatic Mode')
         self.mode_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.mode_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 18px")
+        self.mode_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 30px")
         self.mode_button.clicked.connect(self.mode_clicked)
         mode_layout.addWidget(self.mode_button)
 
@@ -681,11 +691,11 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             self.maintenance_blocks_dict["line"] = line
             self.maintenance_blocks_dict["index"] = block
             self.maintenance_blocks_dict["maintenance"] = True
-            while(1):
-                print('closure')
-                response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
-                if response.status_code == 200:
-                    break
+            # while(1):
+            #     print('closure')
+            #     response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
+            #     if response.status_code == 200:
+            #         break
 
             print("Block", block, "on the", line, "line has been closed for maintenance!")
             dialog.accept()
@@ -775,11 +785,11 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         self.maintenance_blocks_dict["line"] = block_line
         self.maintenance_blocks_dict["index"] = block_number
         self.maintenance_blocks_dict["maintenance"] = False
-        while(1):
-            print('opening')
-            response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
-            if response.status_code == 200:
-                break
+        # while(1):
+        #     print('opening')
+        #     response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
+        #     if response.status_code == 200:
+        #         break
 
         print("Block", block_line, "on the", block_number, "line has been reopened from maintenance!")
         dialog.accept()  
@@ -811,11 +821,11 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         # self.sim_speed_dict["sim_speed"] = 0.10
         # print(self.sim_speed)
 
-        while(1):
-            response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
-            if response.status_code == 200:
-                print('simulation running at', myClock.sim_speed)
-                break
+        # while(1):
+        #     response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
+        #     if response.status_code == 200:
+        #         print('simulation running at', myClock.sim_speed)
+        #         break
 
     # The functionality of the user starting the simulation
     def operational_clicked(self):
@@ -855,12 +865,12 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         if self.automatic_mode:
             # Switch to Automatic Mode
             self.mode_button.setText('Current Mode: Automatic Mode')
-            self.mode_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 18px")
+            self.mode_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 30px")
 
         else:
             # Switch to Manual Mode
             self.mode_button.setText('Current Mode: Manual Mode')
-            self.mode_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 18px")
+            self.mode_button.setStyleSheet("background-color: #772ce8; color: white; font-size: 30px")
 
         # Update the button states based on the new mode
         self.update_mode_button_state()
@@ -953,11 +963,12 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             self.green_station_select_combo_box.setPlaceholderText('Select Station')
             self.green_station_select_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             self.green_station_select_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
-            self.green_station_select_combo_box.addItems(["GLENBURY", "DORMONT", "MT LEBANON", "POPLAR", "CASTLE SHANNON","OVERBROOK", "INGLEWOOD", "CENTRAL", "WHITED", "EDGEBROOK", "PIONEER", "LEBRON", "SOUTH BANK"])
+            self.green_station_select_combo_box.addItems(["GLENBURY OUT", "DORMONT OUT", "MT LEBANON","DORMONT IN", "POPLAR", "CASTLE SHANNON","GLENBURY IN", "OVERBROOK OUT", "INGLEWOOD OUT", "CENTRAL OUT", "WHITED", "EDGEBROOK", "PIONEER", "LEBRON", "SOUTH BANK", "CENTRAL IN", "INGLEWOOD IN", "OVERBROOK IN"])
             self.green_station_and_time_layout.addWidget(self.green_station_select_combo_box)
 
             # Add time entrance
             self.green_time_select_edit = QLineEdit()
+            self.green_time_select_edit.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
             time_regex = QRegularExpression(r"^(2[0-3]|[01]\d):([0-5]\d):([0-5]\d)$")
             validator = QRegularExpressionValidator(time_regex)
             self.green_time_select_edit.setValidator(validator)
@@ -1009,6 +1020,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
 
             # Add time entrance
             self.red_time_select_edit = QLineEdit()
+            self.red_time_select_edit.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
             time_regex = QRegularExpression(r"^(2[0-3]|[01]\d):([0-5]\d):([0-5]\d)$")
             validator = QRegularExpressionValidator(time_regex)
             self.red_time_select_edit.setValidator(validator)
@@ -1141,15 +1153,13 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
 
             for stop in new_train.station_stops:
                 for station in self.green_stations:
-                    if station.name == stop:
-                        station.add_authority(auth_list[0])
-                    elif station.name in ('STATION; POPLAR', 'STATION; CASTLE SHANNON', 'STATION; EDGEBROOK', 'STATION; PIONEER', 'STATION; SOUTH BANK'):
-                        station.add_authority([new_train.name, -1])
-                    elif station.name == 'STATION; YARD':
+                    if station.name == 'STATION; YARD':
                         pass
+                    elif station.name == stop:
+                        station.add_authority(auth_list[0])
                     else:
                         station.add_authority([new_train.name, -1])
-                        station.add_authority([new_train.name, -1])
+                    print(station.name, 'has auth', station.authorities)
 
             if len(self.trains) == 0: # If we are adding the first train, delete the label
                 # Remove the current QLabel
@@ -1182,31 +1192,31 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             self.authority_dict["index"] = 0
             popped_auth = self.yard.pop_authority()
             self.authority_dict["authority"] = popped_auth[1]
-            while(1):
-                    response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
-                    if response.status_code == 200:
-                        break
+            # while(1):
+            #         response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+            #         if response.status_code == 200:
+            #             break
             self.wayside_vision_dict["line"] = "Green"
             self.wayside_vision_dict["index"] = 2
             self.wayside_vision_dict["output_block"] = 0
-            while(1):
-                try:
-                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
-                    response.raise_for_status()  # This will raise an error for 4xx/5xx responses
+            # while(1):
+            #     try:
+            #         response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
+            #         response.raise_for_status()  # This will raise an error for 4xx/5xx responses
 
-                    # If successful, print the response data
-                    print("Success:", response.json())
-                    if response.status_code == 200:
-                        break
+            #         # If successful, print the response data
+            #         print("Success:", response.json())
+            #         if response.status_code == 200:
+            #             break
 
-                except requests.exceptions.HTTPError as http_err:
-                    # Print the HTTP error response
-                    print(f"HTTP error occurred: {http_err}")  # HTTP error details
-                    print("Response content:", response.text)   # Full response content
+            #     except requests.exceptions.HTTPError as http_err:
+            #         # Print the HTTP error response
+            #         print(f"HTTP error occurred: {http_err}")  # HTTP error details
+            #         print("Response content:", response.text)   # Full response content
 
-                except Exception as err:
-                    # Catch any other exceptions
-                    print(f"Other error occurred: {err}")
+            #     except Exception as err:
+            #         # Catch any other exceptions
+            #         print(f"Other error occurred: {err}")
             self.trains[0].on_track = True
         else: # Add a stop to the train
             selected_train = next((train for train in self.trains if train.name == selected_name), None)
@@ -1303,31 +1313,31 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             self.authority_dict["index"] = 0
             popped_auth = self.yard.pop_authority()
             self.authority_dict["authority"] = popped_auth[1]
-            while(1):
-                    response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
-                    if response.status_code == 200:
-                        break
+            # while(1):
+            #         response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+            #         if response.status_code == 200:
+            #             break
             self.wayside_vision_dict["line"] = "Green"
             self.wayside_vision_dict["index"] = 2
             self.wayside_vision_dict["output_block"] = 0
-            while(1):
-                try:
-                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
-                    response.raise_for_status()  # This will raise an error for 4xx/5xx responses
+            # while(1):
+            #     try:
+            #         response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
+            #         response.raise_for_status()  # This will raise an error for 4xx/5xx responses
 
-                    # If successful, print the response data
-                    print("Success:", response.json())
-                    if response.status_code == 200:
-                        break
+            #         # If successful, print the response data
+            #         print("Success:", response.json())
+            #         if response.status_code == 200:
+            #             break
 
-                except requests.exceptions.HTTPError as http_err:
-                    # Print the HTTP error response
-                    print(f"HTTP error occurred: {http_err}")  # HTTP error details
-                    print("Response content:", response.text)   # Full response content
+            #     except requests.exceptions.HTTPError as http_err:
+            #         # Print the HTTP error response
+            #         print(f"HTTP error occurred: {http_err}")  # HTTP error details
+            #         print("Response content:", response.text)   # Full response content
 
-                except Exception as err:
-                    # Catch any other exceptions
-                    print(f"Other error occurred: {err}")
+            #     except Exception as err:
+            #         # Catch any other exceptions
+            #         print(f"Other error occurred: {err}")
             self.trains[0].on_track = True
         else: # Add a stop to the train
             selected_train = next((train for train in self.trains if train.name == selected_name), None)
@@ -1340,10 +1350,10 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         self.wayside_vision_dict["line"] = "Green"
         self.wayside_vision_dict["index"] = 1
         self.wayside_vision_dict["output_block"] = 0
-        while(1):
-            response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
-            if response.status_code == 200:
-                break
+        # while(1):
+        #     response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
+        #     if response.status_code == 200:
+        #         break
         # tell nate to create a train
             
     # Display the correct data based on the train selected
@@ -1440,27 +1450,27 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                                 self.wayside_vision_dict["line"] = "Green"
                                 self.wayside_vision_dict["index"] = 1
                                 self.wayside_vision_dict["output_block"] = 0
-                                while(1):
-                                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
-                                    if response.status_code == 200:
-                                        break
+                                # while(1):
+                                #     response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
+                                #     if response.status_code == 200:
+                                #         break
                             else:
                                 self.wayside_vision_dict["line"] = "Green"
                                 self.wayside_vision_dict["index"] = 1
                                 self.wayside_vision_dict["output_block"] = 58
-                                while(1):
-                                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
-                                    if response.status_code == 200:
-                                        break
+                                # while(1):
+                                #     response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
+                                #     if response.status_code == 200:
+                                #         break
                     station.set_popped(True)
                     # Send Wayside Vision
                     self.wayside_vision_dict["line"] = "Green"
                     self.wayside_vision_dict["index"] = 2
                     self.wayside_vision_dict["output_block"] = 0
-                    while(1):
-                        response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
-                        if response.status_code == 200:
-                            break
+                    # while(1):
+                    #     response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                    #     if response.status_code == 200:
+                    #         break
         
         for station in self.green_stations:
             station_id = 0
@@ -1472,21 +1482,21 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                 self.wayside_vision_dict["line"] = "Green"
                 self.wayside_vision_dict["index"] = 2
                 self.wayside_vision_dict["output_block"] = 62
-                try:
-                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
-                    response.raise_for_status()  # This will raise an error for 4xx/5xx responses
+                # try:
+                #     response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
+                #     response.raise_for_status()  # This will raise an error for 4xx/5xx responses
 
-                    if response.status_code == 200:
-                        break
+                #     if response.status_code == 200:
+                #         break
 
-                except requests.exceptions.HTTPError as http_err:
-                    # Print the HTTP error response
-                    print(f"HTTP error occurred: {http_err}")  # HTTP error details
-                    print("Response content:", response.text)   # Full response content
+                # except requests.exceptions.HTTPError as http_err:
+                #     # Print the HTTP error response
+                #     print(f"HTTP error occurred: {http_err}")  # HTTP error details
+                #     print("Response content:", response.text)   # Full response content
 
-                except Exception as err:
-                    # Catch any other exceptions
-                    print(f"Other error occurred: {err}")
+                # except Exception as err:
+                #     # Catch any other exceptions
+                #     print(f"Other error occurred: {err}")
 
 
         # Speed Stuff 
@@ -1499,10 +1509,10 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                 self.suggested_speed_dict["speed"] = 0
                 for train in self.trains:
                     train.set_suggested_speed(0)
-                while(1):
-                    response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
-                    if response.status_code == 200:
-                        break
+                # while(1):
+                #     response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
+                #     if response.status_code == 200:
+                #         break
             elif block["speed_hazard"] == False and ("Green", block["block"]) in self.recent_speed_hazards:
                 # Change speed to actual
                 self.recent_speed_hazards.remove(("Green", block["block"]))
@@ -1512,10 +1522,10 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                 self.suggested_speed_dict["speed"] = blk.get_block_speed()
                 for train in self.trains:
                     train.set_suggested_speed(blk.get_block_speed())
-                while(1):
-                    response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
-                    if response.status_code == 200:
-                        break
+                # while(1):
+                #     response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
+                #     if response.status_code == 200:
+                #         break
 
         self.update_label_background()
 
@@ -1531,29 +1541,29 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         self.authority_dict["index"] = 0
         popped_auth = self.yard.pop_authority()
         self.authority_dict["authority"] = popped_auth[1]
-        while(1):
-                response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
-                if response.status_code == 200:
-                    break
+        # while(1):
+        #         response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+        #         if response.status_code == 200:
+        #             break
         self.wayside_vision_dict["line"] = "Green"
         self.wayside_vision_dict["index"] = 2
         self.wayside_vision_dict["output_block"] = 0
-        while(1):
-            try:
-                response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
-                response.raise_for_status()  # This will raise an error for 4xx/5xx responses
+        # while(1):
+        #     try:
+        #         response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
+        #         response.raise_for_status()  # This will raise an error for 4xx/5xx responses
 
-                if response.status_code == 200:
-                    break
+        #         if response.status_code == 200:
+        #             break
 
-            except requests.exceptions.HTTPError as http_err:
-                # Print the HTTP error response
-                print(f"HTTP error occurred: {http_err}")  # HTTP error details
-                print("Response content:", response.text)   # Full response content
+        #     except requests.exceptions.HTTPError as http_err:
+        #         # Print the HTTP error response
+        #         print(f"HTTP error occurred: {http_err}")  # HTTP error details
+        #         print("Response content:", response.text)   # Full response content
 
-            except Exception as err:
-                # Catch any other exceptions
-                print(f"Other error occurred: {err}")
+        #     except Exception as err:
+        #         # Catch any other exceptions
+        #         print(f"Other error occurred: {err}")
         self.trains[0].on_track = True
 
 if __name__ == "__main__":    
