@@ -66,7 +66,8 @@ class Train_Controller_SW_UI(QMainWindow):
         self.next_train_id = 0
         self.train_list = tc_list
         self.train_model_list = model_list
-        self.var_from_mitch = 10 # Simulation Speed
+        self.var_from_mitch = 1 # Simulation Speed
+        self.sim_from_ctc = 1
 
 
 
@@ -1455,6 +1456,11 @@ class Train_Controller_SW_UI(QMainWindow):
         
         self.check_errors()
 
+        if self.sim_from_ctc != self.var_from_mitch:
+            self.change_timer(self.sim_from_ctc)
+
+        print(self.var_from_mitch)
+
 
         #print(f"Service Brake = {self.train_list[self.current_train].get_s_brake()}")
 
@@ -1527,7 +1533,9 @@ class Train_Controller_SW_UI(QMainWindow):
         self.next_train_id += 1
         self.train_list.append(new_train)
 
-    def change_timer(self, sim_speed):
+        
+    
+    def change_timer(self, sim_speed: int):
         self.var_from_mitch = sim_speed
         #change timer
         self.power_timer.setInterval(int(90/sim_speed))
@@ -1537,6 +1545,9 @@ class Train_Controller_SW_UI(QMainWindow):
             train.adjust_door_timer(sim_speed)
             train.set_T(sim_speed)
 
+    def ctc_change_sim(self, sim_speed):
+        print(f"Input = {sim_speed}")
+        self.sim_from_ctc = sim_speed
 
 
 if __name__ == "__main__":

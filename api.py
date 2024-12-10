@@ -18,10 +18,8 @@ def recieve_sim_speed():
     if speed_int is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
-    if is_micah:
-        app.qt_app_instance.train_controller_sw.change_timer(speed_int)
-    else:
-        app.qt_app_instance.train_controller_hw.change_timer(speed_int)
+    app.qt_app_instance.train_controller_sw.ctc_change_sim(speed_int)
+    #app.qt_app_instance.train_controller_hw.ctc_change_sim(speed_int)
     #kevin's
     return jsonify("Success"), 200
 
