@@ -824,7 +824,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         myClock.sim_speed = int(speed[:-1])  # Extracting the numeric value from the selected string
         # Send Sim Speed
         # self.sim_speed = myClock.sim_speed
-        # self.sim_speed_dict["sim_speed"] = 0.10
+        self.sim_speed_dict["sim_speed"] = myClock.sim_speed
         # print(self.sim_speed)
 
         while(1):
