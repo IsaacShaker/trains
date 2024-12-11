@@ -16,17 +16,19 @@ class Station:
     
     def set_trainIn(self, x):
         self.trainIn = x
-        if (x):
-            numBoarding = random.randint(0,self.peopleAtStation)
-            #post number of people to a train
-            self.peopleAtStation -= numBoarding
-            if (self.peopleAtStation < 25):
-                self.peopleAtStation += random.randint(0,15)
-            elif (self.peopleAtStation < 40):
-                self.peopleAtStation += random.randint(0,5)
-            elif (self.peopleAtStation >= 50):
-                self.peopleAtStation == 50
-    
+        
+    def train_stopped(self):
+        numBoarding = random.randint(0,self.peopleAtStation)
+        #post number of people to a train
+        self.peopleAtStation -= numBoarding
+        if (self.peopleAtStation < 25):
+            self.peopleAtStation += random.randint(0,15)
+        elif (self.peopleAtStation < 40):
+            self.peopleAtStation += random.randint(0,5)
+        elif (self.peopleAtStation >= 50):
+            self.peopleAtStation == 50
+        return numBoarding
+
     def get_trainIn(self):
         return self.trainIn
     def get_name(self):
