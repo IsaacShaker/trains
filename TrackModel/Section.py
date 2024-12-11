@@ -21,7 +21,7 @@ class Section:
             if block.get_if_train():
                 occ_nums += (tempNum + " ")
             if block.get_closed():
-                mc_nums += (mc_nums + " ")
+                mc_nums += (tempNum + " ")
             if block.get_broken():
                 btf_nums += (tempNum + " ")
             if block.get_circuit():

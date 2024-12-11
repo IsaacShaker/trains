@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QCheckBox, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QCheckBox, QVBoxLayout, QWidget, QHBoxLayout
 
 class BlockOccupancy(QWidget):
     def __init__(self, data, line, mode, editable=False):
@@ -21,8 +21,15 @@ class BlockOccupancy(QWidget):
         self.checkboxes = []
         i = 0
         for block in self.track_data[self.line][self.mode]["blocks"]:  # Ensure we always create 15 checkboxes
+            pair_widget = QWidget()
+            pair_layout = QHBoxLayout() 
+
             checkbox = QCheckBox(f'Block: {block["block"]}')
             checkbox.setChecked(block["occupied"])
+            
+            checkbox2 = QCheckBox("Speed Hazard")
+            checkbox2.setChecked(block["speed_hazard"])
+            checkbox2.setEnabled(False)
             
             # Store the index (or ID) of the block in the checkbox object
             checkbox.block_index = i
@@ -31,7 +38,11 @@ class BlockOccupancy(QWidget):
             # Connect to a modified state change handler that uses the ID
             checkbox.stateChanged.connect(self.on_state_change)
 
-            self.layout.addWidget(checkbox)
+            pair_layout.addWidget(checkbox)
+            pair_layout.addWidget(checkbox2)
+
+            pair_widget.setLayout(pair_layout)
+            self.layout.addWidget(pair_widget)
             self.checkboxes.append(checkbox)
 
         self.set_checkbox_interaction(editable)

@@ -18,7 +18,6 @@ class Station:
         self.trainIn = x
         if (x):
             numBoarding = random.randint(0,self.peopleAtStation)
-            
             #post number of people to a train
             self.peopleAtStation -= numBoarding
             if (self.peopleAtStation < 25):

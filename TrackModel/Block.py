@@ -175,6 +175,8 @@ class Block:
         self.switch = switch
     def set_traffic(self, traffic):
         self.trafficLight = traffic
+    def set_closed(self, maintenance):
+        self.closed = maintenance
 
     def get_num(self):
         return self.number

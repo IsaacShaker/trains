@@ -391,7 +391,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         self.speed_combo_box = QComboBox()
         self.speed_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.speed_combo_box.setStyleSheet("color: white; background-color: #772CE8;")
-        self.speed_combo_box.addItems(["1x", "2x", "5x", "7x", "10x", "50x"])  # Example speed options
+        self.speed_combo_box.addItems(["1x", "2x", "5x", "10x", "25x"])  # Example speed options
         self.speed_combo_box.currentTextChanged.connect(self.sim_speed_selected)
         simOptions_layout.addWidget(self.speed_combo_box)
 
@@ -697,6 +697,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             self.maintenance_blocks_dict["line"] = line
             self.maintenance_blocks_dict["index"] = block
             self.maintenance_blocks_dict["maintenance"] = True
+            print(self.maintenance_blocks_dict)
             while(1):
                 print('closure')
                 response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
@@ -1367,9 +1368,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             self.green_blocks_widget.hide()
             self.red_blocks_widget.show()
 
-    
 
-    
     # Function for receicing block occupancies from wayside
     def receive_block_occupancies(self):
         response = requests.get(URL + "/track-controller-sw/get-data/block_data")
@@ -1465,6 +1464,9 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         for block in data_dict["Green"]:
             if block["speed_hazard"] == True and ("Green", block["block"]) not in self.recent_speed_hazards: # Add to speed hazard set
                 # Change speed to zero
+                blk = self.blocks["Green"][block["block"]]
+                if blk.get_speed_hazard == True:
+                    break
                 self.recent_speed_hazards.add(("Green", block["block"]))
                 self.suggested_speed_dict["line"] = "Green"
                 self.suggested_speed_dict["index"] = block["block"]
@@ -1482,13 +1484,42 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                 self.suggested_speed_dict["index"] = block["block"]
                 blk = self.blocks["Green"][block["block"]]
                 self.suggested_speed_dict["speed"] = blk.get_block_speed()
+                blk.speed_hazard = True
                 for train in self.trains:
                     train.set_suggested_speed(blk.get_block_speed())
                 while(1):
                     response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
                     if response.status_code == 200:
                         break
-
+        # for block in data_dict["Green"]:
+        #     blk = self.blocks["Green"][block["block"]]
+        #     if block["speed_hazard"] == True and ("Green", block["block"]) and blk.get_speed_hazard == False: # Add to speed hazard set
+        #         # Change speed to zero
+        #         #self.recent_speed_hazards.add(("Green", block["block"]))
+        #         self.suggested_speed_dict["line"] = "Green"
+        #         self.suggested_speed_dict["index"] = block["block"]
+        #         self.suggested_speed_dict["speed"] = 0
+        #         for train in self.trains:
+        #             train.set_suggested_speed(0)
+        #         while(1):
+        #             response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
+        #             if response.status_code == 200:
+        #                 break
+        #         blk.speed_hazard = True
+        #     elif block["speed_hazard"] == False:
+        #         # Change speed to actual
+        #         #self.recent_speed_hazards.remove(("Green", block["block"]))
+        #         self.suggested_speed_dict["line"] = "Green"
+        #         self.suggested_speed_dict["index"] = block["block"]
+        #         blk = self.blocks["Green"][block["block"]]
+        #         self.suggested_speed_dict["speed"] = blk.get_block_speed()
+        #         for train in self.trains:
+        #             train.set_suggested_speed(blk.get_block_speed())
+        #         while(1):
+        #             response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
+        #             if response.status_code == 200:
+        #                 break
+        #         blk.speed_hazard = False
         self.update_label_background()
 
     # Release a train from the yard if its time
@@ -1545,6 +1576,9 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                 response = requests.post(URL + "/track-model/make-train", json=self.train_initializer_dict)
                 if response.status_code == 200:
                     break
+                else:
+                    requests.get('http://127.0.0.1:5000/shutdown')
+                    sys.exit()
             except requests.exceptions.HTTPError as http_err:
                 print(f"HTTP error occurred: {http_err}")
                 print("Response Content: ", response.text)

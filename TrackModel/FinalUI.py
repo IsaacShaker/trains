@@ -270,19 +270,24 @@ class TrackUI(QMainWindow):
         print(data)
         if data['line'] == 'Green':
             greenBlocks[data['index']].set_closed(data['maintenance'])
+        elif data['line'] == 'Red':
+            redBlocks[data['index']].set_closed(data['maintenance'])
 
     def set_block_authority(self, data):
         if data['line'] == 'Green':
+            greenBlocks[data['index']].set_authority(data['authority'])
+        elif data['line'] == 'Red':
             greenBlocks[data['index']].set_authority(data['authority'])
 
     def set_block_cmdSpeed(self, data):
         if data['line'] == 'Green':
             greenBlocks[data['index']].set_cmd_speed(data['speed'])
+        elif data['line'] == 'Red':
+            greenBlocks[data['index']].set_cmd_speed(data['speed'])
 
     def set_indexed_train_auth_diff(self,index,diff):
         if initialized == False:
             return
-        print(str(index))
         trains.trainList[index].moveTrain(diff)
 
     def train_in_station(self, index):
@@ -297,7 +302,7 @@ class TrackUI(QMainWindow):
             response = requests.post(URL + "/train-model/get-data/authority-cmd-speed", json=authAndSpeed)
 
     def make_train(self, line):
-        tempTrain = Train(10, greenBlocks[0], 32.2, 0, line)
+        tempTrain = Train(10, greenBlocks[0], 32.2, len(trains.trainList), line)
         trains.addTrain(tempTrain)
         auth.append(0.0)
         cmd.append(0.0)

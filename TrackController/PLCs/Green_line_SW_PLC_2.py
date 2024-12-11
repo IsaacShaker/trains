@@ -10,12 +10,12 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
         # We want to pull out of the YARD
         if switch_suggestions[3] == False and block_occupancies[62] == False and block_occupancies[61] == False and block_occupancies[60] == False:
             switches[3] = False
-            # speed_hazard[0] = False
+            speed_hazard[0] = False
             set_J_hazard(True)
             traffic_lights[5] = False
         else:
             switches[3] = True
-            # speed_hazard[0] = True
+            speed_hazard[0] = True
             set_J_hazard(False)
             traffic_lights[5] = True
         

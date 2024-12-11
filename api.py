@@ -47,6 +47,8 @@ def receive_beacon_info():
     string_value = data.get("beacon_info", None)
     index = data.get("train_id", None)
 
+    print(f"Index = {index}")
+
     if string_value is None or index is None:
         return jsonify({"error": "No float vlaue recieved"}), 400
 
@@ -353,6 +355,8 @@ def get_data_track_model_auth_diff():
         # Get the speed data from the request
         diff = data.get("auth_diff", None)
         index = data.get("train_id", None)
+
+        
         
         if diff is not None and index is not None:
             track_model.set_indexed_train_auth_diff(index,diff)
@@ -399,6 +403,8 @@ def get_data_track_model_beacon_info():
         beacon_info = data.get("beacon_info", None)
         train_id = data.get("id", None)
         
+        print(f"train id = {train_id}")
+
         if beacon_info is not None and train_id is not None:
             #replace with assign beacon data
             train_model.train_list[train_id].set_beaconInfo(beacon_info)
