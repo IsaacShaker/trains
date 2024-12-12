@@ -240,7 +240,9 @@ class TrainModel(QObject):
         if self.passCount > 0:
             self.passengers_leaving = random.randint(0, self.passCount)
         self.passenger_dict["train_id"]=self.ID
-        self.passenger_dict["train_id"]=self.passengers_leaving
+        print(f"ID:{self.ID}")
+        self.passenger_dict["passengers_leaving"]=self.passengers_leaving
+        print(f"Pass leaving: {self.passengers_leaving}")
         #API CALL
         response = requests.post(URL + "/track-model/receive-leaving-passengers", json=self.passenger_dict)
         #Nate call self.update_passengers()

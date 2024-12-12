@@ -29,6 +29,7 @@ class Station:
             self.peopleAtStation == 50
         self.numLeaving = numLeaving
         self.peopleAtStation -= numLeaving
+        return self.numBoarding
     
     def get_trainIn(self):
         return self.trainIn
