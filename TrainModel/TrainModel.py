@@ -75,7 +75,7 @@ class TrainModel(QObject):
         #Calculations
         self.currForce = 0.0
         self.currPower = 0.0
-        self.samplePeriod = 0.09 * 5
+        self.samplePeriod = 0.09 
         self.mitch_var=1
         self.lastVel=0.0
 
@@ -235,6 +235,12 @@ class TrainModel(QObject):
         #print(f"Power set to {cmd}.")
         self.receive_power()
         self.ui_refresh.emit()
+
+    def set_samplePeriod(self, input):
+        if(self.ID == 0):
+            self.samplePeriod = 0.09 * input
+        else:
+            self.samplePeriod = 0.09
 
     def set_passengers_leaving(self):
         if self.passCount > 0:
