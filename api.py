@@ -5,6 +5,34 @@ app.qt_app_instance = None
 
 is_micah = False
 
+
+
+###################################
+#World Clock
+###################################
+@app.route('/global/get-world-clock', methods=['POST'])
+def receive_seconds_tc():
+    data = request.get_json()
+
+    seconds_cum = data.get("seconds_cum", None)
+    seconds = data.get("seconds", None)
+    minute = data.get("minute", None)
+    hour = data.get("hour", None)
+    string = data.get("time_string", None)
+
+    #To Train Controller HW
+    app.qt_app_instance.train_controller_hw.set_seconds(seconds_cum)
+    app.qt_app_instance.train_controller_hw.set_hour(hour)
+    #To Train Controller SW
+    app.qt_app_instance.train_controller_sw.set_hour(hour)
+    #To CTC
+    app.qt_app_instance.ctc.set_seconds_cum(seconds_cum)
+    app.qt_app_instance.ctc.set_clock(string)
+    
+    return jsonify("Success"), 200
+
+
+
 ###################################
 #Train Contoller Input Functions
 ###################################
@@ -36,19 +64,20 @@ def receive_sim_speed_wc():
     
     return jsonify("Success"), 200
 
-@app.route('/train-controller/get-world-clock', methods=['POST'])
-def receive_seconds_tc():
+@app.route('/world-clock/get-clock-activate', methods=['POST'])
+def receive_sim_speed_wc():
     data = request.get_json()
 
-    seconds_cum = data.get("seconds_cum", None)
-    seconds = data.get("seconds", None)
-    minute = data.get("minute", None)
-    hour = data.get("hour", None)
+    enable = data.get("enable", None)
 
-    app.qt_app_instance.train_controller_hw.set_seconds(seconds_cum)
-    app.qt_app_instance.train_controller_hw.set_hour(hour)
+    if enable is None:
+        return jsonify({"error": "No float value received"}), 400
+
+    else:
+        app.qt_app_instance.clock.set_clock_activated(enable)
     
     return jsonify("Success"), 200
+
 
 @app.route('/train-controller/receive-sim-speed', methods=['POST'])
 def receive_sim_speed_tc():
