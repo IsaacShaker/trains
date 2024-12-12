@@ -63,6 +63,7 @@ class TrainModel(QObject):
         self.crewCount = 2
         self.passCount = 0
         self.station_passengers=0
+        self.passengers_leaving=0
 
         #Failure Mode
         self.signalPickupFailure = False
@@ -107,6 +108,11 @@ class TrainModel(QObject):
         self.actual_velocity_dict = {
             "train_id" : self.ID,
             "actual_velocity": self.currentVelocity
+        }
+
+        self.passenger_dict = {
+            "train_id" : self.ID,
+            "passengers_leaving": self.passengers_leaving
         }
 
         self.failure_modes_dict = {
@@ -230,6 +236,15 @@ class TrainModel(QObject):
         self.receive_power()
         self.ui_refresh.emit()
 
+    def set_passengers_leaving(self):
+        if self.passCount > 0:
+            self.passengers_leaving = random.randint(0, self.passCount)
+        self.passenger_dict["train_id"]=self.ID
+        self.passenger_dict["train_id"]=self.passengers_leaving
+        #API CALL
+        response = requests.post(URL + "/track-model/receive-leaving-passengers", json=self.passenger_dict)
+        #Nate call self.update_passengers()
+
     def set_station_passengers(self, num: int):
         self.station_passengers=num
         self.update_passengers()
@@ -346,9 +361,9 @@ class TrainModel(QObject):
 
     def update_passengers(self):
         # If we have passengers, some will leave
-        if self.passCount > 0:
-            passengers_leaving = random.randint(0, self.passCount)
-            self.passCount -= passengers_leaving
+        #if self.passCount > 0:
+            #passengers_leaving = random.randint(0, self.passCount)
+            #self.passCount -= passengers_leaving
         # Maximum passengers to enter
         max_new_passengers = self.MAX_PASSENGERS - self.passCount  
         # Random number of passengers entering from the amount at the station
