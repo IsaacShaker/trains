@@ -62,6 +62,8 @@ class TrainModel(QObject):
         self.numberOfCars = 5
         self.crewCount = 2
         self.passCount = 0
+        self.station_passengers=0
+        self.passengers_leaving=0
 
         #Failure Mode
         self.signalPickupFailure = False
@@ -73,7 +75,7 @@ class TrainModel(QObject):
         #Calculations
         self.currForce = 0.0
         self.currPower = 0.0
-        self.samplePeriod = 0.09 * 5
+        self.samplePeriod = 0.09 
         self.mitch_var=1
         self.lastVel=0.0
 
@@ -106,6 +108,11 @@ class TrainModel(QObject):
         self.actual_velocity_dict = {
             "train_id" : self.ID,
             "actual_velocity": self.currentVelocity
+        }
+
+        self.passenger_dict = {
+            "train_id" : self.ID,
+            "passengers_leaving": self.passengers_leaving
         }
 
         self.failure_modes_dict = {
@@ -229,6 +236,27 @@ class TrainModel(QObject):
         self.receive_power()
         self.ui_refresh.emit()
 
+    def set_samplePeriod(self, input):
+        if(self.ID == 0):
+            self.samplePeriod = 0.09 * input
+        else:
+            self.samplePeriod = 0.09
+
+    def set_passengers_leaving(self):
+        if self.passCount > 0:
+            self.passengers_leaving = random.randint(0, self.passCount)
+        self.passenger_dict["train_id"]=self.ID
+        print(f"ID:{self.ID}")
+        self.passenger_dict["passengers_leaving"]=self.passengers_leaving
+        print(f"Pass leaving: {self.passengers_leaving}")
+        #API CALL
+        response = requests.post(URL + "/track-model/receive-leaving-passengers", json=self.passenger_dict)
+        #Nate call self.update_passengers()
+
+    def set_station_passengers(self, num: int):
+        self.station_passengers=num
+        self.update_passengers()
+
     #Getters
     def get_commandedSpeed(self):
         return self.commandedSpeed
@@ -310,7 +338,7 @@ class TrainModel(QObject):
             self.trainLength=32.2-((5-self.numberOfCars)*6.6)
         #print(f"Length: {self.trainLength}")
 
-    def limit_force(self):
+    def force_limiter(self):
         max_force = self.tons_to_kg(self.totalMass) * 0.5
         #If our force passes the max allowed
         if self.currForce > max_force:
@@ -322,13 +350,16 @@ class TrainModel(QObject):
         elif self.lastVel == 0:
             self.currForce = max_force
 
-    def limit_accel(self):
+    def acceleration_limiter(self):
         if (self.currAccel > self.ACCELERATION_LIMIT and not self.serviceBrake and not self.emergencyBrake):
             # If all brakes are OFF and self.currAccel is above the limit
             self.currAccel = self.ACCELERATION_LIMIT
         elif (self.serviceBrake and not self.emergencyBrake and not self.brakeFailure): # self.currAccel < self.DECELERATION_LIMIT_SERVICE and
             # If the service brake is ON and self.currAccel is below the limit
-            self.currAccel = self.S_BRAKE_ACC
+            if(self.currentVelocity !=0):
+                self.currAccel = self.S_BRAKE_ACC
+            else:
+                self.currAccel = 0
         elif (self.emergencyBrake): # self.currAccel < self.DECELERATION_LIMIT_EMERGENCY and
             # If the emergency brake is ON and self.currAccel is below the limit
             if(self.currentVelocity !=0):
@@ -337,30 +368,23 @@ class TrainModel(QObject):
                 self.currAccel = 0
 
     def update_passengers(self):
-        # If the doors are open and the train was not at a station in the previous loop
-        #if (not self.leftDoor or not self.rightDoor) and not self.atStation:
-            self.atStation = True  # Set variable to indicate the train is at a station
-            #print(f"Current Passengers: {self.passCount}")
-            # Randomly generate the number of passengers leaving the train
-            if self.passCount > 0:
-                passengers_depart = random.randint(0, self.passCount)  # Random number of departing passengers
-                self.passCount -= passengers_depart
-            #print(f"Passengers after departure: {self.passCount}")
-            # Pick up passengers through track model
-            max_pickup = self.MAX_PASSENGERS - self.passCount  # Calculate maximum possible entries
-            passengers_enter = random.randint(0, max_pickup)  # Random number of passengers entering
-            #passengers_board = self.block.get_passengers(random_pass_entry)  # Assuming this method is defined
-            self.passCount += passengers_enter
-            #print(f"Passengers after board: {self.passCount}")
+        # If we have passengers, some will leave
+        #if self.passCount > 0:
+            #passengers_leaving = random.randint(0, self.passCount)
+            #self.passCount -= passengers_leaving
+        # Maximum passengers to enter
+        max_new_passengers = self.MAX_PASSENGERS - self.passCount  
+        # Random number of passengers entering from the amount at the station
+        if(self.station_passengers>max_new_passengers):
+            self.station_passengers=max_new_passengers
+        #Update our passenger count
+        self.passCount += self.station_passengers
 
-            # Calculate new mass based on passenger count
-            self.calc_total_mass()
+        # Calculate new mass based on passenger count
+        self.calc_total_mass()
 
-            self.passengers_changed.emit()
-
-        #leaving the station
-        #elif not self.leftDoor and not self.rightDoor:
-            #self.atStation = False  # Reset boolean when the doors are closed
+        #Update the passenger and weight information in the UI
+        self.passengers_changed.emit()
 
     def receive_power(self):
         if(self.engineFailure):
@@ -375,7 +399,7 @@ class TrainModel(QObject):
              #Force to 0 if velocity is 0 to avoid divide by zero error
             self.currForce = 0
         #print(self.currForce)
-        self.limit_force()
+        self.force_limiter()
        # print(self.currForce)
         #Acceleration calc
         if self.totalMass != 0:
@@ -384,7 +408,7 @@ class TrainModel(QObject):
         else:
             self.currAccel = 0
         #print(self.currAccel)
-        self.limit_accel()
+        self.acceleration_limiter()
         #print(self.currAccel)
 
         #Velocity acceleration

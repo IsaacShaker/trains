@@ -8,18 +8,61 @@ is_micah = False
 ###################################
 #Train Contoller Input Functions
 ###################################
-
-@app.route('/train-controller/receive-sim-speed', methods=['POST'])
-def recieve_sim_speed():
+@app.route('/train-model/receive-sim-speed', methods = ["POST"])
+def receive_sim_speed_tm():
     data = request.get_json()
 
-    speed_int = data.get("sim_speed", None)
+    sim_speed = data.get("sim_speed", None)
 
-    if speed_int is None:
-        return jsonify({"error": "No float vlaue recieved"}), 400
+    if sim_speed is None:
+        return jsonify({"error": "No float value received"}), 400
 
-    app.qt_app_instance.train_controller_sw.ctc_change_sim(speed_int)
-    #app.qt_app_instance.train_controller_hw.ctc_change_sim(speed_int)
+    else:
+        app.qt_app_instance.train_model.train_list[0].set_samplePeriod(sim_speed)
+    
+    return jsonify("Success"), 200
+
+@app.route('/world-clock/get-sim-speed', methods=['POST'])
+def receive_sim_speed_wc():
+    data = request.get_json()
+
+    sim_speed = data.get("sim_speed", None)
+
+    if sim_speed is None:
+        return jsonify({"error": "No float value received"}), 400
+
+    else:
+        app.qt_app_instance.clock.set_sim_speed(sim_speed)
+    
+    return jsonify("Success"), 200
+
+@app.route('/train-controller/get-world-clock', methods=['POST'])
+def receive_seconds_tc():
+    data = request.get_json()
+
+    seconds_cum = data.get("seconds_cum", None)
+    seconds = data.get("seconds", None)
+    minute = data.get("minute", None)
+    hour = data.get("hour", None)
+
+    app.qt_app_instance.train_controller_hw.set_seconds(seconds_cum)
+    app.qt_app_instance.train_controller_hw.set_hour(hour)
+    
+    return jsonify("Success"), 200
+
+@app.route('/train-controller/receive-sim-speed', methods=['POST'])
+def receive_sim_speed_tc():
+    data = request.get_json()
+
+    sim_speed = data.get("sim_speed", None)
+
+    if sim_speed is None:
+        return jsonify({"error": "No float value received"}), 400
+
+    if is_micah:
+        app.qt_app_instance.train_controller_sw.change_timer(sim_speed)
+    else:
+        app.qt_app_instance.train_controller_hw.change_timer(sim_speed)
     #kevin's
     return jsonify("Success"), 200
 
@@ -90,6 +133,20 @@ def receive_actual_velocity():
         app.qt_app_instance.train_controller_sw.train_list[index-1].set_actual_velocity(float_value)
     else:
         app.qt_app_instance.train_controller_hw.set_actual_velocity(float_value)
+    return jsonify("Success"), 200
+
+@app.route('/track-model/receive-leaving-passengers', methods=['POST'])
+def receive_leaving_passengers():
+    data = request.get_json()
+
+    int_value = data.get("passengers_leaving", None)
+    index = data.get("train_id", None)
+
+    if int_value is None or index is None:
+        return jsonify({"error": "No float vlaue recieved"}), 400
+
+    app.qt_app_instance.track_model.post_people_boarding(int_value, index)
+
     return jsonify("Success"), 200
 
 @app.route('/train-controller/receive-failure-modes', methods=['POST'])
@@ -164,6 +221,9 @@ def receive_doors():
 
     app.qt_app_instance.train_model.train_list[index].set_leftDoor(left_door)
     app.qt_app_instance.train_model.train_list[index].set_rightDoor(right_door)
+
+    if(left_door or right_door):
+        app.qt_app_instance.train_model.train_list[index].set_passengers_leaving()
     return jsonify({"status": "Ok"}), 200
 
 @app.route('/train-model/receive-announcement', methods=['POST'])
@@ -435,7 +495,25 @@ def get_data_track_model_grade_info():
     else:
         return jsonify({"error": "Data not available"}), 500
 
+@app.route('/train-model/get-data/station_passengers', methods=['POST'])
+def get_station_passengers():
+    # Check if train_model is available in the MyApp instance
+    if hasattr(app.qt_app_instance, 'train_model'):
+        train_model = app.qt_app_instance.train_model
 
+        data = request.get_json()
+
+        # Get the passenger data
+        num_boarding = data.get("num_boarding", None)
+        train_id = data.get("id", None)
+        
+        if num_boarding is not None and train_id is not None:
+            train_model.train_list[train_id].set_station_passengers(num_boarding)
+            return jsonify("OK"), 200
+        else:
+            return jsonify({"error": "No passenger data provided"}), 400
+    else:
+        return jsonify({"error": "Data not available"}), 500
     
 #Track Controller to Track Model
 @app.route('/track-model/recieve-signals', methods=['POST'])

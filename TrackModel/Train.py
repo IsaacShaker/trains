@@ -139,9 +139,9 @@ class Train:
             self.bBlock = self.fBlock
             self.bBlock.set_train(self, True, authDiff)
 
-    def station_stopped(self):
-        if isinstance(self.fBlock.self.station, Station):
-            return self.fBlock.self.station.train_stopped()
+    def station_stopped(self, numLeaving):
+        if isinstance(self.fBlock.get_station(), Station):
+            return self.fBlock.get_station().train_stopped(numLeaving)
 
             
     def set_info(self, authority, speed):

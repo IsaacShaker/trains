@@ -1,0 +1,998 @@
+#include <Arduino.h>
+#include <LiquidCrystal_I2C.h>
+#include <Keypad.h>
+#include "HexDisplay.h"
+//#include "EngineerKeypad.h"
+
+//HARDWARE INPUT PINS:
+//====================================================================================================          
+//Analog (potentiometers)
+int comTempPot = A0;
+int setpointVelPot = A1;
+//----Buttons----
+const int eBrakeButton = 2;   
+const int sBrakeButton = 3;
+const int insideLightButton = 4;
+const int outsideLightButton = 5;
+const int rightDoorButton = 6;
+const int leftDoorButton = 7;
+const int kiButton = 42;
+const int kpButton = 44;
+//----Switch----
+const int manualModeSwitch = 22;
+//----Keypad----
+const byte ROWS = 4; //four rows
+const byte COLS = 4; //four columns
+char hexaKeys[ROWS][COLS] = {
+  {'1','2','3','F'},
+  {'4','5','6','F'},
+  {'7','8','9','F'},
+  {'.','0','D','F'}
+};
+byte rowPins[ROWS] = {46, 48, 50, 52}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {47, 49, 51, 53}; //connect to the column pinouts of the keypad
+
+//HARDWARE OUPUT PINS:
+//==================================================================================================== 
+//----LEDs----
+const int brakeFailureLED = 24;
+const int engineFailureLED = 25;
+const int signalFailureLED = 27;
+const int insideLightLED = 34;
+const int outsideLightLED = 32;
+const int eBrakeLED = 36;
+const int sBrakeLED = 38;
+const int leftDoorLED = 30;
+const int rightDoorLED = 28;
+//----7-Segment displays----
+//Recommended Velocity (commanded velocity)
+int recommendedVelCLK = 9;
+int recommendedVelDIO = 8;
+//Current Velocity (actual velocity)
+int currentVelCLK = 11;
+int currentVelDIO = 10;
+//Distance To Stop (authority)
+int authCLK = 13;
+int authDIO = 12;
+
+
+//VARIABLES USED FOR DEBOUNCING BUTTONS:
+//====================================================================================================
+unsigned long lastDebounceTime = 0;  //The last time the button state was toggled
+unsigned long debounceDelay = 15;    //Debounce time, in milliseconds
+//----Doors----
+//Left
+int buttonStateLeftDoor;                //Current state of the Left Door Button
+int lastButtonStateLeftDoor = LOW;      //Previous state of the Left Door Button
+bool leftDoorState = LOW;
+//Right
+int buttonStateRightDoor;                //Current state of the Right Door Button
+int lastButtonStateRightDoor = LOW;      //Previous state of the Right Door Button
+bool rightDoorState = LOW;
+//----Lights----
+//Inside
+int buttonStateInsideLight;                
+int lastButtonStateInsideLight = LOW;   
+bool insideLightState = LOW;   
+//Outside
+int buttonStateOutsideLight;  
+int lastButtonStateOutsideLight = LOW;  
+bool outsideLightState = LOW;   
+//----Brakes----
+//Emergency Brake
+int buttonStateEBrake;  
+int lastButtonStateEBrake = LOW; 
+bool eBrakeState = LOW;
+//Service Brake
+bool sBrakeState = LOW;
+bool warningLEDState = LOW;
+//----K Buttons----
+//Ki
+int buttonStateKi;  
+int lastButtonStateKi = LOW;
+int kiCounter = 0;
+//Kp
+int buttonStateKp;  
+int lastButtonStateKp = LOW;
+int kpCounter = 0; 
+//----Mode Switch----
+bool manualMode = false;
+
+// Initialize Strings for LCD
+String kiString = "Ki Value: 50000";
+String kpString = "Kp Value: 500";
+String powerString = "PWR: 0.0 Watts";
+String keypadInput = ""; //Used to grab value from keypad and use in GetString() function
+String pretextKi = "Enter Ki: ";
+String pretextKp = "Enter Kp: ";
+String announcementString = "PA: ";
+float tempKi = 0.0;
+float tempKp = 0.0;
+float kpValue = 500.0;
+float kiValue = 50000.0;
+String output = "";
+String outputStr = "";
+
+//Initializing variables used for door timing functionality
+int tempTime = 0;
+int tempTimeLeft = 0;
+int tempTimeRight = 0;
+bool resetDoorTimer = true;
+bool resetDoorTimerLeft = true;
+bool resetDoorTimerRight = true;
+bool rightDoorRequest = false;
+bool leftDoorRequest = false;
+//bool openDoorsAuto = true;
+//bool doorsAuto = false;
+bool firstTimeOpeningDoors = true;
+
+//Power calculation variables
+float ukCurrent = 0.0;
+float ukPrevious = 0.0;
+float ekCurrent = 0.0;
+float ekPrevious = 0.0;
+int simSpeed = 1;
+
+
+//INPUTS FROM PYTHON 
+//====================================================================================================
+String command; //used to store the string of inputs from python
+int hour = 0;
+int seconds = 0;
+float commandedVelocity = 0;
+float actualVelocity = 0;
+float authority = 0;
+
+bool brakeFailure = false;
+bool engineFailure = false;
+bool signalFailure = false;
+String paAnnouncement = "";
+String previousAnnouncement = "";
+int requiredDoors = 0;
+bool atStop = false; //recieved by beacon - TRUE = entered stop (entrance beacon), FALSE = left stop (exit beacon)
+bool inTunnel = false;
+bool setByTunnel = false;
+bool setByTime = false;
+
+//OUTPUTS TO PYTHON
+//====================================================================================================
+int brakeState = 0; //0 -> no brakes pressed, 1 -> eBrake pressed, 2 -> sBrake pressed
+int doorState = 0;  //0 -> no doors opened, 10 -> left door opened, 01 -> right door opened, 11 -> both doors opened simultaniously
+int lightState = 0; //0 -> no lights active, 1 -> Inside light only, 2 -> Outside light only, 3 -> Both lights active 
+float setpointVelocity = 0.0; 
+int commTemperature = 70;
+float Pcmd = 0.0;
+float last_value = 0.0;
+
+//POINTERS TO CLASSES / Initialize library items
+//====================================================================================================
+HexDisplay* recomVelDisp;
+HexDisplay* currVelDisp;
+HexDisplay* distanceDisp;
+//EngineerKeypad keypad;
+LiquidCrystal_I2C lcd(0x20, 20, 4);
+Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
+
+
+void setup() {
+  //INPUTS:
+  //Analog
+  pinMode(comTempPot, INPUT);
+  pinMode(setpointVelPot, INPUT);
+  //Digital
+  pinMode(eBrakeButton, INPUT);
+  pinMode(sBrakeButton, INPUT);
+  pinMode(insideLightButton, INPUT);
+  pinMode(outsideLightButton, INPUT);
+  pinMode(rightDoorButton, INPUT);
+  pinMode(leftDoorButton, INPUT);
+  pinMode(kiButton, INPUT);
+  pinMode(kpButton, INPUT);
+  pinMode(manualModeSwitch, INPUT);
+
+  //OUTPUTS:
+  pinMode(brakeFailureLED, OUTPUT);
+  pinMode(engineFailureLED, OUTPUT);
+  pinMode(signalFailureLED, OUTPUT);
+  pinMode(insideLightLED, OUTPUT);
+  pinMode(outsideLightLED, OUTPUT);
+  pinMode(eBrakeLED, OUTPUT);
+  pinMode(sBrakeLED, OUTPUT);
+  pinMode(leftDoorLED, OUTPUT);
+  pinMode(rightDoorLED, OUTPUT);
+  //LCD
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print(kiString);
+  lcd.setCursor(0, 1);
+  lcd.print(kpString);
+  lcd.setCursor(0, 2);
+  lcd.print(powerString);
+  lcd.setCursor(0, 3);
+  lcd.print(announcementString);
+
+  //CLASSES:
+  recomVelDisp = new HexDisplay(0, recommendedVelCLK, recommendedVelDIO);
+  currVelDisp = new HexDisplay(0, currentVelCLK, currentVelDIO);
+  distanceDisp = new HexDisplay(0, authCLK, authDIO);
+  //keypad = new EngineerKeypad();
+  
+  Serial.begin(9600);
+}
+
+void loop() {
+  //Send data to python
+  String pythonStr = GenerateStringForPython(commTemperature, brakeState, doorState, lightState, setpointVelocity, kiValue, kpValue, manualMode, firstTimeOpeningDoors);
+  Serial.println(pythonStr);
+
+  //Get data from python
+  if(Serial.available()){
+    command = Serial.readStringUntil('\n');
+    command.trim();
+    
+    // Extract hour
+    int index1 = command.indexOf(','); 
+    hour = (command.substring(0, index1).toInt()); 
+
+    // Extract seconds
+    int index2 = command.indexOf(',', index1 + 1); 
+    seconds = (command.substring(index1 + 1, index2).toInt()); 
+
+    // Extract pa announcement
+    int index3 = command.indexOf(',', index2 + 1); 
+    paAnnouncement = (command.substring(index2 + 1, index3)); 
+
+    // Extract brakeFailure
+    int index4 = command.indexOf(',', index3 + 1); 
+    brakeFailure = (command.substring(index3 + 1, index4).toInt()); 
+
+    // Extract engineFailure
+    int index5 = command.indexOf(',', index4 + 1); 
+    engineFailure = (command.substring(index4 + 1, index5).toInt()); 
+
+    // Extract signalFailure
+    int index6 = command.indexOf(',', index5 + 1); 
+    signalFailure = (command.substring(index5 + 1, index6).toInt()); 
+
+    // Extract authority
+    int index7 = command.indexOf(',', index6 + 1); 
+    authority = (command.substring(index6 + 1, index7).toFloat()); 
+
+    // Extract actual velocity
+    int index8 = command.indexOf(',', index7 + 1); 
+    actualVelocity = (command.substring(index7 + 1, index8).toFloat()); 
+
+    // Extract commandedVelocity
+    int index9 = command.indexOf(',', index8 + 1); 
+    commandedVelocity = (command.substring(index8 + 1, index9).toFloat()); // Float value
+
+    // Extract required doors
+    int index10 = command.indexOf(',', index9 + 1); 
+    requiredDoors = (command.substring(index9 + 1, index10).toInt()); // String value
+
+    // Extract T
+    int index11 = command.indexOf(',', index10 + 1);
+    simSpeed = (command.substring(index10 + 1, index11).toFloat()); 
+
+    // Extract Power Commanded
+    int index12 = command.indexOf(',', index11 + 1);
+    Pcmd = (command.substring(index11 + 1, index12).toInt()); 
+
+    // Extract inTunnel
+    int index13 = command.indexOf(',', index12 + 1);
+    inTunnel = (command.substring(index12 + 1).toInt()); 
+
+    // Extract atStop
+    atStop = (command.substring(index13 + 1).toInt());
+  }
+  
+  //Display 7-Segments
+  if(last_value != commandedVelocity){
+    recomVelDisp -> DisplayFloat(commandedVelocity);
+    last_value = commandedVelocity;
+  }else{
+    recomVelDisp -> DisplayFloat(last_value);
+  }
+  currVelDisp -> DisplayFloat(actualVelocity);
+  if(long(authority) > 9999){
+    distanceDisp -> DisplayFloat(FeetToMiles(authority));
+    //digitalWrite(LED_PIN_FEET, LOW);
+    //digitalWrite(LED_PIN_MILES, HIGH);
+  }else{
+    distanceDisp -> DisplayInt(int(authority));
+    //digitalWrite(LED_PIN_FEET, HIGH);
+    //digitalWrite(LED_PIN_MILES, LOW);
+  }
+
+  //Refresh Pa announcement if necessary
+  UpdateLCD_PA(paAnnouncement);
+  
+  //Toggle failure mode LEDs
+  ToggleFailureModeLEDs(brakeFailure, engineFailure, signalFailure);
+  
+  //Handle eBrake functionality:
+  if (brakeState == 0 || brakeState == 2){
+    ToggleDebounceButton(eBrakeState, eBrakeLED, eBrakeButton, buttonStateEBrake, lastButtonStateEBrake, lastDebounceTime, debounceDelay);
+    if (eBrakeState == true)
+    {
+      brakeState = 1;
+    }
+  }else if (brakeState == 1 && actualVelocity == 0){
+    if(FailureActive(engineFailure, brakeFailure, signalFailure) == false){
+      ToggleDebounceButton(eBrakeState, eBrakeLED, eBrakeButton, buttonStateEBrake, lastButtonStateEBrake, lastDebounceTime, debounceDelay);
+    }
+  }
+
+  //Door Handler:
+  //Will set doorState automatically the first time it enters a stop and open doors as well as take the inputs from manual mode and open the requested doors
+  //Note: the automatic doors take priority over the manual mode
+  if(actualVelocity == 0){
+    //Automatic Doors - Open once at stop
+    if(atStop == true && requiredDoors > 0 && firstTimeOpeningDoors == true && authority <= 0){
+      doorState = requiredDoors;
+      switch(requiredDoors){
+        case 0: //no doors
+          leftDoorRequest = false;
+          rightDoorRequest = false;
+          break;
+        case 1: //right door only
+          leftDoorRequest = false;
+          rightDoorRequest = true;
+          break;
+        case 2: //left door only
+          leftDoorRequest = true;
+          rightDoorRequest = false;
+          break;
+        case 3: //both doors
+          leftDoorRequest = true;
+          rightDoorRequest = true;
+          break;
+        default:
+          leftDoorRequest = false;
+          rightDoorRequest = false;
+          break;
+      }
+      firstTimeOpeningDoors = false;
+    }
+    
+    //Set temporary timer for left and right doors respectively (has to be seperate due to polling both buttons separately)
+    if(resetDoorTimerLeft == true && leftDoorRequest == true){
+      tempTimeLeft = seconds;
+      resetDoorTimerLeft = false;
+      if(brakeState != 1){
+        brakeState = 2;
+      }
+    }
+    if(resetDoorTimerRight == true && rightDoorRequest == true){
+      tempTimeRight = seconds;
+      resetDoorTimerRight = false;
+      if(brakeState != 1){
+        brakeState = 2;
+      }
+    }
+    //Left door
+    if(tempTimeLeft + 60 < seconds){
+      digitalWrite(leftDoorLED, LOW);
+      resetDoorTimerLeft = true;
+      leftDoorRequest = false;
+
+    }
+    //Right door
+    if(tempTimeRight + 60 < seconds){
+      digitalWrite(rightDoorLED, LOW);
+      resetDoorTimerRight = true;
+      rightDoorRequest = false;
+    }
+
+    //Set doorState and LEDs accordingly
+    if (leftDoorRequest == true && rightDoorRequest == true){
+      doorState = 3;
+      digitalWrite(leftDoorLED, HIGH);
+      digitalWrite(rightDoorLED, HIGH);
+    }
+    else if (leftDoorRequest == true && rightDoorRequest == false){
+      doorState = 2;
+      digitalWrite(leftDoorLED, HIGH);
+      digitalWrite(rightDoorLED, LOW);
+    }
+    else if (leftDoorRequest == false && rightDoorRequest == true){
+      doorState = 1;
+      digitalWrite(leftDoorLED, LOW);
+      digitalWrite(rightDoorLED, HIGH);
+    }
+    else
+    {
+      doorState = 0;
+      digitalWrite(leftDoorLED, LOW);
+      digitalWrite(rightDoorLED, LOW);
+      if(brakeState != 1 && sBrakeState == LOW){
+        brakeState = 0;
+      }
+    }
+  }
+  if(actualVelocity > 0){
+    firstTimeOpeningDoors == true;
+  }
+
+  float displacement = (sq(MphToMps(actualVelocity)) / 2.4);
+      float comparingDistance = 0.0;
+      switch(simSpeed){
+        case 1:
+          comparingDistance = displacement;
+          break;
+        case 2:
+          comparingDistance = displacement + FeetToMeters(2);
+          break;
+        case 3:
+          comparingDistance = displacement + FeetToMeters(5);
+          break;
+        case 4:
+          comparingDistance = displacement + FeetToMeters(9);
+          break;
+        case 5:
+          comparingDistance = displacement + FeetToMeters(31);
+          break;
+        case 6:
+          comparingDistance = displacement + FeetToMeters(18);
+          break;
+        case 7:
+          comparingDistance = displacement + FeetToMeters(23);
+          break;
+        case 8:
+          comparingDistance = displacement + FeetToMeters(28);
+          break;
+        case 9:
+          comparingDistance = displacement + FeetToMeters(32);
+          break;
+        case 10:
+          comparingDistance = displacement + FeetToMeters(500);
+          break;
+        default:
+          break;
+      }
+
+  manualMode = digitalRead(manualModeSwitch);
+  //OPERATIONS FOR MANUAL VS AUTO MODE:
+  //=====================================================================================================================================
+  if(manualMode == true){
+    commTemperature = GetConvertedPotValue(analogRead(comTempPot), 0, 950, 65, 75);
+    float setpointVelocityReading = GetConvertedPotValue(analogRead(setpointVelPot), 3, 711, 0, 43.5); //685
+    setpointVelocity = GetSetpointVelocity(setpointVelocityReading, commandedVelocity); //confirms that setpointVelocity is below commandedVelocity
+
+    //Handle updating lightState and LEDs based on button presses/ Auto modes
+    //If the lights were set by the day of time in auto mode, turn them off and give control to driver
+    if(setByTime == true){
+        digitalWrite(insideLightLED, LOW);
+        digitalWrite(outsideLightLED, LOW);
+        insideLightState = false;
+        outsideLightState = false;
+        lightState = 0;
+        setByTime = false;
+    }
+    //Tunnel Handler:
+    if (inTunnel == true){
+      digitalWrite(insideLightLED, HIGH);
+      digitalWrite(outsideLightLED, HIGH);
+      insideLightState = true;
+      outsideLightState = true;
+      lightState = 3;
+      setByTunnel = true;
+    }else{
+      if(setByTunnel == true && inTunnel == false){
+        lightState = 0;
+        digitalWrite(insideLightLED, LOW);
+        digitalWrite(outsideLightLED, LOW);
+        insideLightState = false;
+        outsideLightState = false;
+        setByTunnel = false;
+      }
+      ToggleDebounceButton(insideLightState, insideLightLED, insideLightButton, buttonStateInsideLight, lastButtonStateInsideLight, lastDebounceTime, debounceDelay);
+      ToggleDebounceButton(outsideLightState, outsideLightLED, outsideLightButton, buttonStateOutsideLight, lastButtonStateOutsideLight, lastDebounceTime, debounceDelay);
+      if(insideLightState == true && outsideLightState == true){ lightState = 3;} 
+      else if(insideLightState == false && outsideLightState == true){ lightState = 2;}
+      else if(insideLightState == true && outsideLightState == false){ lightState = 1;}
+      else { lightState = 0;}
+    }
+    
+    //Handle operation of doors when they are not opened automatically
+    if(actualVelocity == 0){
+      int readingLeft = DebounceButton(leftDoorButton, buttonStateLeftDoor, lastButtonStateLeftDoor, lastDebounceTime, debounceDelay);
+      if(readingLeft == 1){ leftDoorRequest = true;}
+      int readingRight = DebounceButton(rightDoorButton, buttonStateRightDoor, lastButtonStateRightDoor, lastDebounceTime, debounceDelay);
+      if(readingRight == 1){ rightDoorRequest = true;}
+    }
+
+    //Handle service brake functionality and set brakeState value
+    sBrakeState = digitalRead(sBrakeButton);
+    if (sBrakeState == HIGH && manualMode == true && eBrakeState == false){
+      digitalWrite(sBrakeLED, HIGH);
+      brakeState = 2;
+    } else {
+      digitalWrite(sBrakeLED, LOW);
+      if(eBrakeState == true)
+      {
+        brakeState = 1;
+      }else{
+        brakeState = 0;
+      }
+    }
+    if (sBrakeState == LOW && manualMode == true && eBrakeState == false){
+      float displacement = (sq(MphToMps(actualVelocity)) / 2.4);
+      if(FeetToMeters(authority) <= comparingDistance + FeetToMeters(150)){ //This will alert driver to pull service brake to stop at authority = 0
+        if(sBrakeState == LOW){
+          warningLEDState = !warningLEDState;  // Toggle the LED state
+          digitalWrite(sBrakeLED, warningLEDState);  // Set the LED based on the new state
+          brakeState = 0;
+        }else{
+          digitalWrite(sBrakeLED, HIGH);
+          brakeState = 2;
+        }
+      }else if(commandedVelocity == 0){
+        if(sBrakeState == LOW){
+          warningLEDState = !warningLEDState;  // Toggle the LED state
+          digitalWrite(sBrakeLED, warningLEDState);  // Set the LED based on the new state
+          brakeState = 0;
+        }//else{
+        //  digitalWrite(sBrakeLED, HIGH);
+        //  brakeState = 2;
+        //}
+      }
+    }
+    
+  }
+  else{ //Auto Mode
+    setpointVelocity = commandedVelocity; //setpoint will always be equal to commanded velocity in auto mode
+    commTemperature = 68; //Set commanded temperature to room temp
+
+    //toggle service brake if eBrake is not active and train is moving faster than setpointVelocity
+    if(eBrakeState == false){
+      //bool checkBit = false;
+      if(FeetToMeters(authority) <= comparingDistance){ //This will pull service brake to stop at authority = 0
+        digitalWrite(sBrakeLED, HIGH);
+        brakeState = 2;
+        //checkBit = true;
+      }else if(actualVelocity > setpointVelocity || actualVelocity > commandedVelocity){
+        digitalWrite(sBrakeLED, HIGH);
+        brakeState = 2;
+      }else if(commandedVelocity == 0){
+        digitalWrite(sBrakeLED, HIGH);
+        brakeState = 2;     
+      /*}else if(checkBit == false){
+        float next_sample_auth = FeetToMeters(authority);
+        for(int i = 0; i < simSpeed; i++){
+          next_sample_auth -= actualVelocity * (0.09*simSpeed);
+          if(next_sample_auth <= displacement){
+
+            digitalWrite(sBrakeLED, HIGH);
+            brakeState = 2;  
+          }
+        }*/
+      }else{
+        digitalWrite(sBrakeLED, LOW);
+        brakeState = 0;
+        //checkBit = false;
+      }
+    }
+
+    //Handle toggling both lights between the hours of 8pm and 8am
+    // ***** need to add a case for being in a tunnel *****
+    if ((hour <= 7 || hour >= 20) && hour != 0){
+      digitalWrite(insideLightLED, HIGH);
+      digitalWrite(outsideLightLED, HIGH);
+      insideLightState = true;
+      outsideLightState = true;
+      lightState = 3;
+      setByTime = true;
+    }else if (inTunnel == true){
+      digitalWrite(insideLightLED, HIGH);
+      digitalWrite(outsideLightLED, HIGH);
+      insideLightState = true;
+      outsideLightState = true;
+      lightState = 3;
+      setByTunnel = true;
+    }else{
+      digitalWrite(insideLightLED, LOW);
+      digitalWrite(outsideLightLED, LOW);
+      insideLightState = false;
+      outsideLightState = false;
+      lightState = 0;
+      setByTime = false;
+      setByTunnel = false;
+    }
+  }
+  
+  //ENGINER PANEL
+  //=====================================================================================================================================
+  //Code in this section will handle updating the lcd display as well as the ki and kp values via the engineer panel
+  kiCounter += DebounceButton(kiButton, buttonStateKi, lastButtonStateKi, lastDebounceTime, debounceDelay);
+  kpCounter += DebounceButton(kpButton, buttonStateKp, lastButtonStateKp, lastDebounceTime, debounceDelay);
+  UpdateCounterLogic(kiCounter, kpCounter);
+  char text = customKeypad.getKey();
+  //This if statement takes ki/kp button inputs to select which value to edit and changes them on the backend and in the 
+  if(kiCounter > 1 || kpCounter > 1){
+      UpdateCounterLogic(kiCounter, kpCounter);
+
+      if (kiCounter == 2)
+      {
+        //UpdateCounterLogic(kiCounter, kpCounter);
+        
+        if(text){
+          keypadInput = GetString(text);
+        }
+        if(!keypadInput)
+        {
+          clearLCDRow(0);
+          WriteToLCD(1, pretextKi, lcd);
+        }
+        else if(keypadInput)
+        {
+          tempKi = keypadInput.toFloat();
+          output = "Enter Ki: " + keypadInput;
+          clearLCDRow(0);
+          WriteToLCD(1, output, lcd);
+        }
+      }
+      else if(kiCounter == 3)
+      {
+        if(output.length() <= 10)
+        {
+          clearLCDRow(0);
+          WriteToLCD(1, kiString, lcd);
+        }
+        else
+        {
+          kiString = "Ki Value: " + keypadInput;
+          kiValue = tempKi;
+          clearLCDRow(0);
+          WriteToLCD(1, kiString, lcd);
+        }
+        kiCounter = 0;
+        output = "";
+        tempKi = 0.0;
+        tempKp = 0.0;
+        keypadInput = "";
+        outputStr = "";
+      }
+      else if (kpCounter == 2)
+      {
+        UpdateCounterLogic(kiCounter, kpCounter);
+        
+        if(text){
+          keypadInput = GetString(text);
+        }
+        if(!keypadInput)
+        {
+          clearLCDRow(1);
+          WriteToLCD(2, pretextKp, lcd);
+        }
+        else if(keypadInput)
+        {
+          tempKp = keypadInput.toFloat();
+          output = "Enter Kp: " + keypadInput;
+          clearLCDRow(1);
+          WriteToLCD(2, output, lcd);
+        }
+      }else if(kpCounter == 3){
+        if(output.length() <= 10)
+        {
+          clearLCDRow(1);
+          WriteToLCD(2, kpString, lcd);
+        }
+        else
+        {
+          kpString = "Kp Value: " + keypadInput;
+          kpValue = tempKp;
+          clearLCDRow(1);
+          WriteToLCD(2, kpString, lcd);
+        }
+        kpCounter = 0;
+        output = "";
+        tempKp = 0.0;
+        tempKi = 0.0;
+        keypadInput = "";
+        outputStr = "";
+      }
+
+  }
+  
+  //Update commanded power and send it to LCD display
+  UpdateLCD_Power(Pcmd);
+}
+
+
+//FUNCTION PROTOTYPES:
+//=================================================================================================================================================================================
+int DebounceButton(int buttonPin, int &buttonState, int &lastButtonState, unsigned long &lastDebounceTime, unsigned long debounceDelay){
+  // Read the state of the button
+  int reading = digitalRead(buttonPin);
+  int isPressed = 0;
+  
+  // Check if the button state has changed (i.e., from HIGH to LOW or LOW to HIGH)
+  if (reading != lastButtonState) {
+    // Reset the debounce timer
+    lastDebounceTime = millis();
+  }
+
+  // Check if the state has been stable for long enough (debounce time)
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    // If the state has changed and is stable, update the button state
+    if (reading != buttonState) {
+      buttonState = reading;
+
+      // Only act on the change if the new state is HIGH (button pressed)
+      if (buttonState == HIGH) {
+        isPressed = 1;
+      }
+    }
+  }
+  
+  // Save the reading for the next loop iteration
+  lastButtonState = reading;
+  return isPressed;
+}
+
+void ToggleDebounceButton(bool &ledState, int ledPin, int buttonPin, int &buttonState, int &lastButtonState, unsigned long &lastDebounceTime, unsigned long debounceDelay){
+  // Read the state of the button
+  int reading = digitalRead(buttonPin);
+  
+  // Check if the button state has changed (i.e., from HIGH to LOW or LOW to HIGH)
+  if (reading != lastButtonState) {
+    // Reset the debounce timer
+    lastDebounceTime = millis();
+  }
+
+  // Check if the state has been stable for long enough (debounce time)
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    // If the state has changed and is stable, update the button state
+    if (reading != buttonState) {
+      buttonState = reading;
+
+      // Only act on the change if the new state is HIGH (button pressed)
+      if (buttonState == HIGH) {
+        //isPressed = 1;
+        ledState = !ledState;  // Toggle the LED state
+        digitalWrite(ledPin, ledState);  // Set the LED based on the new state
+      }
+    }
+  }
+  
+  // Save the reading for the next loop iteration
+  lastButtonState = reading;
+}
+
+void ToggleFailureModeLEDs(bool brakeF, bool engineF, bool signalF){
+  ToggleLED(brakeFailureLED, brakeF);
+  ToggleLED(engineFailureLED, engineF);
+  ToggleLED(signalFailureLED, signalF);
+}
+
+void UpdateCounterLogic(int &kiCounter, int &kpCounter){
+  switch(kiCounter){
+    case 0: 
+      break;
+    case 1:
+      kpCounter = 0;
+      break;
+    case 2:
+      kpCounter = 0;
+      break;
+    case 3:
+      kpCounter = 0;
+      break;
+    default:
+      //kiCounter = 0;
+      break;
+  }
+  switch(kpCounter){
+    case 0: 
+      break;
+    case 1:
+      kiCounter = 0;
+      break;
+    case 2:
+      kiCounter = 0;
+      break;
+    case 3:
+      kiCounter = 0;
+      break;
+    default:
+      //kpCounter = 0;
+      break;
+  }
+
+
+}
+
+float GetSetpointVelocity(float setpt, float commVel){
+  if(setpt > commVel){
+    return commVel;
+  }
+  else{
+    return setpt;
+  }
+}
+
+void WriteToLCD(int row, String text, LiquidCrystal_I2C &lcd){
+  switch(row)
+  {
+    case 1: //ki
+      lcd.setCursor(0,0);
+      lcd.print(text);
+      break;
+    case 2: //kp
+      lcd.setCursor(0,1);
+      lcd.print(text);
+      break;
+    case 3: //power
+      lcd.setCursor(0,2);
+      lcd.print(text);
+      break;
+    case 4: 
+      lcd.setCursor(0,3);
+      lcd.print(text);
+      break;
+    default:
+      break;
+  }
+}
+
+String GetString(char input){
+  //char input = keypad.getKey();
+  if (input){
+    switch(input)
+    {
+      case '0':
+        outputStr += input;
+        break;
+      case '1':
+        outputStr += input;
+        break;
+      case '2':
+        outputStr += input;
+        break;
+      case '3':
+        outputStr += input;
+        break;
+      case '4':
+        outputStr += input;
+        break;
+      case '5':
+        outputStr += input;
+        break;
+      case '6':
+        outputStr += input;
+        break;
+      case '7':
+        outputStr += input;
+        break; 
+      case '8':
+        outputStr += input;
+        break;
+      case '9':
+        outputStr += input;
+        break;
+      case '.':
+        if(outputStr.indexOf('.') == -1)
+        {
+          // Add decimal only if there isnt already one in the string
+          outputStr += input;
+        }
+        break;
+      case 'D':
+        if (outputStr.length() > 0) 
+        {
+          // Remove the last character by specifying the length - 1 as the index
+          outputStr.remove(outputStr.length() - 1);
+        }
+        break;
+      case 'F':
+        break;
+      default:
+        break;
+    }
+    
+    return outputStr;
+  }
+}
+
+// Function to clear an entire row by printing 20 spaces
+void clearLCDRow(int row) {
+  lcd.setCursor(0, row);  // Move the cursor to the beginning of the row
+  lcd.print("                    ");  // Print 20 spaces to clear the entire row
+}
+
+void clearLCDBlocks(int row, int curserPosition, int numToClear){
+  String spaces = "";
+  for(int i = 0; i < numToClear; i++){
+    spaces += " ";
+  }
+
+  lcd.setCursor(curserPosition, row);
+  lcd.print(spaces);
+}
+
+float GetConvertedPotValue(int actual_pot_value, int actual_min, float actual_max, int desired_range_min, float desired_range_max) {
+    // Clamp the potentiometer value within the actual min/max range
+    if (float(actual_pot_value) > actual_max) {
+        actual_pot_value = actual_max;
+    } else if (actual_pot_value < actual_min) {
+        actual_pot_value = actual_min;
+    }
+
+    // Calculate the actual and desired ranges
+    float actual_range = actual_max - actual_min;
+    float desired_range = desired_range_max - desired_range_min;
+
+    // Map the actual potentiometer value to the 0-1 range within the actual range
+    float normalized_value = float(actual_pot_value - actual_min) / float(actual_range);
+
+    // Convert to the desired range
+    float converted_value = (normalized_value * desired_range) + desired_range_min;
+
+    return converted_value;
+}
+
+void ToggleLED(int LED, bool toggle){
+  if(toggle == true){
+    digitalWrite(LED, HIGH);
+  }
+  else{
+    digitalWrite(LED, LOW);
+  }
+}
+
+void UpdateLCD_Power(float pwr){
+  clearLCDBlocks(2, 7, 7);
+  //clearLCDRow(2);
+  //WriteToLCD(3, output, lcd);
+  lcd.setCursor(0,2);
+  lcd.print("PWR: ");
+  lcd.setCursor(5,2);
+  lcd.print(String(pwr));
+  lcd.setCursor(15,2);
+  lcd.print("Watts");
+}
+
+void UpdateLCD_PA(String text){
+  lcd.setCursor(0,3);
+  lcd.print("PA: ");
+
+  if(previousAnnouncement != text){
+    clearLCDBlocks(3, 4, 16);
+    //rotateDisplay(tex)
+    lcd.setCursor(4,3);
+    lcd.print(text);
+    previousAnnouncement = text;
+  }
+
+}
+
+String GenerateStringForPython(int commTemperature, int brakeState, int doorState, int lightState, float setpointVelocity, float kiValue, float kpValue, bool manualMode, bool firstTimeOpeningDoors){
+  String str = String(commTemperature) + "," + String(brakeState) + "," + String(doorState) + "," + String(lightState) + "," + String(setpointVelocity) + "," + String(kiValue) + "," + String(kpValue) + "," + String(manualMode) + "," + String(firstTimeOpeningDoors);
+  return str;
+}
+
+float MphToMps(float input){
+  return (input/2.237);
+}
+
+float FeetToMiles(float input){
+  return (input/5280);
+}
+
+float FeetToMeters(float input){
+  return (input/3.281);
+}
+
+bool FailureActive(bool bF, bool eF, bool sF){
+  if (bF == true || eF == true || sF == true){
+    return true;
+  }else{
+    return false;
+  }
+}
+
+int MetersToFeet(float input){
+  return int(input*3.281);
+}
