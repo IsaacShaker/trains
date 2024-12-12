@@ -1348,7 +1348,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             pass            
             try:
                 # Read the Excel file
-                new_trains = myScheduleReader.get_green_routes(file_path)
+                new_trains = myScheduleReader.get_red_routes(file_path)
                 for i in new_trains:
                     self.trains.append(i)
             
@@ -1807,18 +1807,18 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         self.wayside_vision_dict["line"] = line
         self.wayside_vision_dict["index"] = 2
         self.wayside_vision_dict["output_block"] = 0
-        # while(1):
-        #     try:
-        #         response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
-        #         response.raise_for_status()  # This will raise an error for 4xx/5xx responses
+        while(1):
+            try:
+                response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
+                response.raise_for_status()  # This will raise an error for 4xx/5xx responses
 
-        #         if response.status_code == 200:
-        #             break
+                if response.status_code == 200:
+                    break
 
-        #     except requests.exceptions.HTTPError as http_err:
-        #         # Print the HTTP error response
-        #         print(f"HTTP error occurred: {http_err}")  # HTTP error details
-        #         print("Response content:", response.text)   # Full response content
+            except requests.exceptions.HTTPError as http_err:
+                # Print the HTTP error response
+                print(f"HTTP error occurred: {http_err}")  # HTTP error details
+                print("Response content:", response.text)   # Full response content
 
             except Exception as err:
                 # Catch any other exceptions
