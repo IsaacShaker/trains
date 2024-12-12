@@ -53,6 +53,11 @@ authAndSpeed = {
         'commandedSpeeds' : None
     }
 
+numBoarding = {
+        'num_boarding' : None,
+        'train_id' : None
+    }
+
 class Bluh(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -290,10 +295,12 @@ class TrackUI(QMainWindow):
             return
         trains.trainList[index].moveTrain(diff)
 
-    def train_in_station(self, index):
-        if initialized == False:
-            return
-        trains.trainList[index].get_people()
+    def post_people_boarding(self, index, numLeaving):
+        numBoarding['num_boarding'] = trains.trainList[index].station_stopped(numLeaving)
+        numBoarding['train_id'] = index
+        if launcher:
+            response = requests.post(URL + "/train-model/get-data/station_passenger", json = numBoarding)
+
 
     def post_auth_and_cmd_speed(self):
         authAndSpeed["authorities"]=trains.authorities
