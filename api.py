@@ -8,20 +8,59 @@ is_micah = False
 ###################################
 #Train Contoller Input Functions
 ###################################
-
-@app.route('/train-controller/receive-sim-speed', methods=['POST'])
-def recieve_sim_speed():
+@app.route('/train-model/receive-sim-speed', methods = ["POST"])
+def receive_sim_speed_tm():
     data = request.get_json()
 
-    speed_int = data.get("sim_speed", None)
+    sim_speed = data.get("sim_speed", None)
 
-    if speed_int is None:
-        return jsonify({"error": "No float vlaue recieved"}), 400
+    if sim_speed is None:
+        return jsonify({"error": "No float value received"}), 400
 
-    if is_micah:
-        app.qt_app_instance.train_controller_sw.change_timer(speed_int)
     else:
-        app.qt_app_instance.train_controller_hw.change_timer(speed_int)
+        app.qt_app_instance.train_model.train_list[0].set_samplePeriod(sim_speed)
+    
+    return jsonify("Success"), 200
+
+@app.route('/world-clock/get-sim-speed', methods=['POST'])
+def receive_sim_speed_wc():
+    data = request.get_json()
+
+    sim_speed = data.get("sim_speed", None)
+
+    if sim_speed is None:
+        return jsonify({"error": "No float value received"}), 400
+
+    else:
+        app.qt_app_instance.clock.set_sim_speed(sim_speed)
+    
+    return jsonify("Success"), 200
+
+@app.route('/train-controller/get-world-clock', methods=['POST'])
+def receive_seconds_tc():
+    data = request.get_json()
+
+    seconds_cum = data.get("seconds_cum", None)
+    seconds = data.get("seconds", None)
+    minute = data.get("minute", None)
+    hour = data.get("hour", None)
+
+    app.qt_app_instance.train_controller_hw.set_seconds(seconds_cum)
+    app.qt_app_instance.train_controller_hw.set_hour(hour)
+    
+    return jsonify("Success"), 200
+
+@app.route('/train-controller/receive-sim-speed', methods=['POST'])
+def receive_sim_speed_tc():
+    data = request.get_json()
+
+    sim_speed = data.get("sim_speed", None)
+
+    if sim_speed is None:
+        return jsonify({"error": "No float value received"}), 400
+
+    else:
+        app.qt_app_instance.train_controller_hw.set_sim_speed(sim_speed)
     #kevin's
     return jsonify("Success"), 200
 

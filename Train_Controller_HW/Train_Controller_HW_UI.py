@@ -5,6 +5,9 @@ import requests
 import serial
 
 URL = 'http://127.0.0.1:5000'
+
+sim_speed = 10
+
 class Train_Controller_HW_UI(QMainWindow):
     def __init__(self, model_list):
         super().__init__()
@@ -18,9 +21,9 @@ class Train_Controller_HW_UI(QMainWindow):
         self.connection_status = "Not Connected"
 
         self.timer = QTimer(self)
-        self.timer.setInterval(90)
-        self.timer.timeout.connect(self.read_serial)
-        self.timer.start()  # Read every 90ms
+        self.timer.setInterval(90) # Read every 90ms @ sim speed of 1
+        self.timer.timeout.connect(self.controller_logic)
+        self.timer.start()  
         
         self.init_ui()
         
@@ -50,6 +53,14 @@ class Train_Controller_HW_UI(QMainWindow):
         self.current_beacon_identifier = ""
         self.previous_beacon_identifier = ""
         self.station_name = ""
+
+        self.reset_left_door_timer = False
+        self.reset_right_door_timer = False
+        self.ARD_outside_light_request = False
+        self.ARD_inside_light_request = False
+        self.e_brake_state = False
+        self.s_brake_state = False
+        self.brake_warning = False
 
     #Data to be sent to train model (converting state variables to individual bools)
         self.emergency_brake_state = False
@@ -86,9 +97,9 @@ class Train_Controller_HW_UI(QMainWindow):
         self.sim_speed = 1
     
     #Other Timing Variables
-        self.T = .09  #Represents the period at which current_authority and commanded_power are calculated - Changes in relation to clock speed
+        self.T = .09 #* self.sim_speed #Represents the period at which current_authority and commanded_power are calculated - Changes in relation to clock speed
         self.counter = 1
-    
+
     #Output dictionaries
         self.auth_diff_dict = {
             "auth_diff": self.current_authority,
@@ -129,6 +140,7 @@ class Train_Controller_HW_UI(QMainWindow):
         }
 
 
+#UI FUNCTIONS 
     def init_ui(self):
         # Set up main window properties
         #UI dimensions:
@@ -339,6 +351,8 @@ class Train_Controller_HW_UI(QMainWindow):
             print("Error opening serial port:", ValueError)
             #self.status_label.setText("Arduino Status: Not Connected")
 
+
+#SERIAL CONNECTION FUNCTIONS
     def read_serial(self):
         if self.ser and self.ser.in_waiting > 0:
             # Read a line from the serial connection
@@ -348,46 +362,37 @@ class Train_Controller_HW_UI(QMainWindow):
             #Line comes in the form of "commanded_temperature, brake_state, door_state, light_state, commanded_power"
             if line:
                 values = line.split(',')
-                if len(values) == 9:  # Ensure we have 9 values
-                    temp = int(values[0])
-                    self.compare_and_set(temp, self.commanded_temperature, self.set_commanded_temperature)
-                    
-                    temp = int(values[1])
-                    self.compare_and_set(temp, self.brake_state, self.set_brake_state)
+                if len(values) == 12:  # Ensure we have 12 values
+                    self.compare_and_set(int(values[0]), self.commanded_temperature, self.set_commanded_temperature)
+                     
+                    self.e_brake_state = bool(values[1])
 
-                    temp = int(values[2])
-                    self.compare_and_set(temp, self.door_state, self.set_door_state)
+                    self.s_brake_state = bool(values[2])
 
-                    temp = int(values[3])
-                    self.compare_and_set(temp, self.light_state, self.set_light_state)
-                    
-                    temp = float(values[4])
-                    self.compare_and_set(temp, self.setpoint_velocity, self.set_setpoint_velocity)
-                    #if(float(self.setpoint_velocity) <= 0):
-                    #    self.set_setpoint_velocity = 0.0
+                    self.ARD_outside_light_request = bool(values[3])
 
-                    self.compare_and_set(float(values[5]), self.ki_value, self.set_ki_value)
+                    self.ARD_inside_light_request = bool(values[4])
 
-                    self.compare_and_set(float(values[6]), self.kp_value, self.set_kp_value)
+                    self.left_door_request = bool(values[5])
 
-                    self.manual_mode = bool(values[7])
+                    self.right_door_request = bool(values[6])
 
-                    self.first_time_opening_doors = bool(values[8])
+                    self.compare_and_set(float(values[7]), self.setpoint_velocity, self.set_setpoint_velocity)
+
+                    self.compare_and_set(float(values[8]), self.ki_value, self.set_ki_value)
+
+                    self.compare_and_set(float(values[9]), self.kp_value, self.set_kp_value)
+
+                    self.manual_mode = bool(values[10])
+
+                    self.first_time_opening_doors = bool(values[11])
                     
                     self.actual_velocity = self.train_model_list[0].get_currentVelocity()
-                    self.calculate_commanded_power()
-                    self.update_current_authority()
-                    self.write_to_serial()
-                    #self.timer.setInterval(int(90/self.sim_speed))
-
-                    #self.set_commanded_temperature(int(values[0]))
-                    #self.set_brake_state(int(values[1]))
-                    #self.set_door_state(int(values[2]))
-                    #self.set_light_state(int(values[3]))
-                    #self.set_commanded_power(float(values[4]))
+                    
 
                     #test bench items:
                     self.commanded_temperature_tb.setText(f"Commanded Temperature: {values[0]} Degrees F")
+                    '''
                     self.brake_state_tb.setText(f"Brake State: {values[1]}")
                     self.door_state_tb.setText(f"Door State: {values[2]}")
                     self.light_state_tb.setText(f"Light State: {values[3]}")
@@ -395,7 +400,8 @@ class Train_Controller_HW_UI(QMainWindow):
                     self.ki_value_tb.setText(f"KiValue: {values[5]}")
                     self.kp_value_tb.setText(f"KpValue: {values[6]}")
                     self.setpoint_velocity_tb.setText(f"Setpoint Velocity: {values[4]}")
-                    self.commanded_power_tb.setText(f"Commanded Power: {self.commanded_power}  Watts")   
+                    self.commanded_power_tb.setText(f"Commanded Power: {self.commanded_power}  Watts") 
+                    '''  
                                 
     def write_to_serial(self):
         #self.decode_beacon_info(self.beacon_info)
@@ -403,8 +409,8 @@ class Train_Controller_HW_UI(QMainWindow):
         #Continuously send backend variables to the serial port.
         #Create the command string using individual getter functions
         command = (         
-            str(self.get_hour()) + "," +                                                 #0
-            str(self.get_seconds()) + "," +                                              #1
+            str(self.get_brake_state()) + "," +                                                 #0
+            str(self.get_light_state()) + "," +                                              #1
             self.station_name + "," +                                                    #2
             str(self.get_brake_failure()) + "," +                                        #3
             str(self.get_engine_failure()) + "," +                                       #4
@@ -412,11 +418,10 @@ class Train_Controller_HW_UI(QMainWindow):
             str(self.meters_to_feet(self.get_current_authority())) + "," +               #6
             "{:.1f}".format(self.mps_to_mph(self.get_actual_velocity())) + "," +         #7
             "{:.1f}".format(self.mps_to_mph(self.get_commanded_velocity())) + "," +      #8
-            str(self.get_required_doors()) + "," +                                       #9
-            str(self.sim_speed) + "," +                                                    #10
-            "{:.3f}".format(self.get_commanded_power()) + "," +                          #11
-            str(self.get_in_tunnel()) + "," +                                            #12                                             
-            str(self.get_at_stop()) + "\n"                                               #13
+            str(self.get_door_state()) + "," +                                           #9
+            "{:.3f}".format(self.get_commanded_power()) + "," +                          #10
+            str(self.get_in_tunnel()) + "," +                                            #11
+            str(self.brake_warning) + "\n"
         )
         self.ser.write(command.encode())
 
@@ -426,10 +431,133 @@ class Train_Controller_HW_UI(QMainWindow):
         print (f"UPDATED AUTHORITY: {input}")
 
     def compare_and_set(self, read_value, backend_value, set_function):
-        if(read_value != backend_value):
-            set_function(read_value)
+            if(read_value != backend_value):
+                set_function(read_value)
+            else:
+                pass   
+
+# TRAIN CONTROLLER LOGIC FUNCTIONS
+    def controller_logic(self):
+        if self.ser and self.ser.in_waiting > 0:
+            if(not self.manual_mode):
+                self.setpoint_velocity = self.commanded_velocity
+                self.commanded_temperature = 68
+            self.emergency_brake_handler
+            self.service_brake_handler
+            self.door_handler
+            self.light_handler
+            self.calculate_commanded_power
+            self.update_current_authority
+            self.read_serial
+            self.write_to_serial
+
+    def light_handler(self):
+        if(self.manual_mode):
+            #If the lights were set by the day of time in auto mode, turn them off and give control to driver
+            if(self.lights_set_by_time):
+                self.set_light_state(0)
+                self.lights_set_by_time = False
+            #Tunnel Handler
+            if(self.in_tunnel):
+                self.set_light_state(3)
+                self.lights_set_by_tunnel = True
+            else:
+                if(self.lights_set_by_tunnel and not self.in_tunnel):
+                    self.set_light_state(0)
+                    self.lights_set_by_tunnel = False
+                if(self.ARD_inside_light_request and not self.inside_light):
+                    if(self.ARD_outside_light_request and not self.outside_light):
+                        self.set_light_state(3)
+                    self.set_light_state(2)
+                elif(self.ARD_outside_light_request and not self.outside_light):
+                    self.set_light_state(1)
         else:
-            pass    
+            if((self.hour <= 7 or self.hour >= 20) and self.hour != 0):
+                self.set_light_state(3)
+                self.lights_set_by_time = True
+            elif(self.in_tunnel):
+                self.set_light_state(3)
+                self.lights_set_by_tunnel = True
+            else: 
+                self.set_light_state(0)
+                self.lights_set_by_time = False
+                self.lights_set_by_tunnel = False
+
+    def service_brake_handler(self):
+        displacement = ((self.actual_velocity * self.actual_velocity) / 2.4)
+
+        if(self.manual_mode):
+            if(self.s_brake_state and self.brake_state != 1):
+                self.set_brake_state(2)
+            else:
+                self.set_brake_state(0)
+            if(not self.s_brake_state and self.brake_state != 1):
+                if(self.current_authority <= displacement + self.feet_to_meters(20)):
+                    self.brake_warning = True
+                else:
+                    self.brake_warning = False
+            if(self.commanded_velocity == 0 and not self.s_brake_state and self.actual_velocity > self.commanded_velocity):
+                self.brake_warning = True
+            else:
+                self.brake_warning = False
+        else: #AUTO MODE
+            if(self.brake_state != 1):
+                if(self.current_authority <= displacement or self.actual_velocity > self.commanded_velocity):
+                    self.set_brake_state(2)
+                else:
+                    self.set_brake_state(0)
+
+    def emergency_brake_handler(self):
+        if(self.e_brake_state == True): #from arduino (DRIVER)
+            self.set_brake_state(1)
+        elif(self.brake_state != 2):
+            self.set_brake_state(0)
+
+    def door_handler(self):
+        #Runs automatically to open doors at the station
+        if(self.actual_velocity == 0):
+            if(self.at_stop and self.required_doors > 0 and self.first_time_opening_doors and self.current_authority <= 0):
+                self.set_door_state(self.required_doors)
+                self.right_door_request = self.right_door
+                self.left_door_request = self.left_door
+                self.first_time_opening_doors = False
+            
+            #left door timer
+            if(self.reset_left_door_timer and (self.left_door_request or self.left_door)):
+                self.temp_time_left = self.seconds
+                self.reset_left_door_timer = False
+                if(self.brake_state != 1):
+                    self.set_brake_state(2)
+            #right door timer
+            if(self.reset_right_door_timer and (self.right_door_request or self.right_door)):
+                self.temp_time_right = self.seconds
+                self.reset_right_door_timer = False
+                if(self.brake_state != 1):
+                    self.set_brake_state(2)
+                
+            if(self.temp_time_left + 60 < self.seconds):
+                self.reset_left_door_timer = True
+                self.left_door = False 
+                self.left_door_request = False   
+
+            if(self.temp_time_right + 60 < self.seconds):
+                self.reset_right_door_timer = True
+                self.right_door = False 
+                self.right_door_request = False  
+
+
+            if(self.left_door and self.right_door):
+                self.set_door_state(3)
+            elif(self.left_door and not self.right_door):
+                self.set_door_state(2)
+            elif(not self.left_door and self.right_door):
+                self.set_door_state(1)
+            else:
+                self.set_door_state(0)
+                if(self.brake_state != 1 and not self.s_brake_state):
+                    self.set_brake_state(0)
+        else:
+            self.first_time_opening_doors = True
 
     def decode_beacon_info(self, encoded_beacon_info):
         if encoded_beacon_info:
@@ -446,14 +574,14 @@ class Train_Controller_HW_UI(QMainWindow):
                         if(self.previous_beacon_identifier == "T2"):
                             self.in_tunnel = not(self.in_tunnel)
                     
-                        self.previous_beacon_dentifier = self.current_beacon_identifier
+                    self.previous_beacon_dentifier = self.current_beacon_identifier
                     self.required_doors = values[1]
 
                     #set pa announcement string
                     if self.current_authority < 180:
                         self.station_name = values[2]
                         self.set_pa_announcement(self.station_name, self.at_stop)
-
+                
             elif len(values) == 1:
                 #check if tunnel beacon
                 if values[0][0] == "T" or values[0][0] == "t":
@@ -462,35 +590,19 @@ class Train_Controller_HW_UI(QMainWindow):
                         self.in_tunnel = not(self.in_tunnel)    #flip in_tunnel bool
                         self.previous_beacon_dentifier = self.current_beacon_identifier
 
+                    #self.required_doors = values[1]
+
                     #set pa announcement string
                     if self.current_authority < 180:
                         self.station_name = values[2]
                         self.set_pa_announcement(self.station_name, self.at_stop)
-
-    def kmph_to_mph(self, input):
-        return (float(input)/1.609344)
-
-    def kmph_to_mps(self, input):
-        return (float(input)/3.6)
-
-    def mps_to_mph(self, input):
-        return (float(input)*2.237)
-
-    def mph_to_mps(self, input):
-        return (float(input)/2.237)
-
-    def meters_to_feet(self, input):
-        return (float(input)*3.28084)
-
-    def feet_to_meters(self, input):
-        return (float(input)/3.28084)
 
     def update_current_authority(self):
         if(self.train_instantion == True):
             self.set_current_authority(self.commanded_authority + self.current_authority)
             if(self.current_authority > 0):
                 self.train_instantion = False
-        if(self.current_authority <= 0 and self.actual_velocity == 0 and self.first_time_opening_doors == True):
+        if(self.current_authority <= 0 and self.actual_velocity == 0 and self.first_time_opening_doors == False):
             self.set_current_authority(self.commanded_authority + self.current_authority) 
         else:
             self.current_authority -= self.actual_velocity*self.T
@@ -504,7 +616,7 @@ class Train_Controller_HW_UI(QMainWindow):
             self.counter_authority += 1
 
     def calculate_commanded_power(self):
-        v_command = self.mph_to_mps(self.setpoint_velocity)
+        v_command = self.setpoint_velocity
         v_error = v_command - self.actual_velocity
         self.ek_previous = self.ek_current
         self.ek_current = v_error
@@ -526,6 +638,40 @@ class Train_Controller_HW_UI(QMainWindow):
             self.commanded_power = 0.0
 
         self.set_commanded_power(self.commanded_power)
+
+
+# UNIT CONVERSIONS
+    def kmph_to_mph(self, input):
+        return (float(input)/1.609344)
+
+    def kmph_to_mps(self, input):
+        return (float(input)/3.6)
+
+    def mps_to_mph(self, input):
+        return (float(input)*2.237)
+
+    def mph_to_mps(self, input):
+        return (float(input)/2.237)
+
+    def meters_to_feet(self, input):
+        return (float(input)*3.28084)
+
+    def feet_to_meters(self, input):
+        return (float(input)/3.28084)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #Set Functions:
@@ -628,6 +774,7 @@ class Train_Controller_HW_UI(QMainWindow):
     
     def set_seconds(self, input):
         self.seconds = input
+        #self.write_to_serial()
 
     def set_brake_failure(self, input):
         self.brake_failure = int(input)
@@ -683,13 +830,13 @@ class Train_Controller_HW_UI(QMainWindow):
         self.T = input
 
     def set_setpoint_velocity(self, input):
-        commanded = self.mps_to_mph(self.commanded_velocity)
-        if input > commanded:
-            self.setpoint_velocity = commanded
+        setpt = self.mph_to_mps(input)
+        if self.commanded_velocity < setpt:
+            self.setpoint_velocity = self.commanded_velocity
         elif input < 0:
             self.setpoint_velocity = 0
         else:
-            self.setpoint_velocity = input
+            self.setpoint_velocity = setpt
 
     def set_ki_value(self, input):
         self.ki_value = input

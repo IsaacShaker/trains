@@ -828,7 +828,9 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         # print(self.sim_speed)
 
         while(1):
+            response = requests.post(URL + "/train-model/receive-sim-speed", json=self.sim_speed_dict)
             response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
+            response = requests.post(URL + "/world-clock/get-sim-speed", json=self.sim_speed_dict)
             if response.status_code == 200:
                 print('simulation running at', myClock.sim_speed)
                 break
