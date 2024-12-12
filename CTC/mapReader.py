@@ -69,8 +69,6 @@ class MapReader():
             else:
                 current_stop = stops[i - 1]
                 next_stop = stops[i]
-            print('START =', current_stop)
-            print('STOP =', next_stop)
             # Find indices for the current and next stops
             current_stop_index = df[df['Infrastructure'] == current_stop].index
             next_stop_index = df[df['Infrastructure'] == next_stop].index

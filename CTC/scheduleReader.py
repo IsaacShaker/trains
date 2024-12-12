@@ -32,12 +32,28 @@ class ScheduleReader(Train):
 
         return greenTrains
     
-    def get_red_route(self, train):
+    def get_red_route(self, file_path, num_trains):
         # Open the track layout
-        file_path = '' # insert file path hardcoded
-        df = pd.read_excel(file_path, sheet_name = 'Red Line')
+        df = pd.read_excel(file_path)
+        
+        # Create the required number of trains necessary for the schedule
+        redTrains = []
+        # Create Train objects for each 'Train' column
+        for column in df.columns:
+            column = str(column)
+            if column[:5] == 'Train':
+                new_index = num_trains + len(redTrains)
+                name = "Train "+ str(new_index)
+                train = Train(name, 'Green')  # Create a Train object
+                redTrains.append(train)
 
-        # Calculate the authority for the train
+        # Process each train's data
+        for i, train in enumerate(redTrains):
+            # Extract dispatch time from the first row
+            train.time_to_dispatch = df.iloc[0, i + 1]  # Get the dispatch time from the first row of the train's column
 
+            # Add station stops from remaining rows
+            for index, row in df.iloc[1:].iterrows():  # Skip the first row (dispatch times)
+                train.station_stops.append(row[i + 1])  # Append station stops from the train's column
 
-        return self.intermediate_routes
+        return redTrains
