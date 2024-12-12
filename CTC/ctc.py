@@ -1117,7 +1117,14 @@ class MyWindow(QMainWindow):
         # Toggle the simulation state
         if not self.enable_clock:
             print("The simulation has started!")
+
+            self.sim_speed_dict["sim_speed"] = self.sim_speed
+            response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
+            if response.status_code == 200:
+                print('simulation running at', self.sim_speed)
         else:
+            self.sim_speed_dict["sim_speed"] = 0
+            response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
             print("The simulation has been stopped!")
 
         # Update the button text to reflect the current state
