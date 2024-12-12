@@ -612,7 +612,7 @@
       "switches": [
         {
           "id": 0,
-          "plc_num": 1,
+          "plc_num": 0,
           "name_1": "9 to 10",
           "name_2": "9 to Yard",
           "from": 9,
@@ -622,7 +622,7 @@
         },
         {
           "id": 1,
-          "plc_num": 1,
+          "plc_num": 0,
           "name_1": "16 to 15",
           "name_2": "16 to 1",
           "from": 16,
@@ -632,7 +632,7 @@
         },
         {
           "id": 6,
-          "plc_num": 1,
+          "plc_num": 0,
           "name_1": "52 to 53",
           "name_2": "52 to 66",
           "from": 52,
@@ -644,30 +644,35 @@
       "traffic_lights": [
         {
           "id": 0,
+          "plc_num": 0,
           "name_1": "Block 10 - Red",
           "name_2": "Block 10 - Green",
           "toggled": false
         },
         {
-          "id": 0,
+          "id": 1,
+          "plc_num": 0,
           "name_1": "Block YARD - Red",
           "name_2": "Block YARD - Green",
           "toggled": false
         },
         {
-          "id": 1,
+          "id": 2,
+          "plc_num": 0,
           "name_1": "Block 15 - Red",
           "name_2": "Block 15 - Green",
           "toggled": false
         },
         {
-          "id": 1,
+          "id": 3,
+          "plc_num": 0,
           "name_1": "Block 53 - Red",
           "name_2": "Block 53 - Green",
           "toggled": false
         },
         {
-          "id": 1,
+          "id": 4,
+          "plc_num": 0,
           "name_1": "Block 66 - Red",
           "name_2": "Block 66 - Green",
           "toggled": false
@@ -676,6 +681,7 @@
       "crossings": [
         {
           "id": 0,
+          "plc_num": 0,
           "name_1": "Block 11 - UP",
           "name_2": "Block 11 - DOWN",
           "toggled": false
@@ -1067,8 +1073,8 @@
       ],
       "switches": [
         {
-          "id": 0,
-          "plc_num": 2,
+          "id": 2,
+          "plc_num": 0,
           "name_1": "27 to 28",
           "name_2": "27 to 76",
           "from": 27,
@@ -1078,7 +1084,7 @@
         },
         {
           "id": 3,
-          "plc_num": 1,
+          "plc_num": 0,
           "name_1": "33 to 72",
           "name_2": "33 to 32",
           "from": 33,
@@ -1088,7 +1094,7 @@
         },
         {
           "id": 4,
-          "plc_num": 1,
+          "plc_num": 0,
           "name_1": "38 to 39",
           "name_2": "38 to 71",
           "from": 38,
@@ -1098,7 +1104,7 @@
         },
         {
           "id": 5,
-          "plc_num": 1,
+          "plc_num": 0,
           "name_1": "44 to 67",
           "name_2": "44 to 43",
           "from": 44,
@@ -1109,31 +1115,36 @@
       ],
       "traffic_lights": [
         {
-          "id": 2,
+          "id": 5,
+          "plc_num": 0,
           "name_1": "Block 2 - Red",
           "name_2": "Block 27 - Green",
           "toggled": false
         },
         {
-          "id": 2,
+          "id": 6,
+          "plc_num": 0,
           "name_1": "Block 27 - Red",
           "name_2": "Block 27 - Green",
           "toggled": false
         },
         {
-          "id": 3,
+          "id": 7,
+          "plc_num": 0,
           "name_1": "Block 32 - Red",
           "name_2": "Block 32 - Green",
           "toggled": false
         },
         {
-          "id": 4,
+          "id": 8,
+          "plc_num": 0,
           "name_1": "Block 38 - Red",
           "name_2": "Block 38 - Green",
           "toggled": false
         },
         {
-          "id": 5,
+          "id": 9,
+          "plc_num": 0,
           "name_1": "Block 43 - Red",
           "name_2": "Block 43 - Green",
           "toggled": false
@@ -1142,6 +1153,7 @@
       "crossings": [
         {
           "id": 1,
+          "plc_num": 0,
           "name_1": "Block 47 - UP",
           "name_2": "Block 47 - DOWN",
           "toggled": false
@@ -1563,7 +1575,6 @@
     "SW": {
       "blocks": [
         {
-          "comment": "THIS DA YARD: train should go from block 0 (YARD) to 63",
           "block": 1,
           "occupied": false,
           "speed_hazard": false

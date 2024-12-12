@@ -10,6 +10,9 @@ import requests  # For triggering shutdown
 from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QApplication, QWidget, QTabWidget, QComboBox, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog
 
+RPI_IP = "10.4.0.0"
+SEND_TO_PI = False
+
 LOCAL_DEVELOPMENT = False
 base_path = os.path.dirname(__file__)
 
@@ -51,32 +54,6 @@ class MyApp(QWidget):
         self.data_main = copy.deepcopy(data)
         self.data_test = copy.deepcopy(data)
 
-        self.sw_signal_data = {
-            "Green": {
-                "switches": self.data_main["Green"]["SW"]["switches"],
-                "traffic_lights": self.data_main["Green"]["SW"]["traffic_lights"],
-                "crossings": self.data_main["Green"]["SW"]["crossings"]
-            },
-            "Red": {
-                "switches": self.data_main["Red"]["SW"]["switches"],
-                "traffic_lights": self.data_main["Red"]["SW"]["traffic_lights"],
-                "crossings": self.data_main["Red"]["SW"]["crossings"]
-            }
-        }
-
-        self.hw_signal_data = {
-            "Green": {
-                "switches": self.data_main["Green"]["HW"]["switches"],
-                "traffic_lights": self.data_main["Green"]["HW"]["traffic_lights"],
-                "crossings": self.data_main["Green"]["HW"]["crossings"]
-            },
-            "Red": {
-                "switches": self.data_main["Red"]["HW"]["switches"],
-                "traffic_lights": self.data_main["Red"]["HW"]["traffic_lights"],
-                "crossings": self.data_main["Red"]["HW"]["crossings"]
-            }
-        }
-
         self.plc_managers = {}
         self.plc_num = 0
 
@@ -101,7 +78,8 @@ class MyApp(QWidget):
         self.preset_plc("Green", "SW", 0, f"{base_path}/PLCs/Green_line_SW_PLC_0.py")
         self.preset_plc("Green", "SW", 1, f"{base_path}/PLCs/Green_line_SW_PLC_1.py")
         self.preset_plc("Green", "SW", 2, f"{base_path}/PLCs/Green_line_SW_PLC_2.py")
-        self.preset_plc("Green", "HW", 0, f"{base_path}/PLCs/Green_line_HW_PLC_0.py")
+        if SEND_TO_PI == False:
+            self.preset_plc("Green", "HW", 0, f"{base_path}/PLCs/Green_line_HW_PLC_0.py")
 
         # Create a QTimer instance
         self.update_ui_timer = QTimer(self)
@@ -109,6 +87,13 @@ class MyApp(QWidget):
         self.update_ui_timer.timeout.connect(self.update_content)
         # Start the timer to call update_content every 500 milliseconds
         self.update_ui_timer.start(500)
+
+        # Create a QTimer instance
+        self.run_plc_timer = QTimer(self)
+        # Connect the timer's timeout signal to the update_content method
+        self.run_plc_timer.timeout.connect(self.run_plcs)
+        # Start the timer to call update_content every 500 milliseconds
+        self.run_plc_timer.start(100)
 
         if LOCAL_DEVELOPMENT == False:
             self.api_call_timer = QTimer(self)
@@ -136,12 +121,46 @@ class MyApp(QWidget):
             block["occupied"] = data_dict['Green'][block["block"]]
 
         # Red
-        # for block in self.data_main["Red"]["HW"]["blocks"]:
-        #     block["toggled"] = data_dict['Red'][block["block"]]
-        # for block in self.data_main["Red"]["SW"]["blocks"]:
-        #     block["toggled"] = data_dict['Red'][block["block"]]
+        for block in self.data_main["Red"]["HW"]["blocks"]:
+            block["toggled"] = data_dict['Red'][block["block"]]
+        for block in self.data_main["Red"]["SW"]["blocks"]:
+            block["toggled"] = data_dict['Red'][block["block"]]
+
+        # send them to HW Track Module
+        hw_blocks = {
+            "Green": self.data_main["Green"]["HW"]["blocks"],
+            "Red": self.data_main["Red"]["HW"]["blocks"]
+        }
+
+        if SEND_TO_PI == True:
+            response = requests.post(f"http://{RPI_IP}:5000/data", json=hw_blocks, timeout=3)
     
     def give_signals(self):
+        if SEND_TO_PI == True:
+            response = requests.get(f"http://{RPI_IP}:5000/data", timeout=3)
+            hw_data = {}
+            if response.status_code == 200:
+                hw_data = response.json()
+                for i, block in enumerate(hw_data["Green"]["blocks"]):
+                    self.data_main["Green"]["HW"]["blocks"][i]["speed_hazard"] = block["speed_hazard"]
+                for i, block in enumerate(hw_data["Red"]["blocks"]):
+                    self.data_main["Red"]["HW"]["blocks"][i]["speed_hazard"] = block["speed_hazard"]
+
+                for i, switch in enumerate(hw_data["Green"]["switches"]):
+                    self.data_main["Green"]["HW"]["switches"][i]["toggled"] = switch["toggled"]
+                for i, block in enumerate(hw_data["Red"]["switches"]):
+                    self.data_main["Red"]["HW"]["switches"][i]["toggled"] = switch["toggled"]
+
+                for i, traffic_light in enumerate(hw_data["Green"]["traffic_lights"]):
+                    self.data_main["Green"]["HW"]["traffic_lights"][i]["toggled"] = traffic_light["toggled"]
+                for i, block in enumerate(hw_data["Red"]["traffic_lights"]):
+                    self.data_main["Red"]["HW"]["traffic_lights"][i]["toggled"] = traffic_light["toggled"]
+
+                for i, crossing in enumerate(hw_data["Green"]["crossings"]):
+                    self.data_main["Green"]["HW"]["crossings"][i]["toggled"] = crossing["toggled"]
+                for i, block in enumerate(hw_data["Red"]["crossings"]):
+                    self.data_main["Red"]["HW"]["crossings"][i]["toggled"] = crossing["toggled"]
+
         self.all_signal_data = {
             "Green": {
                 "switches": self.data_main["Green"]["SW"]["switches"] + self.data_main["Green"]["HW"]["switches"],
@@ -149,9 +168,9 @@ class MyApp(QWidget):
                 "crossings": self.data_main["Green"]["SW"]["crossings"] + self.data_main["Green"]["HW"]["crossings"]
             },
             "Red": {
-                "switches": self.data_main["Red"]["HW"]["switches"],
-                "traffic_lights": self.data_main["Red"]["HW"]["traffic_lights"],
-                "crossings": self.data_main["Red"]["HW"]["crossings"]
+                "switches": self.data_main["Red"]["SW"]["switches"] + self.data_main["Red"]["HW"]["switches"],
+                "traffic_lights": self.data_main["Red"]["SW"]["traffic_lights"] + self.data_main["Red"]["HW"]["traffic_lights"],
+                "crossings": self.data_main["Red"]["SW"]["traffic_lights"] + self.data_main["Red"]["HW"]["crossings"]
             }
         }
 
@@ -162,7 +181,7 @@ class MyApp(QWidget):
     def get_block_data(self):
         data = {
             "Green": self.data_main["Green"]["SW"]["blocks"] + self.data_main["Green"]["HW"]["blocks"],
-            "Red": self.data_main["Red"]["SW"]["blocks"] + self.data_main["Red"]["SW"]["blocks"]
+            "Red": self.data_main["Red"]["SW"]["blocks"]
         }
         return data
 
@@ -210,7 +229,12 @@ class MyApp(QWidget):
             plc_manager.stop_current_plc()  # Call the member function on each instance
 
         self.update_ui_timer.stop()  # Stop the timer when the app closes
+        self.run_plc_timer.stop()
         event.accept()  # Accept the event to close the window
+    
+    def run_plcs(self):
+        for name, plc_manager in self.plc_managers.items():
+            plc_manager.update_data()  # Call the member function on each instance
         
     def create_shared_content(self, test=False):
         tab_widget = QWidget()

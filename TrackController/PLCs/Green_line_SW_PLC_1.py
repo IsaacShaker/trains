@@ -11,5 +11,6 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
             switches[2] = False
             traffic_lights[4] = True
         
+        break
         # Simulate delay to avoid CPU hogging
         time.sleep(0.1)
