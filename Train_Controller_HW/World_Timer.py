@@ -53,7 +53,7 @@ class World_Clock(QObject):
             self.clock_dict["seconds"] = self.seconds
             self.clock_dict["minute"] = self.minute
             self.clock_dict["hour"] = self.hour
-            self.time_string["time_string"] = self.time_string
+            self.clock_dict["time_string"] = self.time_string
             response = requests.post(URL + "/global/get-world-clock", json=self.clock_dict)
 
     def get_hour(self):

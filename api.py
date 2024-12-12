@@ -88,11 +88,9 @@ def receive_sim_speed_tc():
     if sim_speed is None:
         return jsonify({"error": "No float value received"}), 400
 
-    if is_micah:
-        app.qt_app_instance.train_controller_sw.change_timer(sim_speed)
-    else:
-        app.qt_app_instance.train_controller_hw.change_timer(sim_speed)
-    #kevin's
+    app.qt_app_instance.train_controller_sw.change_timer(sim_speed)
+    app.qt_app_instance.train_controller_hw.set_sim_speed(sim_speed)
+    
     return jsonify("Success"), 200
 
 @app.route('/train-controller/receive-authority', methods=['POST'])
