@@ -242,6 +242,7 @@ class TrainModel(QObject):
         else:
             self.samplePeriod = 0.09
 
+    #Determine the random amout of passengers leaving
     def set_passengers_leaving(self):
         if self.passCount > 0:
             self.passengers_leaving = random.randint(0, self.passCount)
@@ -273,26 +274,32 @@ class TrainModel(QObject):
     def get_currentVelocity(self):
         return self.currentVelocity
 
+    #Meters per second to miles per hour
     def mps_to_mph(self, vel):
         vel=vel*2.2369
         return vel
 
+    #Miles per hour to meters per second
     def mph_to_mps(self, vel):
         vel=vel/2.2369
         return vel
 
+    #Meters to feet
     def m_to_ft(self, num):
         num=num*3.2808
         return num
 
+    #Tons to kilograms
     def tons_to_kg(self, mass):
         mass=mass*1000
         return mass
 
+    #kilometers to hour to meters per second
     def kmh_to_ms(self,speed):
         speed=(((speed*1000)/60)/60)
         return speed
     
+    #Tons to newtons
     def tons_to_N(self,mass):
         mass=mass*1000*9.80665
         return mass
@@ -300,6 +307,7 @@ class TrainModel(QObject):
     def start_adjusting_temperature(self):
         self.adjust_timer.start(100)  # Update every 100 ms
 
+    #First order differential for temp
     def update_temperature(self):
         if abs(self.temperature - self.commandedTemperature) > 0.01:
             # First-order differential equation update
@@ -311,26 +319,18 @@ class TrainModel(QObject):
             #print("Target temperature reached.")
             self.adjust_timer.stop()  # Stop the timer when the target is reached
 
-    def calc_total_mass(self):
-    
+    def calc_total_mass(self):    
         # Convert train weight to pounds
         car_weight_pounds = self.CAR_MASS * 2204.623
-
-        train_weight_pounds=car_weight_pounds*self.numberOfCars
-        
+        train_weight_pounds=car_weight_pounds*self.numberOfCars        
         # Calculate total weight of crew and passengers
-        total_people_weight = (self.crewCount + self.passCount) * self.PERSON_WEIGHT_POUNDS
-        
+        total_people_weight = (self.crewCount + self.passCount) * self.PERSON_WEIGHT_POUNDS        
         # Total weight in pounds
-        total_weight_pounds = train_weight_pounds + total_people_weight
-        
+        total_weight_pounds = train_weight_pounds + total_people_weight        
         # Convert total weight to tons
-        total_weight_tons = total_weight_pounds / 2204.623  # Convert back to tons
-
+        total_weight_tons = total_weight_pounds / 2204.623
         #print (total_weight_tons)
-
-        self.totalMass=total_weight_tons
-        
+        self.totalMass=total_weight_tons        
         #return total_weight_tons
 
     def calc_total_length(self):
@@ -338,6 +338,7 @@ class TrainModel(QObject):
             self.trainLength=32.2-((5-self.numberOfCars)*6.6)
         #print(f"Length: {self.trainLength}")
 
+    #Ensures force does not exceed max or is not undefined
     def force_limiter(self):
         max_force = self.tons_to_kg(self.totalMass) * 0.5
         #If our force passes the max allowed
@@ -350,6 +351,7 @@ class TrainModel(QObject):
         elif self.lastVel == 0:
             self.currForce = max_force
 
+    #Ensures acceleration is not too high and brakes/failure modes affect it
     def acceleration_limiter(self):
         if (self.currAccel > self.ACCELERATION_LIMIT and not self.serviceBrake and not self.emergencyBrake):
             # If all brakes are OFF and self.currAccel is above the limit
@@ -367,11 +369,8 @@ class TrainModel(QObject):
             else:
                 self.currAccel = 0
 
+    #Set new amount of passengers and update the passenger count
     def update_passengers(self):
-        # If we have passengers, some will leave
-        #if self.passCount > 0:
-            #passengers_leaving = random.randint(0, self.passCount)
-            #self.passCount -= passengers_leaving
         # Maximum passengers to enter
         max_new_passengers = self.MAX_PASSENGERS - self.passCount  
         # Random number of passengers entering from the amount at the station
@@ -386,12 +385,11 @@ class TrainModel(QObject):
         #Update the passenger and weight information in the UI
         self.passengers_changed.emit()
 
+    #When power command is received, use Newton's Laws and the train control equations
     def receive_power(self):
         if(self.engineFailure):
             self.currPower = 0
-
         previousAcceleration=self.currAccel
-
         # Check to avoid division by zero in case velocity is zero
         if self.currentVelocity != 0:
             self.currForce = self.currPower / self.currentVelocity
@@ -401,7 +399,8 @@ class TrainModel(QObject):
         #print(self.currForce)
         self.force_limiter()
        # print(self.currForce)
-        #Acceleration calc
+
+        #Acceleration calculations
         if self.totalMass != 0:
             self.currAccel = self.currForce / (self.tons_to_kg(self.totalMass)) 
         # Ensure totalMass is not zero
@@ -411,7 +410,7 @@ class TrainModel(QObject):
         self.acceleration_limiter()
         #print(self.currAccel)
 
-        #Velocity acceleration
+        #Velocity calculations
         velocityNew = self.currentVelocity + (((self.samplePeriod / 2)/self.mitch_var) * (self.currAccel + previousAcceleration))
         if(velocityNew >= self.VELOCITY_LIMIT):
             # If the velocity is greater than max speed
