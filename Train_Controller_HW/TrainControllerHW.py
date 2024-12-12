@@ -21,6 +21,7 @@ class Train_Controller_HW_UI(QMainWindow):
         self.timer.setInterval(90)
         self.timer.timeout.connect(self.read_serial)
         self.timer.start()  # Read every 90ms
+        self.paused = False
         
         self.init_ui()
         
@@ -340,7 +341,8 @@ class Train_Controller_HW_UI(QMainWindow):
             #self.status_label.setText("Arduino Status: Not Connected")
 
     def read_serial(self):
-        if self.ser and self.ser.in_waiting > 0:
+
+        if self.ser and self.ser.in_waiting > 0 and not self.paused:
             # Read a line from the serial connection
             line = self.ser.readline().decode().strip()
 
@@ -378,13 +380,7 @@ class Train_Controller_HW_UI(QMainWindow):
                     self.calculate_commanded_power()
                     self.update_current_authority()
                     self.write_to_serial()
-                    #self.timer.setInterval(int(90/self.sim_speed))
-
-                    #self.set_commanded_temperature(int(values[0]))
-                    #self.set_brake_state(int(values[1]))
-                    #self.set_door_state(int(values[2]))
-                    #self.set_light_state(int(values[3]))
-                    #self.set_commanded_power(float(values[4]))
+            
 
                     #test bench items:
                     self.commanded_temperature_tb.setText(f"Commanded Temperature: {values[0]} Degrees F")
@@ -490,7 +486,7 @@ class Train_Controller_HW_UI(QMainWindow):
             self.set_current_authority(self.commanded_authority + self.current_authority)
             if(self.current_authority > 0):
                 self.train_instantion = False
-        if(self.current_authority <= 0 and self.actual_velocity == 0 and self.first_time_opening_doors == True):
+        if(self.current_authority <= 0 and self.actual_velocity == 0 and self.first_time_opening_doors == False):
             self.set_current_authority(self.commanded_authority + self.current_authority) 
         else:
             self.current_authority -= self.actual_velocity*self.T
@@ -703,9 +699,10 @@ class Train_Controller_HW_UI(QMainWindow):
     def set_sim_speed(self, input):
         self.sim_speed = input
         if self.sim_speed == 0:
-            self.timer.setInterval(0)
+            self.paused = True
         else: 
-            self.timer.setInterval(90)
+            if(self.paused == True):
+                self.paused = False
             self.set_T(0.09 * self.sim_speed)
 
 

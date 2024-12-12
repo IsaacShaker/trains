@@ -24,10 +24,12 @@ def receive_seconds_tc():
     app.qt_app_instance.train_controller_hw.set_seconds(seconds_cum)
     app.qt_app_instance.train_controller_hw.set_hour(hour)
     #To Train Controller SW
-    app.qt_app_instance.train_controller_sw.set_hour(hour)
+    #app.qt_app_instance.train_controller_sw.set_hour(hour)
     #To CTC
     app.qt_app_instance.ctc.set_seconds_cum(seconds_cum)
-    app.qt_app_instance.ctc.set_clock(string)
+    app.qt_app_instance.ctc.set_current_time(string)
+
+    print(f"WORLD CLOCK: {string}")
     
     return jsonify("Success"), 200
 
@@ -68,10 +70,11 @@ def receive_enable_clock():
     enable = data.get("enable", None)
 
     if enable is None:
-        return jsonify({"error": "No float value received"}), 400
+        return jsonify({"error": "No bool value received"}), 400
 
     else:
         app.qt_app_instance.clock.set_clock_activated(enable)
+        print(f"ENABLE CLOCK VALUE: {enable}")
     
     return jsonify("Success"), 200
 
@@ -84,11 +87,10 @@ def receive_sim_speed_tc():
 
     if sim_speed is None:
         return jsonify({"error": "No float value received"}), 400
-
-    app.qt_app_instance.train_controller_sw.ctc_change_sim(sim_speed)
-    app.qt_app_instance.train_controller_hw.set_sim_speed(sim_speed)
-
-    print(f"simming: {sim_speed}")
+    
+    else:
+        app.qt_app_instance.train_controller_sw.ctc_change_sim(sim_speed)
+        app.qt_app_instance.train_controller_hw.set_sim_speed(sim_speed)
     
     return jsonify("Success"), 200
 

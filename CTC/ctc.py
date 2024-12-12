@@ -240,10 +240,6 @@ class MyWindow(QMainWindow):
             "id": self.index
         }
 
-        self.clock_enable_dict_dict = {
-            "enable": self.enable_clock
-        }
-
         #               Timer Stuff                 #
         self.request_block_occupancies_timer = QTimer(self)
         self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
@@ -1116,7 +1112,7 @@ class MyWindow(QMainWindow):
     # The functionality of the user starting the simulation
     def operational_clicked(self):
         self.enable_clock = not self.enable_clock
-        self.clock_enable_dict_dict["enable"] = self.enable_clock
+        self.clock_enable_dict["enable"] = self.enable_clock
         response = requests.post(URL + "/world-clock/get-clock-activate", json=self.clock_enable_dict)
 
         # Toggle the simulation state
