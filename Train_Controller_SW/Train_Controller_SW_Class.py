@@ -547,7 +547,6 @@ class Train_Controller:
         self.set_r_door(True)
         self.elapsed_timer.start()
         self.sim_speed = sim_speed
-        print("kevinkevinkevin")
         #self.set_doors_can_open(False)
 
         #JUST IN CURRENT
