@@ -30,11 +30,12 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
     switches[1] = True
     up_through_H = False
     while 1:
+        reset_hazard()
 
-        if block_occupancies[16] == True:
+        if block_occupancies[16] == True and not block_occupancies[17]:
             up_through_H = False
         
-        if block_occupancies[52] == True:
+        if block_occupancies[52] == True and not block_occupancies[51]:
             up_through_H = True
 
         
@@ -43,17 +44,37 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
             switches[3] = False
             switches[4] = True
             switches[5] = False
+
+            traffic_lights[5] = True
+            traffic_lights[6] = False
+            traffic_lights[7] = True
+            traffic_lights[8] = False
+            traffic_lights[9] = False
+            
         else:
             switches[2] = False
             switches[3] = True
             switches[4] = False
             switches[5] = True
 
+            traffic_lights[5] = False
+            traffic_lights[6] = True
+            traffic_lights[7] = False
+            traffic_lights[8] = True
+            traffic_lights[9] = True
+
         if up_through_H == False:
             # sections FGHIJ
             for i in range(20, 53):
                 if block_occupancies[i] == True:
-                    for
+                    for j in range(i, 5):
+                        speed_hazard[i-j] =  True
+        else:
+            # sections FGHIJ
+            for i in range(20, 53):
+                if block_occupancies[i] == True:
+                    for j in range(i, 5):
+                        speed_hazard[i+j] =  True
         
         
         # only let train out of yard if clear
@@ -78,7 +99,11 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
             switches[1] = True
             set_A_speed_hazard(True)
             set_N_speed_hazard(True)
-            
+        
+        crossings[1] = False
+        for i in range(0, 3):
+            if block_occupancies[47 - i] or block_occupancies[47 + i]:
+                crossings[1] = True
         break
         # Simulate delay to avoid CPU hogging
         time.sleep(0.1)

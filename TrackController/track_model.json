@@ -619,26 +619,6 @@
           "to": [10, "Yard"],
           "suggested_toggle": false,
           "toggled": false
-        },
-        {
-          "id": 1,
-          "plc_num": 0,
-          "name_1": "16 to 15",
-          "name_2": "16 to 1",
-          "from": 16,
-          "to": [15, 1],
-          "suggested_toggle": false,
-          "toggled": false
-        },
-        {
-          "id": 6,
-          "plc_num": 0,
-          "name_1": "52 to 53",
-          "name_2": "52 to 66",
-          "from": 52,
-          "to": [53, 66],
-          "suggested_toggle": false,
-          "toggled": false
         }
       ],
       "traffic_lights": [
@@ -1073,6 +1053,16 @@
       ],
       "switches": [
         {
+          "id": 1,
+          "plc_num": 0,
+          "name_1": "16 to 15",
+          "name_2": "16 to 1",
+          "from": 16,
+          "to": [15, 1],
+          "suggested_toggle": false,
+          "toggled": false
+        },
+        {
           "id": 2,
           "plc_num": 0,
           "name_1": "27 to 28",
@@ -1109,6 +1099,16 @@
           "name_2": "44 to 43",
           "from": 44,
           "to": [67, 43],
+          "suggested_toggle": false,
+          "toggled": false
+        },
+        {
+          "id": 6,
+          "plc_num": 0,
+          "name_1": "52 to 53",
+          "name_2": "52 to 66",
+          "from": 52,
+          "to": [53, 66],
           "suggested_toggle": false,
           "toggled": false
         }
