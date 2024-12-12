@@ -65,7 +65,7 @@ def receive_sim_speed_wc():
     return jsonify("Success"), 200
 
 @app.route('/world-clock/get-clock-activate', methods=['POST'])
-def receive_sim_speed_wc():
+def receive_enable_clock():
     data = request.get_json()
 
     enable = data.get("enable", None)

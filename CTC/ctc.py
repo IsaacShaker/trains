@@ -423,7 +423,7 @@ class MyWindow(QMainWindow, Train, Station, Block):
         sim_layout = QVBoxLayout()
 
         # Add the clock label
-        self.clock_label = QLabel(myClock.format_time(0))
+        self.clock_label = QLabel("00:00:00")   #(myClock.format_time(0))
         self.clock_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.clock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.clock_label.setStyleSheet("color: white; font-size: 18px;")
