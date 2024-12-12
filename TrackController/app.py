@@ -10,8 +10,8 @@ import requests  # For triggering shutdown
 from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QApplication, QWidget, QTabWidget, QComboBox, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog
 
-RPI_IP = "10.4.0.0"
-SEND_TO_PI = False
+RPI_IP = "10.4.11.47"
+SEND_TO_PI = True
 
 LOCAL_DEVELOPMENT = False
 base_path = os.path.dirname(__file__)

@@ -1795,10 +1795,10 @@ class MyWindow(QMainWindow):
                 self.suggested_speed_dict["speed"] = 0
                 for train in self.trains:
                     train.set_suggested_speed(0)
-                # while(1):
-                #     response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
-                #     if response.status_code == 200:
-                #         break
+                while(1):
+                    response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
+                    if response.status_code == 200:
+                        break
             elif block["speed_hazard"] == False and ("Green", block["block"]) in self.recent_speed_hazards:
                 # Change speed to actual
                 self.recent_speed_hazards.remove(("Green", block["block"]))
