@@ -26,7 +26,7 @@ myScheduleReader = ScheduleReader()
 
 URL = 'http://127.0.0.1:5000'
 
-class MyWindow(QMainWindow, Train, Station, Block):
+class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
@@ -35,6 +35,7 @@ class MyWindow(QMainWindow, Train, Station, Block):
         self.current_time = "00:00:00"
         self.enable_clock = False
         self.seconds_cum = 0
+        self.sim_speed = 1
 
         self.system_time = 0
 
@@ -159,7 +160,7 @@ class MyWindow(QMainWindow, Train, Station, Block):
 
         # Timer for clock update
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.second_passed)
+        # self.timer.timeout.connect(self.second_passed)
 
         # Initialize the start timeand total elapsed time
         self.start_time = time.time()
@@ -238,9 +239,9 @@ class MyWindow(QMainWindow, Train, Station, Block):
         }
 
         #               Timer Stuff                 #
-        # self.request_block_occupancies_timer = QTimer(self)
-        # self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
-        # self.request_block_occupancies_timer.start(1000)
+        self.request_block_occupancies_timer = QTimer(self)
+        self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
+        self.request_block_occupancies_timer.start(1000)
 
     # Create the Home and Test Bench tab for the window
     def create_tabs(self):
@@ -1815,56 +1816,56 @@ class MyWindow(QMainWindow, Train, Station, Block):
         else:
             popped_auth = self.red_yard.pop_authority()
         self.authority_dict["authority"] = popped_auth[1]
-        # while(1):
-        #         response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
-        #         if response.status_code == 200:
-        #             break
+        while(1):
+                response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                if response.status_code == 200:
+                    break
         self.wayside_vision_dict["line"] = line
         self.wayside_vision_dict["index"] = 2
         self.wayside_vision_dict["output_block"] = 0
-        # while(1):
-        #     try:
-        #         response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
-        #         response.raise_for_status()  # This will raise an error for 4xx/5xx responses
+        while(1):
+            try:
+                response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
+                response.raise_for_status()  # This will raise an error for 4xx/5xx responses
 
-        #         if response.status_code == 200:
-        #             break
+                if response.status_code == 200:
+                    break
 
-        #     except requests.exceptions.HTTPError as http_err:
-        #         # Print the HTTP error response
-        #         print(f"HTTP error occurred: {http_err}")  # HTTP error details
-        #         print("Response content:", response.text)   # Full response content
+            except requests.exceptions.HTTPError as http_err:
+                # Print the HTTP error response
+                print(f"HTTP error occurred: {http_err}")  # HTTP error details
+                print("Response content:", response.text)   # Full response content
 
-        #     except Exception as err:
-        #         # Catch any other exceptions
-        #         print(f"Other error occurred: {err}")
+            except Exception as err:
+                # Catch any other exceptions
+                print(f"Other error occurred: {err}")
         self.yard_was_occupied = True
         self.wayside_vision_dict["line"] = line
         self.wayside_vision_dict["index"] = 1
         self.wayside_vision_dict["output_block"] = 0
-        # while(1):
-        #     response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
-        #     if response.status_code == 200:
-        #         break
+        while(1):
+            response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
+            if response.status_code == 200:
+                break
         # tell nate to create a train
         name = name[-1]
         index = int(name)
         self.train_initializer_dict["line"] = line
         self.train_initializer_dict["id"] = index
         print('Current Train is', index)
-        # while(1):
-        #     try:
-        #         response = requests.post(URL + "/track-model/make-train", json=self.train_initializer_dict)
-        #         if response.status_code == 200:
-        #             break
-        #         else:
-        #             requests.get('http://127.0.0.1:5000/shutdown')
-        #             sys.exit()
-        #     except requests.exceptions.HTTPError as http_err:
-        #         print(f"HTTP error occurred: {http_err}")
-        #         print("Response Content: ", response.text)
-        #     except Exception as err:
-        #         print(f"Other error Occurred: {err}")
+        while(1):
+            try:
+                response = requests.post(URL + "/track-model/make-train", json=self.train_initializer_dict)
+                if response.status_code == 200:
+                    break
+                else:
+                    requests.get('http://127.0.0.1:5000/shutdown')
+                    sys.exit()
+            except requests.exceptions.HTTPError as http_err:
+                print(f"HTTP error occurred: {http_err}")
+                print("Response Content: ", response.text)
+            except Exception as err:
+                print(f"Other error Occurred: {err}")
             
         self.trains[0].on_track = True
 
