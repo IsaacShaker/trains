@@ -702,8 +702,11 @@ class Train_Controller_HW_UI(QMainWindow):
 
     def set_sim_speed(self, input):
         self.sim_speed = input
-
-        self.set_T(0.09 * self.sim_speed)
+        if self.sim_speed == 0:
+            self.timer.setInterval(0)
+        else: 
+            self.timer.setInterval(90)
+            self.set_T(0.09 * self.sim_speed)
 
 
 #Get Functions:
