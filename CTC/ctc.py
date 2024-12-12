@@ -1196,6 +1196,8 @@ class MyWindow(QMainWindow):
 
     def set_seconds_cum(self, input):
         self.seconds_cum = input
+        # check if train needs dispatched
+        self.check_dispatch(self.seconds_cum)
             
     # What happens when the user presses Current Mode button
     def mode_clicked(self):        
@@ -1544,7 +1546,7 @@ class MyWindow(QMainWindow):
             # Add the QComboBox to the layout
             self.train_data_big_layout.addWidget(self.train_data_combo_box)   
 
-            self.dispatch_train(new_train.name, new_train.line)
+            #self.dispatch_train(new_train.name, new_train.line)
         else: # Add a stop to the train
             selected_train = next((train for train in self.trains if train.name == selected_name), None)
             #selected_train.route_authorities.clear()
@@ -1623,7 +1625,7 @@ class MyWindow(QMainWindow):
             # Add the QComboBox to the layout
             self.train_data_big_layout.addWidget(self.train_data_combo_box)   
 
-            self.dispatch_train(new_train.name, new_train.line)
+            #self.dispatch_train(new_train.name, new_train.line)
         else: # Add a stop to the train
             selected_train = next((train for train in self.trains if train.name == selected_name), None)
             #selected_train.route_authorities.clear()
@@ -1899,6 +1901,14 @@ class MyWindow(QMainWindow):
                 print(f"Other error Occurred: {err}")
             
         self.trains[0].on_track = True
+
+    # Check if a train needs dispatched at this time
+    def check_dispatch(self, time):
+        for train in self.trains:
+            print('dispatch time =', train.dispatch_time)
+            if train.dispatch_time >= time and train.on_track == False:
+                train.dispatch_train(train.name, train.line)
+
 
 if __name__ == "__main__":    
 
