@@ -25,7 +25,7 @@ class MainApp(QApplication):
         self.track_model = TrackUI()
 
 
-        self.track_controller.show()
+        # self.track_controller.show()
         self.ctc.show()
         self.train_model.show()
         self.train_controller_sw.show()
