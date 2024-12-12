@@ -1415,23 +1415,23 @@ class MyWindow(QMainWindow):
         else:
             print("No file selected.")
 
-        for station in self.green_stations:
-            print(station.name, 'has authorities', station.authorities)
+        # if self.trains_on_green == 0:
+        #     self.train_data_big_layout.removeWidget(self.train_label)
+        #     self.train_label.deleteLater()
+        #     # Create the QComboBox
+        #     self.train_data_combo_box = QComboBox()
+        #     self.train_data_combo_box.setPlaceholderText('Train')
+        #     self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        #     self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+        #     for train in new_trains:
+        #         self.train_data_combo_box.addItem(train.name)
+        #     self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
 
-        self.train_data_big_layout.removeWidget(self.train_label)
-        self.train_label.deleteLater()
-
-        # Create the QComboBox
-        self.train_data_combo_box = QComboBox()
-        self.train_data_combo_box.setPlaceholderText('Train')
-        self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
-        for train in self.trains:
-            self.train_data_combo_box.addItem(train.name)
-        self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
-
-        # Add the QComboBox to the layout
-        self.train_data_big_layout.addWidget(self.train_data_combo_box)
+        #     # Add the QComboBox to the layout
+        #     self.train_data_big_layout.addWidget(self.train_data_combo_box)
+        # else:
+        #     for train in new_trains:
+        #         self.train_data_combo_box.addItem(train.name)
 
     # Allow user to upload a schedule for red line
     def red_upload_clicked(self):        
@@ -1450,20 +1450,20 @@ class MyWindow(QMainWindow):
         else:
             print("No file selected.")
 
-        self.train_data_big_layout.removeWidget(self.train_label)
-        self.train_label.deleteLater()
+        # self.train_data_big_layout.removeWidget(self.train_label)
+        # self.train_label.deleteLater()
 
-        # Create the QComboBox
-        self.train_data_combo_box = QComboBox()
-        self.train_data_combo_box.setPlaceholderText('Train')
-        self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
-        for train in self.trains:
-            self.train_data_combo_box.addItem(train.name)
-        self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
+        # # Create the QComboBox
+        # self.train_data_combo_box = QComboBox()
+        # self.train_data_combo_box.setPlaceholderText('Train')
+        # self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        # self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+        # for train in self.trains:
+        #     self.train_data_combo_box.addItem(train.name)
+        # self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
 
-        # Add the QComboBox to the layout
-        self.train_data_big_layout.addWidget(self.train_data_combo_box)
+        # # Add the QComboBox to the layout
+        # self.train_data_big_layout.addWidget(self.train_data_combo_box)
 
     # Process manual dispatch for green line
     def green_submit_dispatch(self):
@@ -1475,10 +1475,6 @@ class MyWindow(QMainWindow):
                 new_train = 'Train '+str(len(self.trains))
 
             new_train = Train(new_train, 'Green')
-            
-            # rate_string = str(len(self.trains) + 1) +' Trains/hr'
-            # self.green_rate_label.setText(rate_string)
-            # self.green_schedule_train_combo_box.addItem(new_train.name)
             
             new_train.add_stop(self.green_station_select_combo_box.currentText())
             new_train.get_authority_from_map()
@@ -1514,7 +1510,7 @@ class MyWindow(QMainWindow):
                         station.add_authority(auth_list[0])
                     else:
                         station.add_authority([new_train.name, -1])
-            
+
             if len(self.trains) == 0: # If we are adding the first train, delete the label
                 # Remove the current QLabel
                 self.train_data_big_layout.removeWidget(self.train_label)
@@ -1594,9 +1590,6 @@ class MyWindow(QMainWindow):
                         station.add_authority(auth_list[0])
                     else:
                         station.add_authority([new_train.name, -1])
-            for station in self.red_stations:
-                print(station.name, 'has auths', station.authorities)
-
             if len(self.trains) == 0: # If we are adding the first train, delete the label
                 # Remove the current QLabel
                 self.train_data_big_layout.removeWidget(self.train_label)
@@ -1742,10 +1735,25 @@ class MyWindow(QMainWindow):
                     self.wayside_vision_dict["line"] = "Green"
                     self.wayside_vision_dict["index"] = 2
                     self.wayside_vision_dict["output_block"] = 0
-                    # while(1):
-                    #     response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
-                    #     if response.status_code == 200:
-                    #         break
+                    while(1):
+                        response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                        if response.status_code == 200:
+                            break
+                elif ('Red', id) in self.occupied_blocks and station.get_popped() == False:
+                    # Send authority to wayside since just entered station block
+                    print('releasing a train from the yard')
+                    self.authority_dict["line"] = "Red"
+                    self.authority_dict["index"] = id
+                    popped_auth = station.pop_authority()
+                    self.authority_dict["authority"] = popped_auth[1]
+                    for train in self.trains:
+                        if train.name == popped_auth[0]:
+                            train.set_current_authority(popped_auth[1])
+                    station.set_popped(True)
+                    while(1):
+                        response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                        if response.status_code == 200:
+                            break
         
         for station in self.green_stations:
             station_id = 0
