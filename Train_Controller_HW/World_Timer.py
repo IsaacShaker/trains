@@ -15,7 +15,6 @@ class World_Clock(QObject):
         self.seconds_cum = 0
         self.sim_speed = 1
         self.time_string = "00:00:00"
-        self.pause = False
 
         # Create a QTimer that triggers every second
         self.timer = QTimer(self)
@@ -32,7 +31,7 @@ class World_Clock(QObject):
 
     def update_time(self):
         """Updates the clock variables to simulate a military time clock."""
-        if self.clock_activated and not self.pause:
+        if self.clock_activated and self.sim_speed != 0:
             self.seconds += 1
             self.seconds_cum += 1
 
@@ -76,21 +75,20 @@ class World_Clock(QObject):
 
     def set_sim_speed(self, input):
         self.sim_speed = input
-        
+            
         if self.sim_speed != 0:
-            if not self.pause:
-                self.start_timer()
-            self.pause = False
             self.timer.setInterval(int(1000 / self.sim_speed))
-        else:
-            self.pause_timer()
 
     def set_clock_activated(self, input):
         self.clock_activated = input
+
+        if(not self.clock_activated):
+            self.pause_timer
+        else:
+            self.start_timer
 
     def start_timer(self):
         self.timer.start()
 
     def pause_timer(self):
         self.timer.stop()
-        self.pause = True

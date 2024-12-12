@@ -56,11 +56,8 @@ def receive_sim_speed_wc():
 
     sim_speed = data.get("sim_speed", None)
 
-    if sim_speed is None:
-        return jsonify({"error": "No float value received"}), 400
-
-    else:
-        app.qt_app_instance.clock.set_sim_speed(sim_speed)
+    
+    app.qt_app_instance.clock.set_sim_speed(sim_speed)
     
     return jsonify("Success"), 200
 
@@ -88,8 +85,10 @@ def receive_sim_speed_tc():
     if sim_speed is None:
         return jsonify({"error": "No float value received"}), 400
 
-    app.qt_app_instance.train_controller_sw.change_timer(sim_speed)
+    app.qt_app_instance.train_controller_sw.ctc_change_sim(sim_speed)
     app.qt_app_instance.train_controller_hw.set_sim_speed(sim_speed)
+
+    print(f"simming: {sim_speed}")
     
     return jsonify("Success"), 200
 
