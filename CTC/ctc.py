@@ -1733,27 +1733,27 @@ class MyWindow(QMainWindow):
                                 self.wayside_vision_dict["line"] = "Green"
                                 self.wayside_vision_dict["index"] = 1
                                 self.wayside_vision_dict["output_block"] = 0
-                                # while(1):
-                                #     response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
-                                #     if response.status_code == 200:
-                                #         break
+                                while(1):
+                                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
+                                    if response.status_code == 200:
+                                        break
                             else:
                                 self.wayside_vision_dict["line"] = "Green"
                                 self.wayside_vision_dict["index"] = 1
                                 self.wayside_vision_dict["output_block"] = 58
-                                # while(1):
-                                #     response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
-                                #     if response.status_code == 200:
-                                #         break
+                                while(1):
+                                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
+                                    if response.status_code == 200:
+                                        break
                     station.set_popped(True)
-                    # Send Wayside Vision
-                    self.wayside_vision_dict["line"] = "Green"
-                    self.wayside_vision_dict["index"] = 2
-                    self.wayside_vision_dict["output_block"] = 0
-                    # while(1):
-                    #     response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
-                    #     if response.status_code == 200:
-                    #         break
+                    # # Send Wayside Vision
+                    # self.wayside_vision_dict["line"] = "Green"
+                    # self.wayside_vision_dict["index"] = 2
+                    # self.wayside_vision_dict["output_block"] = 0
+                    while(1):
+                        response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                        if response.status_code == 200:
+                            break
         
         for station in self.green_stations:
             station_id = 0
@@ -1765,21 +1765,21 @@ class MyWindow(QMainWindow):
                 self.wayside_vision_dict["line"] = "Green"
                 self.wayside_vision_dict["index"] = 2
                 self.wayside_vision_dict["output_block"] = 62
-                # try:
-                #     response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
-                #     response.raise_for_status()  # This will raise an error for 4xx/5xx responses
+                try:
+                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
+                    response.raise_for_status()  # This will raise an error for 4xx/5xx responses
 
-                #     if response.status_code == 200:
-                #         break
+                    if response.status_code == 200:
+                        break
 
-                # except requests.exceptions.HTTPError as http_err:
-                #     # Print the HTTP error response
-                #     print(f"HTTP error occurred: {http_err}")  # HTTP error details
-                #     print("Response content:", response.text)   # Full response content
+                except requests.exceptions.HTTPError as http_err:
+                    # Print the HTTP error response
+                    print(f"HTTP error occurred: {http_err}")  # HTTP error details
+                    print("Response content:", response.text)   # Full response content
 
-                # except Exception as err:
-                #     # Catch any other exceptions
-                #     print(f"Other error occurred: {err}")
+                except Exception as err:
+                    # Catch any other exceptions
+                    print(f"Other error occurred: {err}")
 
 
         # Speed Stuff 
