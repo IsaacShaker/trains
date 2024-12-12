@@ -613,7 +613,7 @@ def make_track_train():
             print("successfully added train in track model")
             if train_id != 0 and train_id != 1:
                 if hasattr(app.qt_app_instance, 'train_controller_sw'):
-                    app.qt_app_instance.train_controller_sw.add_train()
+                    app.qt_app_instance.train_controller_sw.ctc_add_train()
                     app.qt_app_instance.train_model.update_train_list()
                     print("successfully added train in train controller")
                     return "Success", 200

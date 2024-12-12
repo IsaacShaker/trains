@@ -68,6 +68,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.train_model_list = model_list
         self.var_from_mitch = 1 # Simulation Speed
         self.sim_from_ctc = 1
+        self.need_new_train = False
 
 
 
@@ -726,7 +727,7 @@ class Train_Controller_SW_UI(QMainWindow):
         self.pause_timer = QTimer(self)
         self.pause_timer.timeout.connect(self.check_for_play)  # Connect the timer to your function
 
-        self.change_timer(self.var_from_mitch)
+        #self.change_timer(self.var_from_mitch)
 
         
 
@@ -1531,6 +1532,10 @@ class Train_Controller_SW_UI(QMainWindow):
         else:
             self.l_door_button.setEnabled(False)
             self.r_door_button.setEnabled(False)
+
+        if self.need_new_train:
+            self.need_new_train = False
+            self.add_train()
     
 
     def add_train(self):
@@ -1591,6 +1596,10 @@ class Train_Controller_SW_UI(QMainWindow):
                         train.set_o_light(False)
                     if train.get_i_light():
                         train.set_i_light(False)
+
+    def ctc_add_train(self):
+        self.need_new_train = True
+
                     
 
 

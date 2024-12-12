@@ -59,7 +59,7 @@ class Train_Controller:
         self.beacon_info = 0
         self.train_id = id
         self.doors_to_open = "0"
-
+        self.elapsed_sim_time = 0
         self.sim_speed = 1
         self.elapsed_timer = QElapsedTimer()  #To track elapsed time
 
@@ -594,9 +594,6 @@ class Train_Controller:
             self.elapsed_sim_time = self.elapsed_timer.elapsed()*self.sim_speed
 
             return
-
-
-
 
         if self.r_door or self.l_door:
 
