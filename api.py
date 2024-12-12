@@ -24,7 +24,7 @@ def receive_seconds_tc():
     app.qt_app_instance.train_controller_hw.set_seconds(seconds_cum)
     app.qt_app_instance.train_controller_hw.set_hour(hour)
     #To Train Controller SW
-    #app.qt_app_instance.train_controller_sw.set_hour(hour)
+    app.qt_app_instance.train_controller_sw.set_hour(hour)
     #To CTC
     app.qt_app_instance.ctc.set_seconds_cum(seconds_cum)
     app.qt_app_instance.ctc.set_current_time(string)

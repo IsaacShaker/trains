@@ -9,10 +9,10 @@ class World_Clock(QObject):
         
         # Initialize hour, minute, and second variables
         self.clock_activated = False
-        self.hour = 6
-        self.minute = 0
+        self.hour = 7
+        self.minute = 30
         self.seconds = 0
-        self.seconds_cum = 0
+        self.seconds_cum = 1 * 60 * 60 * 7 + (1 * 60 * 30) 
         self.sim_speed = 1
         self.interval = 1000
         self.time_string = "00:00:00"
