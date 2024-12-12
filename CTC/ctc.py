@@ -328,6 +328,23 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         # 1. Initial setup for Maintenance Section (Top left)
         maintenance_frame = self.create_section_frame(250, 80)
         maintenance_layout = QHBoxLayout()
+
+        # Vertical layout for Closure and Opening buttons
+        green_button_layout = QVBoxLayout()
+
+        # Define Maintenance Closure button
+        green_closure_button = QPushButton("Closure")
+        green_closure_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        green_closure_button.setStyleSheet("background-color: green; color: white;")
+        green_closure_button.clicked.connect(self.green_closure_clicked)
+        green_button_layout.addWidget(green_closure_button)  # Add the Closure button to the horizontal layout
+
+        # Define Maintenance Opening button as an instance attribute
+        self.green_opening_button = QPushButton("Opening")
+        self.green_opening_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        green_button_layout.addWidget(self.green_opening_button)
+        maintenance_layout.addLayout(green_button_layout)
+
         maintenance_label = QLabel("Maintenance")
         maintenance_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         maintenance_label.setStyleSheet("color: white; font-size: 20px;")
@@ -335,27 +352,28 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         maintenance_layout.addWidget(maintenance_label)
 
         # Vertical layout for Closure and Opening buttons
-        button_layout = QVBoxLayout()
+        red_button_layout = QVBoxLayout()
 
         # Define Maintenance Closure button
-        closure_button = QPushButton("Closure")
-        closure_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        closure_button.setStyleSheet("background-color: yellow; color: black;")
-        closure_button.clicked.connect(self.closure_clicked)
-        button_layout.addWidget(closure_button)  # Add the Closure button to the horizontal layout
+        red_closure_button = QPushButton("Closure")
+        red_closure_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        red_closure_button.setStyleSheet("background-color: red; color: white;")
+        red_closure_button.clicked.connect(self.red_closure_clicked)
+        red_button_layout.addWidget(red_closure_button)  # Add the Closure button to the horizontal layout
 
         # Define Maintenance Opening button as an instance attribute
-        self.opening_button = QPushButton("Opening")
-        self.opening_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        button_layout.addWidget(self.opening_button)
+        self.red_opening_button = QPushButton("Opening")
+        self.red_opening_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        red_button_layout.addWidget(self.red_opening_button)
+        maintenance_layout.addLayout(red_button_layout)
 
         # Add the vertical button layout to the maintenance frame layout
-        maintenance_layout.addLayout(button_layout)
         maintenance_frame.setLayout(maintenance_layout)
         grid_layout.addWidget(maintenance_frame, 0, 0)
 
         # Update the button's state initially based on maintenance_blocks
-        self.update_opening_button_state()
+        self.update_green_opening_button_state()
+        self.update_red_opening_button_state()
 
 
 
@@ -536,11 +554,11 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         self.label_and_switch_layout.addWidget(block_occupancies_label)
 
         # Switch for toggling view
-        block_occupancies_toggle = QPushButton("Toggle View")
-        block_occupancies_toggle.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-        block_occupancies_toggle.setStyleSheet("background-color: #772ce8; color: white; font-size: 12px")
-        block_occupancies_toggle.clicked.connect(self.occupancies_view_clicked)
-        self.label_and_switch_layout.addWidget(block_occupancies_toggle)
+        self.block_occupancies_toggle = QPushButton("Toggle to Red Line")
+        self.block_occupancies_toggle.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        self.block_occupancies_toggle.setStyleSheet("background-color: #772ce8; color: white; font-size: 12px")
+        self.block_occupancies_toggle.clicked.connect(self.occupancies_view_clicked)
+        self.label_and_switch_layout.addWidget(self.block_occupancies_toggle)
 
         blocks_layout.addLayout(self.label_and_switch_layout)
 
@@ -570,7 +588,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                 if row == 6 and col == 10:
                     continue
                 block_label = QLabel(str(number))  # Convert number to string for QLabel text
-                block_label.setStyleSheet("background-color: red; color: white; font-size: 14px;")
+                block_label.setStyleSheet("background-color: green; color: white; font-size: 14px;")
                 block_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
                 self.red_blocks_grid_layout.addWidget(block_label, row, col)
                 self.block_labels['Red', number] = block_label
@@ -597,7 +615,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         return frame
 
     # Custom dialog for user to select maintenance closure line
-    def closure_clicked(self):
+    def green_closure_clicked(self):
         dialog = QDialog(self)
         dialog.setWindowTitle("Maintenance Report")
 
@@ -641,16 +659,17 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         layout = QVBoxLayout(dialog)
 
         # Create label
-        label = QLabel("What Block Requries Maintenance?")
+        label = QLabel("What Block Requires Maintenance?")
         layout.addWidget(label)
 
         # Create horizontal layout for combo box and text entry box
         h_layout = QHBoxLayout()
 
-        # Create Cbox for Line
-        line_combo_box = QComboBox()
-        line_combo_box.addItems(["Green", "Red"])
-        h_layout.addWidget(line_combo_box)
+        # Create Label for Line
+        green_label = QLabel("Green")
+        green_label.setAlignment(Qt.AlignmentFlag.AlignCenter) 
+        green_label.setStyleSheet("background-color: green;")
+        h_layout.addWidget(green_label)
 
         # Create Cbox for Block
         block_combo_box = QComboBox()
@@ -665,22 +684,98 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
 
         # Create 'Submit' button
         button = QPushButton("Submit")
-        button.clicked.connect(lambda: self.submit_closure(dialog, line_combo_box.currentText(), block_combo_box.currentText()))
+        button.clicked.connect(lambda: self.green_submit_closure(dialog, block_combo_box.currentText()))
+        layout.addWidget(button)
+
+        dialog.setLayout(layout)
+        dialog.exec()
+
+        # Custom dialog for user to select maintenance closure line
+    def red_closure_clicked(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Maintenance Report")
+
+        # Apply styles to the dialog
+        dialog.setStyleSheet("""
+            QDialog {
+                background-color: #171717;
+            }
+            QLabel {
+                color: white;
+            }
+            QComboBox {
+                background-color: #772ce8;
+                color: #ffffff;
+                border: 1px solid #ffffff;
+                padding: 5px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #772ce8;
+                color: #ffffff;
+                selection-background-color: #CCCCFF;
+                selection-color: #000000;
+            }
+            QLineEdit {
+                background-color: #772ce8;
+                color: #ffffff;
+                padding: 5px;
+                border: 1px solid #ffffff;
+            }
+            QPushButton {
+                background-color: green;
+                color: white;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QPushButton:hover {
+                background-color: #ffffff;
+            }
+        """)
+
+        layout = QVBoxLayout(dialog)
+
+        # Create label
+        label = QLabel("What Block Requires Maintenance?")
+        layout.addWidget(label)
+
+        # Create horizontal layout for combo box and text entry box
+        h_layout = QHBoxLayout()
+
+        # Create Cbox for Line
+        red_label = QLabel("Red")
+        red_label.setAlignment(Qt.AlignmentFlag.AlignCenter) 
+        red_label.setStyleSheet("background-color: red;")
+        h_layout.addWidget(red_label)
+
+        # Create Cbox for Block
+        block_combo_box = QComboBox()
+        maintenance_numbers = {block[1] for block in self.maintenance_blocks}
+        for i in range(1, 77):
+            if i not in maintenance_numbers:
+                block_combo_box.addItems([str(i)])
+        h_layout.addWidget(block_combo_box)
+
+        # Add horizontal layout to the main layout
+        layout.addLayout(h_layout)
+
+        # Create 'Submit' button
+        button = QPushButton("Submit")
+        button.clicked.connect(lambda: self.red_submit_closure(dialog, block_combo_box.currentText()))
         layout.addWidget(button)
 
         dialog.setLayout(layout)
         dialog.exec()
 
     # Handle the selection when 'Submit' is pressed
-    def submit_closure(self, dialog, line, block):
+    def green_submit_closure(self, dialog, block):
         block = int(block)
-        new_block = (line, block)
+        new_block = ("Green", block)
         if new_block in self.occupied_blocks:
             print('Cannot place block under maintenance since train is occupying block')
         else:
-            self.maintenance_blocks.add((line, block))
+            self.maintenance_blocks.add(("Green", block))
             print(self.maintenance_blocks)
-            self.update_opening_button_state()
+            self.update_green_opening_button_state()
 
             # Change background color accordingly
             #if new_block in self.block_labels:
@@ -688,7 +783,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             self.update_label_background()
 
             # Send maintenance block to wayside
-            self.maintenance_blocks_dict["line"] = line
+            self.maintenance_blocks_dict["line"] = "Green"
             self.maintenance_blocks_dict["index"] = block
             self.maintenance_blocks_dict["maintenance"] = True
             # while(1):
@@ -697,11 +792,40 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             #     if response.status_code == 200:
             #         break
 
-            print("Block", block, "on the", line, "line has been closed for maintenance!")
+            print("Block", block, "on the Green line has been closed for maintenance!")
+            dialog.accept()
+
+    # Handle the selection when 'Submit' is pressed
+    def red_submit_closure(self, dialog, block):
+        block = int(block)
+        new_block = ("Red", block)
+        if new_block in self.occupied_blocks:
+            print('Cannot place block under maintenance since train is occupying block')
+        else:
+            self.maintenance_blocks.add(("Red", block))
+            print(self.maintenance_blocks)
+            self.update_red_opening_button_state()
+
+            # Change background color accordingly
+            #if new_block in self.block_labels:
+            block_label = self.block_labels[new_block]
+            self.update_label_background()
+
+            # Send maintenance block to wayside
+            self.maintenance_blocks_dict["line"] = "Red"
+            self.maintenance_blocks_dict["index"] = block
+            self.maintenance_blocks_dict["maintenance"] = True
+            # while(1):
+            #     print('closure')
+            #     response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
+            #     if response.status_code == 200:
+            #         break
+
+            print("Block", block, "on the Red line has been closed for maintenance!")
             dialog.accept()
 
     # The functionality for user opening a block from maintenance
-    def opening_clicked(self):
+    def green_opening_clicked(self):
         dialog = QDialog(self)
         dialog.setWindowTitle("Maintenance Report")
 
@@ -759,7 +883,75 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
 
         # Create 'Submit' button
         button = QPushButton("Submit")
-        button.clicked.connect(lambda: self.submit_opening(dialog, line_combo_box.currentText()))
+        button.clicked.connect(lambda: self.green_submit_opening(dialog, line_combo_box.currentText()))
+        h_layout.addWidget(button)
+
+        # Add horizontal layout to the main layout
+        layout.addLayout(h_layout)
+
+        dialog.setLayout(layout)
+        dialog.exec()
+
+    # The functionality for user opening a block from maintenance
+    def red_opening_clicked(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Maintenance Report")
+
+        # Apply styles to the dialog
+        dialog.setStyleSheet("""
+            QDialog {
+                background-color: #171717;
+            }
+            QLabel {
+                color: white;
+            }
+            QComboBox {
+                background-color: #772ce8;
+                color: #ffffff;
+                border: 1px solid #ffffff;
+                padding: 5px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #772ce8;
+                color: #ffffff;
+                selection-background-color: #CCCCFF;
+                selection-color: #000000;
+            }
+            QLineEdit {
+                background-color: #772ce8;
+                color: #ffffff;
+                padding: 5px;
+                border: 1px solid #ffffff;
+            }
+            QPushButton {
+                background-color: green;
+                color: white;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QPushButton:hover {
+                background-color: #ffffff;
+            }
+        """)
+
+        layout = QVBoxLayout(dialog)
+
+        # Create label
+        label = QLabel("What Block Needs Opened?")
+        layout.addWidget(label)
+
+        # Create horizontal layout for combo box and text entry box
+        h_layout = QVBoxLayout()
+
+        # Create combo box with options
+        line_combo_box = QComboBox()
+        for block in self.maintenance_blocks:
+            line_combo_box.addItem(f"{block[0]} #{block[1]}")
+        h_layout.addWidget(line_combo_box)
+
+        # Create 'Submit' button
+        button = QPushButton("Submit")
+        button.clicked.connect(lambda: self.red_submit_opening(dialog, line_combo_box.currentText()))
         h_layout.addWidget(button)
 
         # Add horizontal layout to the main layout
@@ -769,14 +961,14 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         dialog.exec()
 
     # Handle the selection when 'Submit' is pressed
-    def submit_opening(self, dialog, open_block):
+    def green_submit_opening(self, dialog, open_block):
         block_line, block_number_str = open_block.split(" #")
         block_number = int(block_number_str)
         block = (block_line, block_number)
         self.recently_opened.add(block)
         self.maintenance_blocks.remove(block)
         print(self.maintenance_blocks)
-        self.update_opening_button_state()
+        self.update_green_opening_button_state()
 
         # Change background color accordingly
         self.update_label_background()
@@ -794,23 +986,67 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         print("Block", block_line, "on the", block_number, "line has been reopened from maintenance!")
         dialog.accept()  
 
+    # Handle the selection when 'Submit' is pressed
+    def red_submit_opening(self, dialog, open_block):
+        block_line, block_number_str = open_block.split(" #")
+        block_number = int(block_number_str)
+        block = (block_line, block_number)
+        self.recently_opened.add(block)
+        self.maintenance_blocks.remove(block)
+        print(self.maintenance_blocks)
+        self.update_red_opening_button_state()
+
+        # Change background color accordingly
+        self.update_label_background()
+
+        # Send maintenance block to wayside
+        self.maintenance_blocks_dict["line"] = block_line
+        self.maintenance_blocks_dict["index"] = block_number
+        self.maintenance_blocks_dict["maintenance"] = False
+        # while(1):
+        #     print('opening')
+        #     response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
+        #     if response.status_code == 200:
+        #         break
+
+        print("Block", block_line, "on the", block_number, "line has been reopened from maintenance!")
+        dialog.accept()
+
     # Method to update the Opening button's state dynamically
-    def update_opening_button_state(self):
+    def update_green_opening_button_state(self):
         try:
             # Try disconnecting the clicked signal if it's already connected
-            self.opening_button.clicked.disconnect()
+            self.green_opening_button.clicked.disconnect()
         except TypeError:
             # If there's nothing to disconnect, just pass
             pass
 
         # Update the button's state based on whether there are maintenance blocks
         if len(self.maintenance_blocks) > 0:
-            self.opening_button.setEnabled(True)
-            self.opening_button.setStyleSheet("background-color: green; color: black;")
-            self.opening_button.clicked.connect(self.opening_clicked)  # Enable click functionality
+            self.green_opening_button.setEnabled(True)
+            self.green_opening_button.setStyleSheet("background-color: green; color: white;")
+            self.green_opening_button.clicked.connect(self.green_opening_clicked)  # Enable click functionality
         else:
-            self.opening_button.setEnabled(False)  # Disable the button
-            self.opening_button.setStyleSheet("background-color: gray; color: white;")
+            self.green_opening_button.setEnabled(False)  # Disable the button
+            self.green_opening_button.setStyleSheet("background-color: gray; color: white;")
+
+    # Method to update the Opening button's state dynamically
+    def update_red_opening_button_state(self):
+        try:
+            # Try disconnecting the clicked signal if it's already connected
+            self.red_opening_button.clicked.disconnect()
+        except TypeError:
+            # If there's nothing to disconnect, just pass
+            pass
+
+        # Update the button's state based on whether there are maintenance blocks
+        if len(self.maintenance_blocks) > 0:
+            self.red_opening_button.setEnabled(True)
+            self.red_opening_button.setStyleSheet("background-color: red; color: white;")
+            self.red_opening_button.clicked.connect(self.red_opening_clicked)  # Enable click functionality
+        else:
+            self.red_opening_button.setEnabled(False)  # Disable the button
+            self.red_opening_button.setStyleSheet("background-color: gray; color: white;")
 
     # The functionality of the user selecting the Simulation Speed of the system
     def sim_speed_selected(self, speed):
@@ -1399,9 +1635,11 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
     def occupancies_view_clicked(self):
         self.viewing_green = not self.viewing_green
         if self.viewing_green:  # Show green, hide red
+            self.block_occupancies_toggle.setText("Toggle View to Red Line")
             self.green_blocks_widget.show()
             self.red_blocks_widget.hide()
         else:  # Show red, hide green
+            self.block_occupancies_toggle.setText("Togggle View to Green Line")
             self.green_blocks_widget.hide()
             self.red_blocks_widget.show()
 
