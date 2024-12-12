@@ -1572,6 +1572,27 @@ class Train_Controller_SW_UI(QMainWindow):
             self.change_timer(self.sim_from_ctc)
             self.pause_timer.stop()
 
+    #sets hour from api
+    def set_hour(self, hour):
+
+        #sets lights off if out of tunnel and is day
+        #sets lights on if night
+        for train in self.train_list:
+            if hour >= 20 or hour < 8:
+                train.is_night = True
+                if  not train.get_o_light():
+                    train.set_o_light(True)
+                if  not train.get_i_light():
+                    train.set_i_light(True)
+            elif hour == 8:
+                train.is_night = False
+                if not train.in_tunnel:
+                    if train.get_o_light():
+                        train.set_o_light(False)
+                    if train.get_i_light():
+                        train.set_i_light(False)
+                    
+
 
 
 
