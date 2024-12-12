@@ -22,6 +22,8 @@ FILE_PATH = os.path.abspath(FILE_PATH)
 # Create an object from Clock class
 myClock = Clock()
 
+myScheduleReader = ScheduleReader()
+
 URL = 'http://127.0.0.1:5000'
 
 class MyWindow(QMainWindow, Clock, Train, Station, Block):
@@ -1316,7 +1318,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             pass            
             try:
                 # Read the Excel file
-                new_trains = myScheduleReader.get_green_routes(file_path)
+                new_trains = myScheduleReader.get_green_routes(file_path, len(self.trains))
                 for i in new_trains:
                     self.trains.append(i)
             
@@ -1324,6 +1326,12 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
                 print(f"Error reading the Excel file: {e}")
         else:
             print("No file selected.")
+
+        for train in self.trains:
+            train.get_authority_from_map()
+            print(train.name, ' has authorities', train.route_authorities)
+
+        # Add the authorites to stations
 
         self.train_data_big_layout.removeWidget(self.train_label)
         self.train_label.deleteLater()
