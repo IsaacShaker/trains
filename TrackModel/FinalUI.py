@@ -271,6 +271,25 @@ class TrackUI(QMainWindow):
             else:
                 greenRailroadCrossings[crossing_id].set_D()
 
+        for switch in data['Red']['switches']:
+            switch_id = switch['id']
+            if switch['toggled'] == 0:
+                redSwitches[switch_id].set_L()
+            else:
+                redSwitches[switch_id].set_R()
+        for traffic in data['Red']['traffic_lights']:
+            traffic_id = traffic['id']
+            #if traffic['toggled'] == 0:
+                #redTrafficLights[traffic_id].set_R()
+            #else:
+                #redTrafficLights[traffic_id].set_G()
+        for crossing in data['Red']['crossings']:   
+            crossing_id = crossing['id']
+            if crossing['toggled'] == 0:
+                redRailroadCrossings[crossing_id].set_U()
+            else:
+                redRailroadCrossings[crossing_id].set_D()
+
     def set_maintenance(self, data):
         print(data)
         if data['line'] == 'Green':
@@ -282,13 +301,13 @@ class TrackUI(QMainWindow):
         if data['line'] == 'Green':
             greenBlocks[data['index']].set_authority(data['authority'])
         elif data['line'] == 'Red':
-            greenBlocks[data['index']].set_authority(data['authority'])
+            redBlocks[data['index']].set_authority(data['authority'])
 
     def set_block_cmdSpeed(self, data):
         if data['line'] == 'Green':
             greenBlocks[data['index']].set_cmd_speed(data['speed'])
         elif data['line'] == 'Red':
-            greenBlocks[data['index']].set_cmd_speed(data['speed'])
+            redBlocks[data['index']].set_cmd_speed(data['speed'])
 
     def set_indexed_train_auth_diff(self,index,diff):
         if initialized == False:
@@ -311,7 +330,10 @@ class TrackUI(QMainWindow):
             response = requests.post(URL + "/train-model/get-data/authority-cmd-speed", json=authAndSpeed)
 
     def make_train(self, line):
-        tempTrain = Train(10, greenBlocks[0], 32.2, len(trains.trainList), line)
+        if (line == "Green"):
+            tempTrain = Train(10, greenBlocks[0], 32.2, len(trains.trainList), line)
+        elif (line == "Red"):
+            tempTrain = Train(10, redBlocks[0], 32.2, len(trains.trainList), line)
         trains.addTrain(tempTrain)
         auth.append(0.0)
         cmd.append(0.0)

@@ -21,6 +21,12 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
                 return True
         return False
     
+    def OPQ_occupied():
+        for i in range(86, 101):
+            if block_occupancies[i]:
+                return True
+        return False
+    
     def set_Q_hazard(truth_val):
         for i in range(98, 101):
             speed_hazard[i] = truth_val
@@ -75,7 +81,7 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
                     speed_hazard[i-j] = True
             speed_hazard[i] = False
         
-        if N_occupied() == False:
+        if N_occupied() == False and OPQ_occupied() == False:
             switches[4] = False
             switches[5] = True
             traffic_lights[6] = True
@@ -83,23 +89,31 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
             traffic_lights[8] = True
             traffic_lights[9] = False
 
-            set_Q_hazard(False)
+            # set_Q_hazard(False)
             set_M_hazard(False)
 
             # if trains are at both ends of section N, give priority over trains at section M
-            if Q_occupied() and M_occupied():
-                set_Q_hazard(True) # stops trains at Q
-        elif N_occupied() == True and not block_occupancies[76] and not block_occupancies[100]:
+            # if Q_occupied() and M_occupied():
+            #     set_Q_hazard(True) # stops trains at Q
+
+        elif (N_occupied() == True and not block_occupancies[76]) or OPQ_occupied() == True:
             switches[4] = True
-            switches[5] = False
             traffic_lights[6] = False
             traffic_lights[7] = True
-            traffic_lights[8] = False
-            traffic_lights[9] = True
-
-            # stop other trains from entering section N
             set_M_hazard(True)
-            set_Q_hazard(True)
+
+            if N_occupied() == True and not block_occupancies[100]:
+                switches[5] = False
+                traffic_lights[8] = False
+                traffic_lights[9] = True
+
+                # stop other trains from entering section N
+                # set_Q_hazard(True)
+            elif N_occupied() == False:
+                switches[5] = True
+                traffic_lights[8] = True
+                traffic_lights[9] = False
+
 
         # check 3 blocks behind crossing and block of crossing (4 total blocks)
         crossings[1] = False # Default is up

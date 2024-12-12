@@ -27,7 +27,9 @@ def receive_seconds_tc():
     app.qt_app_instance.train_controller_sw.set_hour(hour)
     #To CTC
     app.qt_app_instance.ctc.set_seconds_cum(seconds_cum)
-    app.qt_app_instance.ctc.set_clock(string)
+    app.qt_app_instance.ctc.set_current_time(string)
+
+    print(f"WORLD CLOCK: {string}")
     
     return jsonify("Success"), 200
 
@@ -56,25 +58,23 @@ def receive_sim_speed_wc():
 
     sim_speed = data.get("sim_speed", None)
 
-    if sim_speed is None:
-        return jsonify({"error": "No float value received"}), 400
-
-    else:
-        app.qt_app_instance.clock.set_sim_speed(sim_speed)
+    
+    app.qt_app_instance.clock.set_sim_speed(sim_speed)
     
     return jsonify("Success"), 200
 
 @app.route('/world-clock/get-clock-activate', methods=['POST'])
-def receive_sim_speed_wc():
+def receive_enable_clock():
     data = request.get_json()
 
     enable = data.get("enable", None)
 
     if enable is None:
-        return jsonify({"error": "No float value received"}), 400
+        return jsonify({"error": "No bool value received"}), 400
 
     else:
         app.qt_app_instance.clock.set_clock_activated(enable)
+        print(f"ENABLE CLOCK VALUE: {enable}")
     
     return jsonify("Success"), 200
 
@@ -87,12 +87,11 @@ def receive_sim_speed_tc():
 
     if sim_speed is None:
         return jsonify({"error": "No float value received"}), 400
-
-    if is_micah:
-        app.qt_app_instance.train_controller_sw.change_timer(sim_speed)
+    
     else:
-        app.qt_app_instance.train_controller_hw.change_timer(sim_speed)
-    #kevin's
+        app.qt_app_instance.train_controller_sw.ctc_change_sim(sim_speed)
+        app.qt_app_instance.train_controller_hw.set_sim_speed(sim_speed)
+    
     return jsonify("Success"), 200
 
 @app.route('/train-controller/receive-authority', methods=['POST'])
@@ -614,7 +613,7 @@ def make_track_train():
             print("successfully added train in track model")
             if train_id != 0 and train_id != 1:
                 if hasattr(app.qt_app_instance, 'train_controller_sw'):
-                    app.qt_app_instance.train_controller_sw.add_train()
+                    app.qt_app_instance.train_controller_sw.ctc_add_train()
                     app.qt_app_instance.train_model.update_train_list()
                     print("successfully added train in train controller")
                     return "Success", 200

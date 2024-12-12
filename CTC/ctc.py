@@ -22,9 +22,11 @@ FILE_PATH = os.path.abspath(FILE_PATH)
 # Create an object from Clock class
 #myClock = Clock()
 
+myScheduleReader = ScheduleReader()
+
 URL = 'http://127.0.0.1:5000'
 
-class MyWindow(QMainWindow, Train, Station, Block):
+class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
@@ -33,6 +35,7 @@ class MyWindow(QMainWindow, Train, Station, Block):
         self.current_time = "00:00:00"
         self.enable_clock = False
         self.seconds_cum = 0
+        self.sim_speed = 1
 
         self.system_time = 0
 
@@ -53,19 +56,13 @@ class MyWindow(QMainWindow, Train, Station, Block):
 
         # Create the trains list
         self.trains = []
+        self.trains_on_green = 0
+        self.trains_on_red = 0
 
-        # Create the stations and add them to a list
+        # Create the green stations and add them to a list
         self.green_stations = []
-        self.yard = Station("STATION; YARD", [0])
-        self.green_stations.append(self.yard)
-        self.glenbury_out = Station("STATION; GLENBURY OUT", [65])
-        self.green_stations.append(self.glenbury_out)
-        self.glenbury_in = Station("STATION; GLENBURY IN", [114])
-        self.green_stations.append(self.glenbury_in)
-        self.dormont_out = Station("STATION; DORMONT OUT", [73])
-        self.green_stations.append(self.dormont_out)
-        self.dormont_in = Station("STATION; DORMONT IN", [105])
-        self.green_stations.append(self.dormont_in)
+        self.green_yard = Station("STATION; YARD", [0])
+        self.green_stations.append(self.green_yard)
         self.glenbury_out = Station("STATION; GLENBURY OUT", [65])
         self.green_stations.append(self.glenbury_out)
         self.glenbury_in = Station("STATION; GLENBURY IN", [114])
@@ -92,26 +89,38 @@ class MyWindow(QMainWindow, Train, Station, Block):
         self.green_stations.append(self.central_out)
         self.central_in = Station("STATION; CENTRAL IN", [39])
         self.green_stations.append(self.central_in)
-        self.overbrook_out = Station("STATION; OVERBROOK OUT", [123])
-        self.green_stations.append(self.overbrook_out)
-        self.overbrook_in = Station("STATION; OVERBROOK IN", [57])
-        self.green_stations.append(self.overbrook_in)
-        self.inglewood_out = Station("STATION; INGLEWOOD OUT", [132])
-        self.green_stations.append(self.inglewood_out)
-        self.inglewood_in = Station("STATION; INGLEWOOD IN", [48])
-        self.green_stations.append(self.inglewood_in)
-        self.central_out = Station("STATION; CENTRAL OUT", [141])
-        self.green_stations.append(self.central_out)
-        self.central_in = Station("STATION; CENTRAL IN", [39])
-        self.green_stations.append(self.central_in)
         self.whited = Station("STATION; WHITED", [22])
         self.green_stations.append(self.whited)
+        self.lebron = Station("STATION; LEBRON", [16])
+        self.green_stations.append(self.lebron)
         self.edgebrook = Station("STATION; EDGEBROOK", [9])
         self.green_stations.append(self.edgebrook)
         self.pioneer = Station("STATION; PIONEER", [2])
         self.green_stations.append(self.pioneer)
         self.south_bank = Station("STATION; SOUTH BANK", [31])
         self.green_stations.append(self.south_bank)
+
+        # Create the red stations and add them to a list
+        self.red_stations = []
+        self.red_yard = Station("STATION; YARD", [0])
+        self.red_stations.append(self.red_yard)
+        self.shadyside = Station("STATION; SHADYSIDE", [7])
+        self.red_stations.append(self.shadyside)
+        self.herron_ave = Station("STATION; HERRON AVE", [16])
+        self.red_stations.append(self.herron_ave)
+        self.swissville = Station("STATION; SWISSVILLE", [21])
+        self.red_stations.append(self.swissville)
+        self.penn_station = Station("STATION; PENN STATION", [25])
+        self.red_stations.append(self.penn_station)
+        self.steel_plaza = Station("STATION; STEEL PLAZA", [35])
+        self.red_stations.append(self.steel_plaza)
+        self.first_ave = Station("STATION; FIRST AVE", [45])
+        self.red_stations.append(self.first_ave)
+        self.station_sqaure = Station("STATION; STATION SQUARE", [48])
+        self.red_stations.append(self.station_sqaure)
+        self.south_hills_junction = Station("STATION; SOUTH HILLS JUNCTION", [60])
+        self.red_stations.append(self.south_hills_junction)
+
 
         # Bool for helping switch the occupancies grid
         self.viewing_green = True
@@ -153,7 +162,7 @@ class MyWindow(QMainWindow, Train, Station, Block):
 
         # Timer for clock update
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.second_passed)
+        # self.timer.timeout.connect(self.second_passed)
 
         # Initialize the start timeand total elapsed time
         self.start_time = time.time()
@@ -232,9 +241,9 @@ class MyWindow(QMainWindow, Train, Station, Block):
         }
 
         #               Timer Stuff                 #
-        # self.request_block_occupancies_timer = QTimer(self)
-        # self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
-        # self.request_block_occupancies_timer.start(1000)
+        self.request_block_occupancies_timer = QTimer(self)
+        self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
+        self.request_block_occupancies_timer.start(1000)
 
     # Create the Home and Test Bench tab for the window
     def create_tabs(self):
@@ -423,7 +432,7 @@ class MyWindow(QMainWindow, Train, Station, Block):
         sim_layout = QVBoxLayout()
 
         # Add the clock label
-        self.clock_label = QLabel(myClock.format_time(0))
+        self.clock_label = QLabel("00:00:00")   #(myClock.format_time(0))
         self.clock_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.clock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.clock_label.setStyleSheet("color: white; font-size: 18px;")
@@ -549,14 +558,14 @@ class MyWindow(QMainWindow, Train, Station, Block):
         # Create the label for train authority
         self.train_authority_label = QLabel("Authority")
         self.train_authority_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.train_authority_label.setStyleSheet("background-color: green; color: white; font-size: 14px;")
+        self.train_authority_label.setStyleSheet("background-color: #772ce8; color: white; font-size: 14px;")
         self.train_authority_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         self.train_data_small_layout.addWidget(self.train_authority_label)
 
         #Create the label for suggested speed
         self.train_suggested_speed_label = QLabel("Suggested Speed")
         self.train_suggested_speed_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.train_suggested_speed_label.setStyleSheet("background-color: green; color: white; font-size: 12px;")
+        self.train_suggested_speed_label.setStyleSheet("background-color: #772ce8; color: white; font-size: 12px;")
         self.train_suggested_speed_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the text
         self.train_data_small_layout.addWidget(self.train_suggested_speed_label)
         self.train_data_big_layout.addLayout(self.train_data_small_layout)
@@ -1084,33 +1093,39 @@ class MyWindow(QMainWindow, Train, Station, Block):
 
     # The functionality of the user selecting the Simulation Speed of the system
     def sim_speed_selected(self, speed):
-        self.sim_speed = speed
+        self.sim_speed = int(speed[:-1])
+        self.sim_speed_dict["sim_speed"] = self.sim_speed #myClock.sim_speed
         print("The simulation is now running at", self.sim_speed, "speed!")
         #myClock.sim_speed = int(speed[:-1])  # Extracting the numeric value from the selected string
         # Send Sim Speed
         # self.sim_speed = myClock.sim_speed
-        self.sim_speed_dict["sim_speed"] = self.sim_speed #myClock.sim_speed
-        # print(self.sim_speed)
+        
+        print(f"sim2: {self.sim_speed}")
 
-        while(1):
-            response = requests.post(URL + "/train-model/receive-sim-speed", json=self.sim_speed_dict)
-            response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
-            response = requests.post(URL + "/world-clock/get-sim-speed", json=self.sim_speed_dict)
-            if response.status_code == 200:
-                print('simulation running at', self.sim_speed)
+        response = requests.post(URL + "/train-model/receive-sim-speed", json=self.sim_speed_dict)
+        response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
+        response = requests.post(URL + "/world-clock/get-sim-speed", json=self.sim_speed_dict)
+        if response.status_code == 200:
+            print('simulation running at', self.sim_speed)
 
-                break
 
     # The functionality of the user starting the simulation
     def operational_clicked(self):
         self.enable_clock = not self.enable_clock
-        self.clock_enable_dict_dict["enable"] = self.enable_clock
+        self.clock_enable_dict["enable"] = self.enable_clock
         response = requests.post(URL + "/world-clock/get-clock-activate", json=self.clock_enable_dict)
 
         # Toggle the simulation state
-        if not self.enable_clock:
+        if self.enable_clock:
             print("The simulation has started!")
+
+            self.sim_speed_dict["sim_speed"] = self.sim_speed
+            response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
+            if response.status_code == 200:
+                print('simulation running at', self.sim_speed)
         else:
+            self.sim_speed_dict["sim_speed"] = 0
+            response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
             print("The simulation has been stopped!")
 
         # Update the button text to reflect the current state
@@ -1128,9 +1143,23 @@ class MyWindow(QMainWindow, Train, Station, Block):
             myClock.simulation_running = True
             myClock.elapsed_time = time.time()  # Reset start time when simulation starts
             print("The simulation has started!")
+
+            self.sim_speed_dict["sim_speed"] = myClock.sim_speed
+            while(1):
+                response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
+                if response.status_code == 200:
+                    print('simulation running at', myClock.sim_speed)
+                    break
         else:
             myClock.simulation_running = False
             print("The simulation has been stopped!")
+
+            self.sim_speed_dict["sim_speed"] = 0
+            while(1):
+                response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
+                if response.status_code == 200:
+                    print('simulation running at', myClock.sim_speed)
+                    break
 
         # Update the button text to reflect the current state
         sender = self.sender()  # Get the button that triggered the event
@@ -1163,6 +1192,8 @@ class MyWindow(QMainWindow, Train, Station, Block):
 
     def set_seconds_cum(self, input):
         self.seconds_cum = input
+        # check if train needs dispatched
+        self.check_dispatch(self.seconds_cum)
             
     # What happens when the user presses Current Mode button
     def mode_clicked(self):        
@@ -1358,7 +1389,32 @@ class MyWindow(QMainWindow, Train, Station, Block):
             pass            
             try:
                 # Read the Excel file
-                new_trains = myScheduleReader.get_green_routes(file_path)
+                new_trains = myScheduleReader.get_green_routes(file_path, len(self.trains))
+                for train in new_trains:
+                    train.get_authority_from_map()
+                    self.green_yard.add_authority([train.name, train.route_authorities[0]])
+                    self.glenbury_out.add_authority([train.name, train.route_authorities[1]])
+                    self.dormont_out.add_authority([train.name, train.route_authorities[2]])
+                    self.mt_lebanon.add_authority([train.name, train.route_authorities[3]])
+                    self.poplar.add_authority([train.name, train.route_authorities[4]])
+                    self.castle_shannon.add_authority([train.name, train.route_authorities[5]])
+                    self.mt_lebanon.add_authority([train.name, train.route_authorities[6]])
+                    self.dormont_in.add_authority([train.name, train.route_authorities[7]])
+                    self.glenbury_in.add_authority([train.name, train.route_authorities[8]])
+                    self.overbrook_out.add_authority([train.name, train.route_authorities[9]])
+                    self.inglewood_out.add_authority([train.name, train.route_authorities[10]])
+                    self.central_out.add_authority([train.name, train.route_authorities[11]])
+                    self.whited.add_authority([train.name, train.route_authorities[12]])
+                    self.lebron.add_authority([train.name, train.route_authorities[13]])
+                    self.edgebrook.add_authority([train.name, train.route_authorities[14]])
+                    self.pioneer.add_authority([train.name, train.route_authorities[15]])
+                    self.lebron.add_authority([train.name, train.route_authorities[16]])
+                    self.whited.add_authority([train.name, train.route_authorities[17]])
+                    self.south_bank.add_authority([train.name, train.route_authorities[18]])
+                    self.central_in.add_authority([train.name, train.route_authorities[19]])
+                    self.inglewood_in.add_authority([train.name, train.route_authorities[20]])
+                    self.overbrook_in.add_authority([train.name, train.route_authorities[21]])
+
                 for i in new_trains:
                     self.trains.append(i)
             
@@ -1367,20 +1423,23 @@ class MyWindow(QMainWindow, Train, Station, Block):
         else:
             print("No file selected.")
 
-        self.train_data_big_layout.removeWidget(self.train_label)
-        self.train_label.deleteLater()
+        # if self.trains_on_green == 0:
+        #     self.train_data_big_layout.removeWidget(self.train_label)
+        #     self.train_label.deleteLater()
+        #     # Create the QComboBox
+        #     self.train_data_combo_box = QComboBox()
+        #     self.train_data_combo_box.setPlaceholderText('Train')
+        #     self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        #     self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+        #     for train in new_trains:
+        #         self.train_data_combo_box.addItem(train.name)
+        #     self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
 
-        # Create the QComboBox
-        self.train_data_combo_box = QComboBox()
-        self.train_data_combo_box.setPlaceholderText('Train')
-        self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
-        for train in self.trains:
-            self.train_data_combo_box.addItem(train.name)
-        self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
-
-        # Add the QComboBox to the layout
-        self.train_data_big_layout.addWidget(self.train_data_combo_box)
+        #     # Add the QComboBox to the layout
+        #     self.train_data_big_layout.addWidget(self.train_data_combo_box)
+        # else:
+        #     for train in new_trains:
+        #         self.train_data_combo_box.addItem(train.name)
 
     # Allow user to upload a schedule for red line
     def red_upload_clicked(self):        
@@ -1399,24 +1458,23 @@ class MyWindow(QMainWindow, Train, Station, Block):
         else:
             print("No file selected.")
 
-        self.train_data_big_layout.removeWidget(self.train_label)
-        self.train_label.deleteLater()
+        # self.train_data_big_layout.removeWidget(self.train_label)
+        # self.train_label.deleteLater()
 
-        # Create the QComboBox
-        self.train_data_combo_box = QComboBox()
-        self.train_data_combo_box.setPlaceholderText('Train')
-        self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
-        for train in self.trains:
-            self.train_data_combo_box.addItem(train.name)
-        self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
+        # # Create the QComboBox
+        # self.train_data_combo_box = QComboBox()
+        # self.train_data_combo_box.setPlaceholderText('Train')
+        # self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        # self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+        # for train in self.trains:
+        #     self.train_data_combo_box.addItem(train.name)
+        # self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
 
-        # Add the QComboBox to the layout
-        self.train_data_big_layout.addWidget(self.train_data_combo_box)
+        # # Add the QComboBox to the layout
+        # self.train_data_big_layout.addWidget(self.train_data_combo_box)
 
     # Process manual dispatch for green line
     def green_submit_dispatch(self):
-        print('------------------------------------------------------')
         selected_name = self.green_schedule_train_combo_box.currentText()
         if selected_name == 'New Train': # Create a new train
             if len(self.trains) == 0:
@@ -1425,11 +1483,6 @@ class MyWindow(QMainWindow, Train, Station, Block):
                 new_train = 'Train '+str(len(self.trains))
 
             new_train = Train(new_train, 'Green')
-            
-            print(new_train.name, 'on the Green line will arrive at', self.green_station_select_combo_box.currentText() ,'at', self.green_time_select_edit.text())
-            rate_string = str(len(self.trains) + 1) +' Trains/hr'
-            self.green_rate_label.setText(rate_string)
-            self.green_schedule_train_combo_box.addItem(new_train.name)
             
             new_train.add_stop(self.green_station_select_combo_box.currentText())
             new_train.get_authority_from_map()
@@ -1442,12 +1495,10 @@ class MyWindow(QMainWindow, Train, Station, Block):
             hours = int(time_in_seconds // 3600)
             minutes = int((time_in_seconds % 3600) //60)
             seconds = int(time_in_seconds % 60)
-            print('arrival time =', hours, minutes, seconds)
             new_train.set_first_arrival_time(time_in_seconds)
             hours = new_train.dispatch_time // 3600
             minutes = (new_train.dispatch_time % 3600) //60
             seconds = new_train.dispatch_time % 60
-            print('dispatch time =', hours, minutes, seconds)
 
             # Convert authorities to tuples for a list
             auth_list = []
@@ -1455,7 +1506,7 @@ class MyWindow(QMainWindow, Train, Station, Block):
                 auth_list.append([new_train.name, authority])
             
             # Populate the stations
-            self.yard.add_authority(auth_list[0])
+            self.green_yard.add_authority(auth_list[0])
             new_train.route_authorities.popleft()
             del auth_list[0]
 
@@ -1465,101 +1516,7 @@ class MyWindow(QMainWindow, Train, Station, Block):
                         pass
                     elif station.name == stop:
                         station.add_authority(auth_list[0])
-                    if station.name == 'STATION; YARD':
-                        pass
-                    elif station.name == stop:
-                        station.add_authority(auth_list[0])
                     else:
-                        station.add_authority([new_train.name, -1])
-            
-            if len(self.trains) == 0: # If we are adding the first train, delete the label
-                # Remove the current QLabel
-                self.train_data_big_layout.removeWidget(self.train_data_label)
-                self.train_data_label.deleteLater()  # Delete QLabel
-            else:
-                # Remove the QComboBox
-                self.train_data_big_layout.removeWidget(self.train_data_combo_box)
-                self.train_data_combo_box.deleteLater() # Delete QComboBox
-
-            self.trains.append(new_train)
-
-            # Create the QComboBox
-            self.train_data_combo_box = QComboBox()
-            self.train_data_combo_box.setPlaceholderText('Train')
-            self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-            self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
-            for train in self.trains:
-                self.train_data_combo_box.addItem(train.name)
-            self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
-
-            # Add the QComboBox to the layout
-            self.train_data_big_layout.addWidget(self.train_data_combo_box)   
-
-            self.dispatch_train(new_train.name, new_train.line)
-        else: # Add a stop to the train
-            selected_train = next((train for train in self.trains if train.name == selected_name), None)
-            #selected_train.route_authorities.clear()
-            selected_train.add_stop(self.green_station_select_combo_box.currentText())
-            selected_train.get_authority_from_map()
-
-    # Process manual dispatch for red line
-    def red_submit_dispatch(self):
-        print('------------------------------------------------------')
-        selected_name = self.schedule_train_combo_box.currentText()
-        if selected_name == 'New Train': # Create a new train
-            self.make_train()
-
-            if len(self.trains) == 0:
-                new_train = 'Train 1'
-            else:
-                new_train = 'Train '+str(len(self.trains) + 1)
-
-            new_train = Train(new_train, 'Green')
-            print(new_train.name, 'on the Green line will arrive at', self.station_select_combo_box.currentText() ,'at', self.time_select_edit.text())
-            rate_string = str(len(self.trains) + 1) +' Trains/hr'
-            self.rate_label.setText(rate_string)
-            self.schedule_train_combo_box.addItem(new_train.name)
-            
-            new_train.add_stop(self.station_select_combo_box.currentText())
-            new_train.get_authority_from_map()
-
-            # Set time to release train from yard
-            time = self.time_select_edit.text()
-            # Split the time string into hours, minutes, and seconds
-            hours, minutes, seconds = map(int, time.split(":"))
-            time_in_seconds = hours * 3600 + minutes * 60 + seconds
-            hours = int(time_in_seconds // 3600)
-            minutes = int((time_in_seconds % 3600) //60)
-            seconds = int(time_in_seconds % 60)
-            print('arrival time =', hours, minutes, seconds)
-            new_train.set_first_arrival_time(time_in_seconds)
-            hours = new_train.dispatch_time // 3600
-            minutes = (new_train.dispatch_time % 3600) //60
-            seconds = new_train.dispatch_time % 60
-            print('dispatch time =', hours, minutes, seconds)
-
-            # Convert authorities to tuples for a list
-            auth_list = []
-            for authority in new_train.route_authorities:
-                auth_list.append([new_train.name, authority])
-            
-            # Populate the stations
-            self.yard.add_authority(auth_list[0])
-            new_train.route_authorities.popleft()
-            del auth_list[0]
-
-            print('Authority list is', auth_list)
-
-            for stop in new_train.station_stops:
-                for station in self.green_stations:
-                    if station.name == stop:
-                        station.add_authority(auth_list[0])
-                    elif station.name in ('STATION; POPLAR', 'STATION; CASTLE SHANNON', 'STATION; EDGEBROOK', 'STATION; PIONEER', 'STATION; SOUTH BANK'):
-                        station.add_authority([new_train.name, -1])
-                    elif station.name == 'STATION; YARD':
-                        pass
-                    else:
-                        station.add_authority([new_train.name, -1])
                         station.add_authority([new_train.name, -1])
 
             if len(self.trains) == 0: # If we are adding the first train, delete the label
@@ -1585,44 +1542,90 @@ class MyWindow(QMainWindow, Train, Station, Block):
             # Add the QComboBox to the layout
             self.train_data_big_layout.addWidget(self.train_data_combo_box)   
 
-            print('dispatching a train')
-            # Tell train controller to exist
-
-            # Put authority on the YARD block
-            self.authority_dict["line"] = "Green"
-            self.authority_dict["index"] = 0
-            popped_auth = self.yard.pop_authority()
-            self.authority_dict["authority"] = popped_auth[1]
-            # while(1):
-            #         response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
-            #         if response.status_code == 200:
-            #             break
-            self.wayside_vision_dict["line"] = "Green"
-            self.wayside_vision_dict["index"] = 2
-            self.wayside_vision_dict["output_block"] = 0
-            # while(1):
-            #     try:
-            #         response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
-            #         response.raise_for_status()  # This will raise an error for 4xx/5xx responses
-
-            #         # If successful, print the response data
-            #         print("Success:", response.json())
-            #         if response.status_code == 200:
-            #             break
-
-            #     except requests.exceptions.HTTPError as http_err:
-            #         # Print the HTTP error response
-            #         print(f"HTTP error occurred: {http_err}")  # HTTP error details
-            #         print("Response content:", response.text)   # Full response content
-
-            #     except Exception as err:
-            #         # Catch any other exceptions
-            #         print(f"Other error occurred: {err}")
-            self.trains[0].on_track = True
+            #self.dispatch_train(new_train.name, new_train.line)
         else: # Add a stop to the train
             selected_train = next((train for train in self.trains if train.name == selected_name), None)
             #selected_train.route_authorities.clear()
-            selected_train.add_stop(self.station_select_combo_box.currentText())
+            selected_train.add_stop(self.green_station_select_combo_box.currentText())
+            selected_train.get_authority_from_map()
+
+    # Process manual dispatch for red line
+    def red_submit_dispatch(self):
+        selected_name = self.red_schedule_train_combo_box.currentText()
+        if selected_name == 'New Train': # Create a new train
+            if len(self.trains) == 0:
+                new_train = 'Train 0'
+            else:
+                new_train = 'Train '+str(len(self.trains))
+
+            new_train = Train(new_train, 'Red')
+            
+            # rate_string = str(len(self.trains) + 1) +' Trains/hr'
+            # self.red_rate_label.setText(rate_string)
+            # self.red_schedule_train_combo_box.addItem(new_train.name)
+            
+            new_train.add_stop(self.red_station_select_combo_box.currentText())
+            new_train.get_authority_from_map()
+
+            # Set time to release train from yard
+            time = self.red_time_select_edit.text()
+            # Split the time string into hours, minutes, and seconds
+            hours, minutes, seconds = map(int, time.split(":"))
+            time_in_seconds = hours * 3600 + minutes * 60 + seconds
+            hours = int(time_in_seconds // 3600)
+            minutes = int((time_in_seconds % 3600) //60)
+            seconds = int(time_in_seconds % 60)
+            new_train.set_first_arrival_time(time_in_seconds)
+            hours = new_train.dispatch_time // 3600
+            minutes = (new_train.dispatch_time % 3600) //60
+            seconds = new_train.dispatch_time % 60
+
+            # Convert authorities to tuples for a list
+            auth_list = []
+            for authority in new_train.route_authorities:
+                auth_list.append([new_train.name, authority])
+            print(auth_list)
+
+            # Populate the stations
+            self.red_yard.add_authority(auth_list[0])
+            new_train.route_authorities.popleft()
+            del auth_list[0]
+            for stop in new_train.station_stops:
+                for station in self.red_stations:
+                    if station.name == 'STATION; YARD':
+                        pass
+                    elif station.name == stop:
+                        station.add_authority(auth_list[0])
+                    else:
+                        station.add_authority([new_train.name, -1])
+            if len(self.trains) == 0: # If we are adding the first train, delete the label
+                # Remove the current QLabel
+                self.train_data_big_layout.removeWidget(self.train_label)
+                self.train_label.deleteLater()  # Delete QLabel
+            else:
+                # Remove the QComboBox
+                self.train_data_big_layout.removeWidget(self.train_data_combo_box)
+                self.train_data_combo_box.deleteLater() # Delete QComboBox
+
+            self.trains.append(new_train)
+
+            # Create the QComboBox
+            self.train_data_combo_box = QComboBox()
+            self.train_data_combo_box.setPlaceholderText('Train')
+            self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+            self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+            for train in self.trains:
+                self.train_data_combo_box.addItem(train.name)
+            self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
+
+            # Add the QComboBox to the layout
+            self.train_data_big_layout.addWidget(self.train_data_combo_box)   
+
+            #self.dispatch_train(new_train.name, new_train.line)
+        else: # Add a stop to the train
+            selected_train = next((train for train in self.trains if train.name == selected_name), None)
+            #selected_train.route_authorities.clear()
+            selected_train.add_stop(self.red_station_select_combo_box.currentText())
             selected_train.get_authority_from_map()
             
     # Display the correct data based on the train selected
@@ -1633,9 +1636,6 @@ class MyWindow(QMainWindow, Train, Station, Block):
             else:
                 pass
 
-        print('Displaying info on', selected_train,':')
-        print('Authority =', my_train.get_authority(), 'm')
-        print('Suggested Speed =', my_train.get_suggested_speed(), 'kph')
         imperial_authority = my_train.get_authority() * 3.28084 # Convert from metric
         imperial_authority = round(imperial_authority)
         auth_str = 'Authority = '+str(imperial_authority)+' ft'
@@ -1644,6 +1644,13 @@ class MyWindow(QMainWindow, Train, Station, Block):
         imperial_suggested_speed = round(imperial_suggested_speed)
         speed_str = 'Suggested Speed = '+str(imperial_suggested_speed)+' mph'
         self.train_suggested_speed_label.setText(speed_str)
+
+        if my_train.line == 'Green':
+            self.train_authority_label.setStyleSheet("background-color: green; color: white;")
+            self.train_suggested_speed_label.setStyleSheet("background-color: green; color: white;")
+        else:
+            self.train_authority_label.setStyleSheet("background-color: red; color: white;")
+            self.train_suggested_speed_label.setStyleSheet("background-color: red; color: white;")
 
     # Function to update label background based on block status
     def update_label_background(self):
@@ -1719,27 +1726,42 @@ class MyWindow(QMainWindow, Train, Station, Block):
                                 self.wayside_vision_dict["line"] = "Green"
                                 self.wayside_vision_dict["index"] = 1
                                 self.wayside_vision_dict["output_block"] = 0
-                                # while(1):
-                                #     response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
-                                #     if response.status_code == 200:
-                                #         break
+                                while(1):
+                                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
+                                    if response.status_code == 200:
+                                        break
                             else:
                                 self.wayside_vision_dict["line"] = "Green"
                                 self.wayside_vision_dict["index"] = 1
                                 self.wayside_vision_dict["output_block"] = 58
-                                # while(1):
-                                #     response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
-                                #     if response.status_code == 200:
-                                #         break
+                                while(1):
+                                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)
+                                    if response.status_code == 200:
+                                        break
                     station.set_popped(True)
                     # Send Wayside Vision
                     self.wayside_vision_dict["line"] = "Green"
                     self.wayside_vision_dict["index"] = 2
                     self.wayside_vision_dict["output_block"] = 0
-                    # while(1):
-                    #     response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
-                    #     if response.status_code == 200:
-                    #         break
+                    while(1):
+                        response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                        if response.status_code == 200:
+                            break
+                elif ('Red', id) in self.occupied_blocks and station.get_popped() == False:
+                    # Send authority to wayside since just entered station block
+                    print('releasing a train from the yard')
+                    self.authority_dict["line"] = "Red"
+                    self.authority_dict["index"] = id
+                    popped_auth = station.pop_authority()
+                    self.authority_dict["authority"] = popped_auth[1]
+                    for train in self.trains:
+                        if train.name == popped_auth[0]:
+                            train.set_current_authority(popped_auth[1])
+                    station.set_popped(True)
+                    while(1):
+                        response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                        if response.status_code == 200:
+                            break
         
         for station in self.green_stations:
             station_id = 0
@@ -1751,21 +1773,21 @@ class MyWindow(QMainWindow, Train, Station, Block):
                 self.wayside_vision_dict["line"] = "Green"
                 self.wayside_vision_dict["index"] = 2
                 self.wayside_vision_dict["output_block"] = 62
-                # try:
-                #     response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
-                #     response.raise_for_status()  # This will raise an error for 4xx/5xx responses
+                try:
+                    response = requests.post(URL + "/track-controller-sw/give-data/wayside-vision", json=self.wayside_vision_dict)                        
+                    response.raise_for_status()  # This will raise an error for 4xx/5xx responses
 
-                #     if response.status_code == 200:
-                #         break
+                    if response.status_code == 200:
+                        break
 
-                # except requests.exceptions.HTTPError as http_err:
-                #     # Print the HTTP error response
-                #     print(f"HTTP error occurred: {http_err}")  # HTTP error details
-                #     print("Response content:", response.text)   # Full response content
+                except requests.exceptions.HTTPError as http_err:
+                    # Print the HTTP error response
+                    print(f"HTTP error occurred: {http_err}")  # HTTP error details
+                    print("Response content:", response.text)   # Full response content
 
-                # except Exception as err:
-                #     # Catch any other exceptions
-                #     print(f"Other error occurred: {err}")
+                except Exception as err:
+                    # Catch any other exceptions
+                    print(f"Other error occurred: {err}")
 
 
         # Speed Stuff 
@@ -1799,48 +1821,29 @@ class MyWindow(QMainWindow, Train, Station, Block):
                     response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
                     if response.status_code == 200:
                         break
-        # for block in data_dict["Green"]:
-        #     blk = self.blocks["Green"][block["block"]]
-        #     if block["speed_hazard"] == True and ("Green", block["block"]) and blk.get_speed_hazard == False: # Add to speed hazard set
-        #         # Change speed to zero
-        #         #self.recent_speed_hazards.add(("Green", block["block"]))
-        #         self.suggested_speed_dict["line"] = "Green"
-        #         self.suggested_speed_dict["index"] = block["block"]
-        #         self.suggested_speed_dict["speed"] = 0
-        #         for train in self.trains:
-        #             train.set_suggested_speed(0)
-        #         while(1):
-        #             response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
-        #             if response.status_code == 200:
-        #                 break
-        #         blk.speed_hazard = True
-        #     elif block["speed_hazard"] == False:
-        #         # Change speed to actual
-        #         #self.recent_speed_hazards.remove(("Green", block["block"]))
-        #         self.suggested_speed_dict["line"] = "Green"
-        #         self.suggested_speed_dict["index"] = block["block"]
-        #         blk = self.blocks["Green"][block["block"]]
-        #         self.suggested_speed_dict["speed"] = blk.get_block_speed()
-        #         for train in self.trains:
-        #             train.set_suggested_speed(blk.get_block_speed())
-        #         while(1):
-        #             response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
-        #             if response.status_code == 200:
-        #                 break
-        #         blk.speed_hazard = False
+        
         self.update_label_background()
 
     # Release a train from the yard if its time
     def dispatch_train(self, name, line):
-        # for train in self.trains:
-        #     if self.system_time >= train.dispatch_time and train.on_track == False:
-        print('dispatching a train')
-        # Tell train controller to exist
-
+        if (line == "Green"):
+            self.trains_on_green += 1
+            rate_string = str(self.trains_on_green) +' Trains/hr'
+            self.green_rate_label.setText(rate_string)
+            self.green_schedule_train_combo_box.addItem(name)
+        else:
+            self.trains_on_red += 1
+            rate_string = str(self.trains_on_red) +' Trains/hr'
+            self.red_rate_label.setText(rate_string)
+            self.red_schedule_train_combo_box.addItem(name)
+        
         # Put authority on the YARD block
         self.authority_dict["line"] = line
         self.authority_dict["index"] = 0
-        popped_auth = self.yard.pop_authority()
+        if line == 'Green':
+            popped_auth = self.green_yard.pop_authority()
+        else:
+            popped_auth = self.red_yard.pop_authority()
         self.authority_dict["authority"] = popped_auth[1]
         while(1):
                 response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
@@ -1894,6 +1897,14 @@ class MyWindow(QMainWindow, Train, Station, Block):
                 print(f"Other error Occurred: {err}")
             
         self.trains[0].on_track = True
+
+    # Check if a train needs dispatched at this time
+    def check_dispatch(self, time):
+        for train in self.trains:
+            print('dispatch time =', train.dispatch_time)
+            if train.dispatch_time >= time and train.on_track == False:
+                train.dispatch_train(train.name, train.line)
+
 
 if __name__ == "__main__":    
 
