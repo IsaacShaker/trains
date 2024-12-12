@@ -36,7 +36,7 @@ class MapReader():
                     start = current_stop_index[0]
                     end = next_stop_index[0]
                     # Sum the block lengths from start to end
-                    authority = df.loc[start + 1:end - 1, 'Block Length (m)'].sum()
+                    authority = df.loc[start:end - 1, 'Block Length (m)'].sum()
                     authority += df.loc[end, 'Block Length (m)']/2 + 16 + 10
                     self.route_authorities_list.append(float(authority))
                 else:
@@ -44,7 +44,7 @@ class MapReader():
                     end = next_stop_index[0]
                     # Sum the block lengths from start to end
                     authority = df.loc[start, 'Block Length (m)']/2  - 13
-                    authority += df.loc[start + 1:end, 'Block Length (m)'].sum()
+                    authority += df.loc[start:end, 'Block Length (m)'].sum()
                     self.route_authorities_list.append(float(authority))
             else:
                 print(f"Stop '{current_stop}' or '{next_stop}' not found in the data.")
