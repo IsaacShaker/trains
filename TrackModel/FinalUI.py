@@ -311,7 +311,10 @@ class TrackUI(QMainWindow):
             response = requests.post(URL + "/train-model/get-data/authority-cmd-speed", json=authAndSpeed)
 
     def make_train(self, line):
-        tempTrain = Train(10, greenBlocks[0], 32.2, len(trains.trainList), line)
+        if (line == "Green"):
+            tempTrain = Train(10, greenBlocks[0], 32.2, len(trains.trainList), line)
+        elif (line == "Red"):
+            tempTrain = Train(10, redBlocks[0], 32.2, len(trains.trainList), line)
         trains.addTrain(tempTrain)
         auth.append(0.0)
         cmd.append(0.0)
