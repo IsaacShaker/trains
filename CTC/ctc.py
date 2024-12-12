@@ -1128,9 +1128,23 @@ class MyWindow(QMainWindow, Train, Station, Block):
             myClock.simulation_running = True
             myClock.elapsed_time = time.time()  # Reset start time when simulation starts
             print("The simulation has started!")
+
+            self.sim_speed_dict["sim_speed"] = myClock.sim_speed
+            while(1):
+                response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
+                if response.status_code == 200:
+                    print('simulation running at', myClock.sim_speed)
+                    break
         else:
             myClock.simulation_running = False
             print("The simulation has been stopped!")
+
+            self.sim_speed_dict["sim_speed"] = 0
+            while(1):
+                response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
+                if response.status_code == 200:
+                    print('simulation running at', myClock.sim_speed)
+                    break
 
         # Update the button text to reflect the current state
         sender = self.sender()  # Get the button that triggered the event

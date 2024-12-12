@@ -1,9 +1,6 @@
-import sys
-import time
-import requests
+
 from PyQt6.QtCore import Qt, QTimer, QElapsedTimer
 
-URL = 'http://127.0.0.1:5000'
 
 
 ############################
@@ -14,10 +11,8 @@ URL = 'http://127.0.0.1:5000'
 class Train_Controller:
 
     #train constructor function
-    def __init__ (self, id, model_list):
-        
-        self.train_model_list = model_list
-
+    def __init__ (self, id):
+    
 
         self.is_micah = True
         self.manual_mode = False
@@ -114,8 +109,6 @@ class Train_Controller:
         self.r_door_timer.setSingleShot(True)
         self.r_door_timer.timeout.connect(self.close_r_door)
 
-        #self.session = self._create_session()
-        self.session = requests.Session()
 
 
     ############################
@@ -143,9 +136,6 @@ class Train_Controller:
         self.l_door = left
         self.doors_dict["l_door"] = self.l_door
 
-        if self.is_micah:
-            response = requests.post(URL + "/train-model/receive-doors", json=self.doors_dict)
-
     def set_r_door(self, right):
 
         #if doors are closing, then we should now be able to get authority
@@ -157,24 +147,17 @@ class Train_Controller:
         self.r_door = right
         self.doors_dict["r_door"] = self.r_door
 
-        if self.is_micah:
-            response = requests.post(URL + "/train-model/receive-doors", json=self.doors_dict)
-
     #set lights
     def set_i_light(self, inside):
         self.i_light = inside
         self.lights_dict["i_light"] = self.i_light
 
-        if self.is_micah:
-            response = requests.post(URL + "/train-model/receive-lights", json=self.lights_dict)
 
     #set lights
     def set_o_light(self, outside):
         self.o_light = outside
         self.lights_dict["o_light"] = self.o_light
 
-        if self.is_micah:
-            response = requests.post(URL + "/train-model/receive-lights", json=self.lights_dict)
 
     #set lights
     def set_beacon_info(self, info):
@@ -193,8 +176,6 @@ class Train_Controller:
         self.temperature = temp
         self.temperature_dict["temperature"] = self.temperature
 
-        if self.is_micah:
-            response = requests.post(URL + "/train-model/receive-temperature", json=self.temperature_dict)
         
     #set brakes
     def set_s_brake(self, status):
@@ -205,22 +186,17 @@ class Train_Controller:
         #print(f"Different: {old_brake != self.s_brake}")
         #only sends a new state if a change occurs
         #if self.is_micah and old_brake != self.s_brake:
-        if self.is_micah and old_brake != self.s_brake:
-            print("LALALALALALA")
-            response = requests.post(URL + "/train-model/receive-brakes", json=self.brakes_dict)
+
 
     def set_e_brake(self, status):
         self.e_brake = status
         self.brakes_dict["e_brake"] = self.e_brake
-        if self.is_micah:
-            response = requests.post(URL + "/train-model/receive-brakes", json=self.brakes_dict)
+
 
     def set_pa_announcement(self, announcement):
         self.pa_announcement = announcement
         self.pa_announcement_dict["pa_announcement"] = self.pa_announcement
 
-        if self.is_micah:
-            response = requests.post(URL + "/train-model/receive-announcement", json=self.pa_announcement_dict)
 
     #set authority
     def set_authority(self, distance):
@@ -230,22 +206,22 @@ class Train_Controller:
         self.received_authority = distance
 
     def send_auth_diff(self):
-        try:
-            if self.is_micah:
-                #print("")
-                response = requests.post(URL + "/track-model/get-data/auth_difference", json=self.auth_diff_dict)
-                response.raise_for_status()  # This will raise an error for 4xx/5xx responses
+        # try:
+        #     if self.is_micah:
+        #         #print("")
+        #         response = requests.post(URL + "/track-model/get-data/auth_difference", json=self.auth_diff_dict)
+        #         response.raise_for_status()  # This will raise an error for 4xx/5xx responses
 
-                #print("Success:", response.json())
+        #         #print("Success:", response.json())
 
-        except requests.exceptions.HTTPError as http_err:
-            # Print the HTTP error response
-            print(f"HTTP error occurred: {http_err}")  # HTTP error details
-            print("Response content:", response.text)   # Full response content
+        # except requests.exceptions.HTTPError as http_err:
+        #     # Print the HTTP error response
+        #     print(f"HTTP error occurred: {http_err}")  # HTTP error details
+        #     print("Response content:", response.text)   # Full response content
 
-        except Exception as err:
-        # Catch any other exceptions
-            print(f"Other error occurred: {err}")
+        # except Exception as err:
+        # # Catch any other exceptions
+        #     print(f"Other error occurred: {err}")
 
         # print(f"Difference: {self.auth_diff}")
         # print(f"Current Authority: {self.authority}")
@@ -304,8 +280,7 @@ class Train_Controller:
         self.train_id = number
 
     def set_T(self, speed):
-        if speed != 0:
-            self.T = .09/speed
+        self.T = .09/speed
 
     ############################
     #  Get Functions 
@@ -498,7 +473,7 @@ class Train_Controller:
             #     except requests.exceptions.ConnectionError as e:
             #         print("Connection error:", e)
 
-            self.train_model_list[self.train_id].set_commanded_power(self.commanded_power)
+            #self.train_model_list[self.train_id].set_commanded_power(self.commanded_power)
 
             return
         
@@ -527,7 +502,7 @@ class Train_Controller:
         #     except requests.exceptions.ConnectionError as e:
         #         print("Connection error:", e)
 
-        self.train_model_list[self.train_id].set_commanded_power(self.commanded_power)
+        #self.train_model_list[self.train_id].set_commanded_power(self.commanded_power)
 
     def open_l_door(self, sim_speed):
         self.set_l_door(True)
@@ -580,33 +555,11 @@ class Train_Controller:
 
     #called when sim_speed is changed
     def adjust_door_timer(self, new_sim_speed):
-
-        print(f"on the block: {new_sim_speed}")
-        
-        #pause simulation
-        if new_sim_speed == 0:
-            if self.r_door_timer.isActive():
-                self.r_door_timer.stop()  # Stop right door timer
-            if self.l_door_timer.isActive():
-                self.l_door_timer.stop()  # Stop left door timer
-
-            self.elapsed_sim_time = self.elapsed_timer.elapsed()*self.sim_speed
-
-            return
-
-
-
-
-        if self.r_door or self.l_door:
+        if self.r_door_timer.isActive() or self.l_door_timer.isActive():
 
             #Stop the timer and calculate elapsed time in simulation
-
-            elapsed_real_time = self.elapsed_timer.elapsed()
-
-            if self.r_door_timer.isActive() or self.l_door_timer.isActive():
-                elapsed_sim_time = elapsed_real_time * self.sim_speed  
-            else:
-                elapsed_sim_time = self.elapsed_sim_time
+            elapsed_real_time = self.elapsed_timer.elapsed() 
+            elapsed_sim_time = elapsed_real_time * self.sim_speed  
 
             #Calculate remaining time in real-time
             remaining_time = max(0, 60000 - elapsed_sim_time)
@@ -615,11 +568,11 @@ class Train_Controller:
             self.sim_speed = new_sim_speed
 
             #checks which door is active
-            if self.r_door:
+            if self.r_door_timer.isActive():
                 self.r_door_timer.start(int(remaining_time / self.sim_speed))
             
-            if self.l_door:
+            if self.l_door_timer.isActive():
                 self.l_door_timer.start(int(remaining_time / self.sim_speed))
 
-        self.elapsed_timer.restart()
+            self.elapsed_timer.restart()
 
