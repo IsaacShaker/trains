@@ -3,8 +3,8 @@ from PyQt6.QtWidgets import QCheckBox, QVBoxLayout, QWidget, QHBoxLayout
 class BlockOccupancy(QWidget):
     def __init__(self, data, line, mode, editable=False):
         super().__init__()
-        self.line = line
-        self.mode = mode
+        self.line = None
+        self.mode = None
         self.track_data = data
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(10)
@@ -12,13 +12,22 @@ class BlockOccupancy(QWidget):
         # Refresh the checkboxes based on the line and mode
         self.refresh(line, mode, editable)
 
+    def update_checkboxes(self):
+        for i, block in enumerate(self.track_data[self.line][self.mode]["blocks"]):
+            self.checkboxes[i].setChecked(block["occupied"])
+            self.checkboxes2[i].setChecked(block["speed_hazard"])
+
     def refresh(self, line, mode, editable):
+        if self.line == line and self.mode == mode:
+            self.update_checkboxes()
+
         self.clear_layout()
         self.line = line
         self.mode = mode
 
         # Create checkboxes dynamically based on JSON data
         self.checkboxes = []
+        self.checkboxes2 = []
         i = 0
         for block in self.track_data[self.line][self.mode]["blocks"]:  # Ensure we always create 15 checkboxes
             pair_widget = QWidget()
@@ -44,6 +53,7 @@ class BlockOccupancy(QWidget):
             pair_widget.setLayout(pair_layout)
             self.layout.addWidget(pair_widget)
             self.checkboxes.append(checkbox)
+            self.checkboxes2.append(checkbox2)
 
         self.set_checkbox_interaction(editable)
 

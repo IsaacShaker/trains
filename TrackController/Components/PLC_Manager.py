@@ -16,6 +16,8 @@ class PLCManager(QObject):
         self.auto = auto
         self.plc_num = plc_num
 
+        self.plc_module = None
+
         # create the inputs that are going into PLC
         self.num_blocks = 0
         self.num_switches = 0
@@ -28,7 +30,10 @@ class PLCManager(QObject):
             self.num_crossings = 2
             self.num_traffic_lights = 10
         elif line == "Red":
-            pass
+            self.num_blocks = 77 # extra is for YARD
+            self.num_switches = 7
+            self.num_crossings = 2
+            self.num_traffic_lights = 10
         if line == "Blue":
             print("Blue Line PLC")
             self.num_blocks = 16
@@ -61,8 +66,10 @@ class PLCManager(QObject):
         self.update_data_timer.stop()
 
     def update_data(self):
-        self.update_output_data()
         self.update_input_data()
+        if self.plc_module is not None:
+            self.plc_module.main(self.stop_event, self.blocks, self.switch_suggest, self.switches, self.traffic_lights, self.crossings, self.speed_hazard)
+        self.update_output_data()
 
     def update_input_data(self):        
         # populate the list with proper values
@@ -119,12 +126,12 @@ class PLCManager(QObject):
         self.stop_current_plc()  # Stop the previous PLC
         
         # Dynamically load the new PLC module
-        plc_module = self.load_plc_module(plc_filepath)
+        self.plc_module = self.load_plc_module(plc_filepath)
         
         # Start a new thread with the new PLC program
-        self.plc_thread = Thread(target=self.run_plc, args=(plc_module,))
-        self.plc_thread.start()
-        self.start_updating_timer()  # Start updating inputs for the new PLC
+        # self.plc_thread = Thread(target=self.run_plc, args=(self.plc_module,))
+        # self.plc_thread.start()
+        # self.start_updating_timer()  # Start updating inputs for the new PLC
 
     def load_plc_module(self, filepath):
         """Dynamically load a Python file as a module."""

@@ -40,10 +40,8 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
             speed_hazard[i] = truth_val
         
     def reset_hazard():
-        for i in range(1, len(speed_hazard)):
-            if speed_hazard[i] == True:
-                if not (block_occupancies[i+1] or block_occupancies[i+2] or block_occupancies[i+3] or block_occupancies[i+4]):   
-                    speed_hazard[i] = False
+        for i in range(0, len(speed_hazard)):
+            speed_hazard[i] = False
     
     while 1:
         J_hazard = J_is_hazard()
@@ -109,6 +107,7 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
             if block_occupancies[108 - i]: # block 108 is the railroad crossing
                 crossings[1] = True # Put the crossing down
 
+        break
         # Simulate delay to avoid CPU hogging
         time.sleep(0.1)
         

@@ -88,6 +88,7 @@ def main(stop_event, block_occupancies, switch_suggestions, switches, traffic_li
             if block_occupancies[19 + i]: # block 19 is the railroad crossing
                 crossings[0] = True # Put the crossing down
                 break
-
+    
+        break
         # Simulate delay to avoid CPU hogging
         time.sleep(0.1)
