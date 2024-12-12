@@ -799,7 +799,7 @@ class Train_UI(QMainWindow):
         self.height_label.setText(f"{self.selected_train.m_to_ft(self.selected_train.trainHeight):.2f}")
         self.width_label.setText(f"{self.selected_train.m_to_ft(self.selected_train.trainWidth):.2f}")
         self.length_label.setText(f"{self.selected_train.m_to_ft(self.selected_train.trainLength):.2f}")
-        self.mass_label.setText(str(self.selected_train.totalMass))
+        self.mass_label.setText(f"{self.selected_train.totalMass:.2f}")
         self.num_cars_label.setText(str(self.selected_train.numberOfCars))
         
         self.temperature_label.setText(f"{self.selected_train.temperature:.2f}")
