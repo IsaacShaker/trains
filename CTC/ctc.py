@@ -238,6 +238,10 @@ class MyWindow(QMainWindow):
             "id": self.index
         }
 
+        self.clock_enable_dict_dict = {
+            "enable": self.enable_clock
+        }
+
         #               Timer Stuff                 #
         self.request_block_occupancies_timer = QTimer(self)
         self.request_block_occupancies_timer.timeout.connect(self.receive_block_occupancies)
@@ -1091,22 +1095,21 @@ class MyWindow(QMainWindow):
 
     # The functionality of the user selecting the Simulation Speed of the system
     def sim_speed_selected(self, speed):
-        self.sim_speed = speed
+        self.sim_speed = int(speed[:-1])
+        self.sim_speed_dict["sim_speed"] = self.sim_speed #myClock.sim_speed
         print("The simulation is now running at", self.sim_speed, "speed!")
         #myClock.sim_speed = int(speed[:-1])  # Extracting the numeric value from the selected string
         # Send Sim Speed
         # self.sim_speed = myClock.sim_speed
-        self.sim_speed_dict["sim_speed"] = self.sim_speed #myClock.sim_speed
-        # print(self.sim_speed)
+        
+        print(f"sim2: {self.sim_speed}")
 
-        while(1):
-            response = requests.post(URL + "/train-model/receive-sim-speed", json=self.sim_speed_dict)
-            response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
-            response = requests.post(URL + "/world-clock/get-sim-speed", json=self.sim_speed_dict)
-            if response.status_code == 200:
-                print('simulation running at', self.sim_speed)
+        response = requests.post(URL + "/train-model/receive-sim-speed", json=self.sim_speed_dict)
+        response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
+        response = requests.post(URL + "/world-clock/get-sim-speed", json=self.sim_speed_dict)
+        if response.status_code == 200:
+            print('simulation running at', self.sim_speed)
 
-                break
 
     # The functionality of the user starting the simulation
     def operational_clicked(self):
@@ -1115,7 +1118,7 @@ class MyWindow(QMainWindow):
         response = requests.post(URL + "/world-clock/get-clock-activate", json=self.clock_enable_dict)
 
         # Toggle the simulation state
-        if not self.enable_clock:
+        if self.enable_clock:
             print("The simulation has started!")
 
             self.sim_speed_dict["sim_speed"] = self.sim_speed
