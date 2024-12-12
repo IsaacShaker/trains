@@ -56,6 +56,8 @@ class MyWindow(QMainWindow):
 
         # Create the trains list
         self.trains = []
+        self.trains_on_green = 0
+        self.trains_on_red = 0
 
         # Create the green stations and add them to a list
         self.green_stations = []
@@ -1474,9 +1476,9 @@ class MyWindow(QMainWindow):
 
             new_train = Train(new_train, 'Green')
             
-            rate_string = str(len(self.trains) + 1) +' Trains/hr'
-            self.green_rate_label.setText(rate_string)
-            self.green_schedule_train_combo_box.addItem(new_train.name)
+            # rate_string = str(len(self.trains) + 1) +' Trains/hr'
+            # self.green_rate_label.setText(rate_string)
+            # self.green_schedule_train_combo_box.addItem(new_train.name)
             
             new_train.add_stop(self.green_station_select_combo_box.currentText())
             new_train.get_authority_from_map()
@@ -1554,9 +1556,9 @@ class MyWindow(QMainWindow):
 
             new_train = Train(new_train, 'Red')
             
-            rate_string = str(len(self.trains) + 1) +' Trains/hr'
-            self.red_rate_label.setText(rate_string)
-            self.red_schedule_train_combo_box.addItem(new_train.name)
+            # rate_string = str(len(self.trains) + 1) +' Trains/hr'
+            # self.red_rate_label.setText(rate_string)
+            # self.red_schedule_train_combo_box.addItem(new_train.name)
             
             new_train.add_stop(self.red_station_select_combo_box.currentText())
             new_train.get_authority_from_map()
@@ -1808,6 +1810,17 @@ class MyWindow(QMainWindow):
 
     # Release a train from the yard if its time
     def dispatch_train(self, name, line):
+        if (line == "Green"):
+            self.trains_on_green += 1
+            rate_string = str(self.trains_on_green) +' Trains/hr'
+            self.green_rate_label.setText(rate_string)
+            self.green_schedule_train_combo_box.addItem(name)
+        else:
+            self.trains_on_red += 1
+            rate_string = str(self.trains_on_red) +' Trains/hr'
+            self.red_rate_label.setText(rate_string)
+            self.red_schedule_train_combo_box.addItem(name)
+        
         # Put authority on the YARD block
         self.authority_dict["line"] = line
         self.authority_dict["index"] = 0
