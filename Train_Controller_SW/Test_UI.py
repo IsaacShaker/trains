@@ -1,8 +1,8 @@
 import time
 import sys
 
-from Train_Controller_SW.Train_Controller_SW_Class import Train_Controller
-#from Train_Controller_SW_Class import Train_Controller
+#from Train_Controller_SW.Train_Controller_SW_Class import Train_Controller
+from Test_Train_Class import Train_Controller
 
 
 
@@ -59,13 +59,12 @@ from PyQt6.QtWidgets import (
 
 class Train_Controller_SW_UI(QMainWindow):
 
-    def __init__(self, model_list, tc_list):
+    def __init__(self):
         super(Train_Controller_SW_UI, self).__init__()
 
         self.auth_counter = 0
-        self.next_train_id = 1
-        self.train_list = tc_list
-        self.train_model_list = model_list
+        self.next_train_id = 0
+        self.train_list = []
         self.var_from_mitch = 1 # Simulation Speed
         self.sim_from_ctc = 1
 
@@ -141,7 +140,7 @@ class Train_Controller_SW_UI(QMainWindow):
 
         #create dropdown menu with 3 trains in it already
         self.train_selection = QComboBox(self)
-        self.train_selection.addItems(["Train 1"])
+        self.train_selection.addItems(["Train 0"])
 
         # Sends the current index (position) of the selected item.
         self.train_selection.currentIndexChanged.connect( self.index_changed )
@@ -723,9 +722,6 @@ class Train_Controller_SW_UI(QMainWindow):
         self.power_timer.timeout.connect(self.calculate_power)  # Connect the timer to your function
         self.power_timer.start(90)  # 90 milliseconds interval
 
-        self.pause_timer = QTimer(self)
-        self.pause_timer.timeout.connect(self.check_for_play)  # Connect the timer to your function
-
         self.change_timer(self.var_from_mitch)
 
         
@@ -1042,8 +1038,6 @@ class Train_Controller_SW_UI(QMainWindow):
         #testing changing sim speed
         #self.change_timer(10)
 
-        #self.change_timer(0)
-
         #checks if light is currently on or off
         if self.train_list[self.current_train].get_i_light() == False:
             #light must turn on
@@ -1061,8 +1055,6 @@ class Train_Controller_SW_UI(QMainWindow):
         
         #testing changing sim speed
         #self.change_timer(1)
-
-        #self.change_timer(10)
 
         #checks if light is currently on or off
         if self.train_list[self.current_train].get_o_light() == False:
@@ -1428,8 +1420,7 @@ class Train_Controller_SW_UI(QMainWindow):
 
             #once counter reaches 40, sends updated amount moved to track model
             if self.auth_counter == 40:
-                if train.get_train_id() == len(self.train_list):
-                    self.auth_counter = 0
+                self.auth_counter = 0
                 train.send_auth_diff()
 
 
@@ -1464,9 +1455,7 @@ class Train_Controller_SW_UI(QMainWindow):
         
         self.check_errors()
 
-
-
-        if self.sim_from_ctc != self.var_from_mitch or self.sim_from_ctc == 0:
+        if self.sim_from_ctc != self.var_from_mitch:
             self.change_timer(self.sim_from_ctc)
 
         print(self.var_from_mitch)
@@ -1534,9 +1523,9 @@ class Train_Controller_SW_UI(QMainWindow):
     
 
     def add_train(self):
-        new_train = Train_Controller(self.next_train_id, self.train_model_list)
+        new_train = Train_Controller(self.next_train_id)
 
-        if self.next_train_id > 1:
+        if self.next_train_id > 0:
             self.train_selection.addItems(["Train " + str(self.next_train_id)])
 
         #increment
@@ -1546,16 +1535,9 @@ class Train_Controller_SW_UI(QMainWindow):
         
     
     def change_timer(self, sim_speed: int):
-        if sim_speed != 0:
-            self.var_from_mitch = sim_speed
-            #change timer
-            self.power_timer.setInterval(int(90/sim_speed))
-
-            if not self.power_timer.isActive():
-                self.power_timer.start()
-        else:
-            self.power_timer.stop()
-            self.pause_timer.start(90)
+        self.var_from_mitch = sim_speed
+        #change timer
+        self.power_timer.setInterval(int(90/sim_speed))
 
         #adjust T
         for train in self.train_list:
@@ -1565,14 +1547,6 @@ class Train_Controller_SW_UI(QMainWindow):
     def ctc_change_sim(self, sim_speed):
         print(f"Input = {sim_speed}")
         self.sim_from_ctc = sim_speed
-        
-
-    def check_for_play(self):
-        if self.sim_from_ctc != 0:
-            self.change_timer(self.sim_from_ctc)
-            self.pause_timer.stop()
-
-
 
 
 if __name__ == "__main__":

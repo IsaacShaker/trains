@@ -4,7 +4,7 @@ import time
 import pandas as pd
 import requests
 from CTC.train import Train
-from CTC.clock import Clock
+#from CTC.clock import Clock
 from CTC.scheduleReader import ScheduleReader
 from CTC.station import Station
 from CTC.block import Block
@@ -20,16 +20,19 @@ FILE_PATH = os.path.join(base_path, '..', 'CTC', 'Blocks.xlsx')
 FILE_PATH = os.path.abspath(FILE_PATH)
 
 # Create an object from Clock class
-myClock = Clock()
+#myClock = Clock()
 
 URL = 'http://127.0.0.1:5000'
 
-class MyWindow(QMainWindow, Clock, Train, Station, Block):
+class MyWindow(QMainWindow, Train, Station, Block):
     def __init__(self):
         super().__init__()
 
-        myClock.old_time = 21600 # the system will began at 6AM
-        myClock.sim_speed = 1 # the system will be running at 1x speed by default
+        #myClock.old_time = 21600 # the system will began at 6AM
+        #myClock.sim_speed = 1 # the system will be running at 1x speed by default
+        self.current_time = "00:00:00"
+        self.enable_clock = False
+        self.seconds_cum = 0
 
         self.system_time = 0
 
@@ -216,6 +219,10 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
 
         self.sim_speed_dict = {
             "sim_speed": self.sim_speed
+        }
+
+        self.clock_enable_dict = {
+            "enable": self.enable_clock
         }
 
         self.line = ""
@@ -416,7 +423,7 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         sim_layout = QVBoxLayout()
 
         # Add the clock label
-        self.clock_label = QLabel(myClock.format_time(0))
+        self.clock_label = QLabel("00:00:00")   #(myClock.format_time(0))
         self.clock_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.clock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.clock_label.setStyleSheet("color: white; font-size: 18px;")
@@ -1077,11 +1084,12 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
 
     # The functionality of the user selecting the Simulation Speed of the system
     def sim_speed_selected(self, speed):
-        print("The simulation is now running at", speed, "speed!")
-        myClock.sim_speed = int(speed[:-1])  # Extracting the numeric value from the selected string
+        self.sim_speed = speed
+        print("The simulation is now running at", self.sim_speed, "speed!")
+        #myClock.sim_speed = int(speed[:-1])  # Extracting the numeric value from the selected string
         # Send Sim Speed
         # self.sim_speed = myClock.sim_speed
-        self.sim_speed_dict["sim_speed"] = myClock.sim_speed
+        self.sim_speed_dict["sim_speed"] = self.sim_speed #myClock.sim_speed
         # print(self.sim_speed)
 
         while(1):
@@ -1089,19 +1097,54 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
             response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
             response = requests.post(URL + "/world-clock/get-sim-speed", json=self.sim_speed_dict)
             if response.status_code == 200:
-                print('simulation running at', myClock.sim_speed)
+                print('simulation running at', self.sim_speed)
+
                 break
 
     # The functionality of the user starting the simulation
     def operational_clicked(self):
+        self.enable_clock = not self.enable_clock
+        self.clock_enable_dict_dict["enable"] = self.enable_clock
+        response = requests.post(URL + "/world-clock/get-clock-activate", json=self.clock_enable_dict)
+
+        # Toggle the simulation state
+        if not self.enable_clock:
+            print("The simulation has started!")
+        else:
+            print("The simulation has been stopped!")
+
+        # Update the button text to reflect the current state
+        sender = self.sender()  # Get the button that triggered the event
+        if self.enable_clock:
+            sender.setText("Stop")  # Change the button text to "Stop" when running
+            sender.setStyleSheet("background-color: red; color: white;")
+        else:
+            sender.setText("Start")  # Change the button text back to "Start" when stopped
+            sender.setStyleSheet("background-color: green; color: white;")
+
+        '''
         # Toggle the simulation state
         if not myClock.simulation_running:
             myClock.simulation_running = True
             myClock.elapsed_time = time.time()  # Reset start time when simulation starts
             print("The simulation has started!")
+
+            self.sim_speed_dict["sim_speed"] = myClock.sim_speed
+            while(1):
+                response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
+                if response.status_code == 200:
+                    print('simulation running at', myClock.sim_speed)
+                    break
         else:
             myClock.simulation_running = False
             print("The simulation has been stopped!")
+
+            self.sim_speed_dict["sim_speed"] = 0
+            while(1):
+                response = requests.post(URL + "/train-controller/receive-sim-speed", json=self.sim_speed_dict)
+                if response.status_code == 200:
+                    print('simulation running at', myClock.sim_speed)
+                    break
 
         # Update the button text to reflect the current state
         sender = self.sender()  # Get the button that triggered the event
@@ -1111,8 +1154,10 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
         else:
             sender.setText("Start")  # Change the button text back to "Start" when stopped
             sender.setStyleSheet("background-color: green; color: white;")
+        '''
 
     # Update the clock every realtime second that passes
+    '''
     def second_passed(self):
         # Only update the clock if the simulation is running
         #if myClock.simulation_running:
@@ -1121,6 +1166,17 @@ class MyWindow(QMainWindow, Clock, Train, Station, Block):
 
         # Update the label in UI
         self.clock_label.setText(myClock.current_time)
+    '''
+
+    def set_current_time(self, input):
+        self.current_time = input
+        self.update_clock()
+
+    def update_clock(self):
+        self.clock_label.setText(self.current_time)
+
+    def set_seconds_cum(self, input):
+        self.seconds_cum = input
             
     # What happens when the user presses Current Mode button
     def mode_clicked(self):        
