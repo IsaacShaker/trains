@@ -36,6 +36,8 @@ class MainApp(QApplication):
         self.train_controller_sw = Train_Controller_SW_UI()
 
         self.train_controller_sw.show()
+
+        self.train_controller_sw.add_train()
         
 
         #all units are set in meters or m/s but displayed in feet or MPH
@@ -72,6 +74,8 @@ class MainApp(QApplication):
         self.train_controller_sw.train_list[0].set_authority(0)
         self.train_controller_sw.train_list[0].set_beacon_info("b3,3,Dormont")
         self.train_controller_sw.train_list[0].set_actual_velocity(0)
+
+        
 
         
 

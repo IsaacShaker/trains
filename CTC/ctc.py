@@ -56,6 +56,8 @@ class MyWindow(QMainWindow):
 
         # Create the trains list
         self.trains = []
+        self.trains_on_green = 0
+        self.trains_on_red = 0
 
         # Create the green stations and add them to a list
         self.green_stations = []
@@ -236,10 +238,6 @@ class MyWindow(QMainWindow):
         self.train_initializer_dict = {
             "line": self.line,
             "id": self.index
-        }
-
-        self.clock_enable_dict_dict = {
-            "enable": self.enable_clock
         }
 
         #               Timer Stuff                 #
@@ -1114,7 +1112,7 @@ class MyWindow(QMainWindow):
     # The functionality of the user starting the simulation
     def operational_clicked(self):
         self.enable_clock = not self.enable_clock
-        self.clock_enable_dict_dict["enable"] = self.enable_clock
+        self.clock_enable_dict["enable"] = self.enable_clock
         response = requests.post(URL + "/world-clock/get-clock-activate", json=self.clock_enable_dict)
 
         # Toggle the simulation state
@@ -1194,6 +1192,8 @@ class MyWindow(QMainWindow):
 
     def set_seconds_cum(self, input):
         self.seconds_cum = input
+        # check if train needs dispatched
+        self.check_dispatch(self.seconds_cum)
             
     # What happens when the user presses Current Mode button
     def mode_clicked(self):        
@@ -1423,23 +1423,23 @@ class MyWindow(QMainWindow):
         else:
             print("No file selected.")
 
-        for station in self.green_stations:
-            print(station.name, 'has authorities', station.authorities)
+        # if self.trains_on_green == 0:
+        #     self.train_data_big_layout.removeWidget(self.train_label)
+        #     self.train_label.deleteLater()
+        #     # Create the QComboBox
+        #     self.train_data_combo_box = QComboBox()
+        #     self.train_data_combo_box.setPlaceholderText('Train')
+        #     self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        #     self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+        #     for train in new_trains:
+        #         self.train_data_combo_box.addItem(train.name)
+        #     self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
 
-        self.train_data_big_layout.removeWidget(self.train_label)
-        self.train_label.deleteLater()
-
-        # Create the QComboBox
-        self.train_data_combo_box = QComboBox()
-        self.train_data_combo_box.setPlaceholderText('Train')
-        self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
-        for train in self.trains:
-            self.train_data_combo_box.addItem(train.name)
-        self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
-
-        # Add the QComboBox to the layout
-        self.train_data_big_layout.addWidget(self.train_data_combo_box)
+        #     # Add the QComboBox to the layout
+        #     self.train_data_big_layout.addWidget(self.train_data_combo_box)
+        # else:
+        #     for train in new_trains:
+        #         self.train_data_combo_box.addItem(train.name)
 
     # Allow user to upload a schedule for red line
     def red_upload_clicked(self):        
@@ -1458,20 +1458,20 @@ class MyWindow(QMainWindow):
         else:
             print("No file selected.")
 
-        self.train_data_big_layout.removeWidget(self.train_label)
-        self.train_label.deleteLater()
+        # self.train_data_big_layout.removeWidget(self.train_label)
+        # self.train_label.deleteLater()
 
-        # Create the QComboBox
-        self.train_data_combo_box = QComboBox()
-        self.train_data_combo_box.setPlaceholderText('Train')
-        self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
-        for train in self.trains:
-            self.train_data_combo_box.addItem(train.name)
-        self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
+        # # Create the QComboBox
+        # self.train_data_combo_box = QComboBox()
+        # self.train_data_combo_box.setPlaceholderText('Train')
+        # self.train_data_combo_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        # self.train_data_combo_box.setStyleSheet("color: white; background-color: #772CE8; font-size: 16px")
+        # for train in self.trains:
+        #     self.train_data_combo_box.addItem(train.name)
+        # self.train_data_combo_box.currentTextChanged.connect(self.train_selected)
 
-        # Add the QComboBox to the layout
-        self.train_data_big_layout.addWidget(self.train_data_combo_box)
+        # # Add the QComboBox to the layout
+        # self.train_data_big_layout.addWidget(self.train_data_combo_box)
 
     # Process manual dispatch for green line
     def green_submit_dispatch(self):
@@ -1483,10 +1483,6 @@ class MyWindow(QMainWindow):
                 new_train = 'Train '+str(len(self.trains))
 
             new_train = Train(new_train, 'Green')
-            
-            rate_string = str(len(self.trains) + 1) +' Trains/hr'
-            self.green_rate_label.setText(rate_string)
-            self.green_schedule_train_combo_box.addItem(new_train.name)
             
             new_train.add_stop(self.green_station_select_combo_box.currentText())
             new_train.get_authority_from_map()
@@ -1522,7 +1518,7 @@ class MyWindow(QMainWindow):
                         station.add_authority(auth_list[0])
                     else:
                         station.add_authority([new_train.name, -1])
-            
+
             if len(self.trains) == 0: # If we are adding the first train, delete the label
                 # Remove the current QLabel
                 self.train_data_big_layout.removeWidget(self.train_label)
@@ -1546,7 +1542,7 @@ class MyWindow(QMainWindow):
             # Add the QComboBox to the layout
             self.train_data_big_layout.addWidget(self.train_data_combo_box)   
 
-            self.dispatch_train(new_train.name, new_train.line)
+            #self.dispatch_train(new_train.name, new_train.line)
         else: # Add a stop to the train
             selected_train = next((train for train in self.trains if train.name == selected_name), None)
             #selected_train.route_authorities.clear()
@@ -1564,9 +1560,9 @@ class MyWindow(QMainWindow):
 
             new_train = Train(new_train, 'Red')
             
-            rate_string = str(len(self.trains) + 1) +' Trains/hr'
-            self.red_rate_label.setText(rate_string)
-            self.red_schedule_train_combo_box.addItem(new_train.name)
+            # rate_string = str(len(self.trains) + 1) +' Trains/hr'
+            # self.red_rate_label.setText(rate_string)
+            # self.red_schedule_train_combo_box.addItem(new_train.name)
             
             new_train.add_stop(self.red_station_select_combo_box.currentText())
             new_train.get_authority_from_map()
@@ -1602,9 +1598,6 @@ class MyWindow(QMainWindow):
                         station.add_authority(auth_list[0])
                     else:
                         station.add_authority([new_train.name, -1])
-            for station in self.red_stations:
-                print(station.name, 'has auths', station.authorities)
-
             if len(self.trains) == 0: # If we are adding the first train, delete the label
                 # Remove the current QLabel
                 self.train_data_big_layout.removeWidget(self.train_label)
@@ -1628,7 +1621,7 @@ class MyWindow(QMainWindow):
             # Add the QComboBox to the layout
             self.train_data_big_layout.addWidget(self.train_data_combo_box)   
 
-            self.dispatch_train(new_train.name, new_train.line)
+            #self.dispatch_train(new_train.name, new_train.line)
         else: # Add a stop to the train
             selected_train = next((train for train in self.trains if train.name == selected_name), None)
             #selected_train.route_authorities.clear()
@@ -1746,10 +1739,25 @@ class MyWindow(QMainWindow):
                                     if response.status_code == 200:
                                         break
                     station.set_popped(True)
-                    # # Send Wayside Vision
-                    # self.wayside_vision_dict["line"] = "Green"
-                    # self.wayside_vision_dict["index"] = 2
-                    # self.wayside_vision_dict["output_block"] = 0
+                    # Send Wayside Vision
+                    self.wayside_vision_dict["line"] = "Green"
+                    self.wayside_vision_dict["index"] = 2
+                    self.wayside_vision_dict["output_block"] = 0
+                    while(1):
+                        response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
+                        if response.status_code == 200:
+                            break
+                elif ('Red', id) in self.occupied_blocks and station.get_popped() == False:
+                    # Send authority to wayside since just entered station block
+                    print('releasing a train from the yard')
+                    self.authority_dict["line"] = "Red"
+                    self.authority_dict["index"] = id
+                    popped_auth = station.pop_authority()
+                    self.authority_dict["authority"] = popped_auth[1]
+                    for train in self.trains:
+                        if train.name == popped_auth[0]:
+                            train.set_current_authority(popped_auth[1])
+                    station.set_popped(True)
                     while(1):
                         response = requests.post(URL + "/track-controller-sw/give-data/authority", json=self.authority_dict)
                         if response.status_code == 200:
@@ -1818,6 +1826,17 @@ class MyWindow(QMainWindow):
 
     # Release a train from the yard if its time
     def dispatch_train(self, name, line):
+        if (line == "Green"):
+            self.trains_on_green += 1
+            rate_string = str(self.trains_on_green) +' Trains/hr'
+            self.green_rate_label.setText(rate_string)
+            self.green_schedule_train_combo_box.addItem(name)
+        else:
+            self.trains_on_red += 1
+            rate_string = str(self.trains_on_red) +' Trains/hr'
+            self.red_rate_label.setText(rate_string)
+            self.red_schedule_train_combo_box.addItem(name)
+        
         # Put authority on the YARD block
         self.authority_dict["line"] = line
         self.authority_dict["index"] = 0
@@ -1878,6 +1897,14 @@ class MyWindow(QMainWindow):
                 print(f"Other error Occurred: {err}")
             
         self.trains[0].on_track = True
+
+    # Check if a train needs dispatched at this time
+    def check_dispatch(self, time):
+        for train in self.trains:
+            print('dispatch time =', train.dispatch_time)
+            if train.dispatch_time >= time and train.on_track == False:
+                train.dispatch_train(train.name, train.line)
+
 
 if __name__ == "__main__":    
 

@@ -35,6 +35,7 @@ class Train_Controller:
         self.station_reached = False
         self.doors_can_open = False
         self.can_get_authority = True
+        self.is_night = False
 
         #Floats
         self.k_p = 7000
@@ -441,7 +442,7 @@ class Train_Controller:
                 if self.in_tunnel:
                     self.set_i_light(True)
                     self.set_o_light(True)
-                else:
+                elif not self.is_night:
                     self.set_i_light(False)
                     self.set_o_light(False)
         #this decodes the 3 segments of information
@@ -462,7 +463,7 @@ class Train_Controller:
                         if self.in_tunnel:
                             self.set_i_light(True)
                             self.set_o_light(True)
-                        else:
+                        elif not self.is_night:
                             self.set_i_light(False)
                             self.set_o_light(False)
 
@@ -593,9 +594,6 @@ class Train_Controller:
             self.elapsed_sim_time = self.elapsed_timer.elapsed()*self.sim_speed
 
             return
-
-
-
 
         if self.r_door or self.l_door:
 
