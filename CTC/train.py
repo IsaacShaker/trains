@@ -91,10 +91,10 @@ class Train:
             authority_list = self.myReader.calculate_green_authorities(self.station_stops)
             for authority in authority_list:
                 self.route_authorities.append(authority)
-        #else:
-            #authority_list = self.calculate_red_authorites(self.station_stops)
-            #for authority in authority_list:
-                #self.route_authorities.append(authority)
+        else:
+            authority_list = self.myReader.calculate_red_authorities(self.station_stops)
+            for authority in authority_list:
+                self.route_authorities.append(authority)
 
         self.set_current_authority(self.route_authorities[0])
 
