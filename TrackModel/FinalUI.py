@@ -25,6 +25,7 @@ redYard = []
 redBlocks = []
 redSwitches = []
 redRailroadCrossings = []
+redTrafficLights = []
 redBeacons = [] 
 redStations = [] 
 redSections = []
@@ -183,6 +184,8 @@ class TrackUI(QMainWindow):
         
         for i in range(10):
             greenTrafficLights.append(TrafficLight("Green", False))
+        for i in range(6):
+            redTrafficLights.append(TrafficLight("Red", False))
 
         #override for sake of spawn simulation
         for i in range(150):
@@ -298,8 +301,6 @@ class TrackUI(QMainWindow):
     def post_people_boarding(self, numLeaving, index):
         numBoarding['num_boarding'] = trains.trainList[index].station_stopped(numLeaving)
         numBoarding['id'] = index
-        print(f"Index{index}")
-        print(f"Number leaving: {trains.trainList[index].station_stopped(numLeaving)}")
         if launcher:
             response = requests.post(URL + "/train-model/get-data/station_passengers", json = numBoarding)
 
@@ -359,7 +360,7 @@ class TrackUI(QMainWindow):
 
         self.make_red_sections(tab5)
         self.make_red_switches(tab5)
-        # self.make_lights(tab1, 110)
+        self.make_red_lights(tab5)
         self.make_red_crossings(tab5)
         # self.make_train(tab1)
         self.make_red_stations(tab5)
@@ -551,6 +552,15 @@ class TrackUI(QMainWindow):
                 self.redGreenCrossings[i].show()
             self.redGreenCrossings[i].setToolTip(redRailroadCrossings[i].display_info(i))
             self.redRedCrossings[i].setToolTip(redRailroadCrossings[i].display_info(i))
+
+        for i in range(6):
+            #red is underneath green
+            if redTrafficLights[i].get_RorG():
+                self.redLightsTop[i].show()
+            else:
+                self.redLightsTop[i].hide()
+            self.redLightsTop[i].setToolTip(redTrafficLights[i].display_info(i))
+            self.redLightsBot[i].setToolTip(redTrafficLights[i].display_info(i))
 
 
     
@@ -1429,6 +1439,33 @@ class TrackUI(QMainWindow):
         self.greenLightsTop[8].setGeometry(640, 455, 30, 30)
         self.greenLightsBot[9].setGeometry(515, 345, 30, 30)
         self.greenLightsTop[9].setGeometry(515, 345, 30, 30)
+
+    def make_red_lights(self, tab1):
+        original_pixmap_red = QPixmap(add_TM+"images/RedLight.png")
+        resized_pixmap_red = original_pixmap_red.scaled(30,30)
+        original_pixmap_green = QPixmap(add_TM+"images/GreenLight.png")
+        resized_pixmap_green = original_pixmap_green.scaled(30,30)
+        self.redLightsBot = []
+        self.redLightsTop = []
+        for i in range(6):
+            self.redLightsBot.append(QLabel(tab1))
+            self.redLightsTop.append(QLabel(tab1))
+            self.redLightsBot[i].setPixmap(resized_pixmap_red)
+            self.redLightsTop[i].setPixmap(resized_pixmap_green)   
+            self.redLightsBot[i].setGeometry(10+30*i, 10, 30, 30)
+            self.redLightsTop[i].setGeometry(10+30*i, 10, 30, 30)
+        self.redLightsBot[0].setGeometry(130, 210, 30, 30)
+        self.redLightsTop[0].setGeometry(130, 210, 30, 30)
+        self.redLightsBot[1].setGeometry(230, 210, 30, 30)
+        self.redLightsTop[1].setGeometry(230, 210, 30, 30)
+        self.redLightsBot[2].setGeometry(475, 158, 30, 30)
+        self.redLightsTop[2].setGeometry(475, 158, 30, 30)
+        self.redLightsBot[3].setGeometry(627, 45, 30, 30)
+        self.redLightsTop[3].setGeometry(627, 45, 30, 30)
+        self.redLightsBot[4].setGeometry(717, 375, 30, 30)
+        self.redLightsTop[4].setGeometry(717, 375, 30, 30)
+        self.redLightsBot[5].setGeometry(573, 430, 30, 30)
+        self.redLightsTop[5].setGeometry(573, 430, 30, 30)
 
     def make_green_temp(self, tab):
         self.greenTempButton = QPushButton("Set New Temperature", tab)

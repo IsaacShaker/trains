@@ -8,10 +8,12 @@ class Station:
         self.trainIn = False
         self.leftDoor = Left
         self.rightDoor = Right
+        self.numLeaving = 0
+        self.numBoarding = 0
         self.peopleAtStation = random.randint(1,50)
         
     def display_info(self):
-        string = f"{self.name}:\n\tLine: {self.line}\n\tBlock Number: {self.block.display_num()} \n\tLeft Door: {self.leftDoor}\n\tRight Door: {self.rightDoor}"
+        string = f"{self.name}:\n\tLine: {self.line}\n\tBlock Number: {self.block.display_num()} \n\tLeft Door: {self.leftDoor}\n\tRight Door: {self.rightDoor}\n\tPeople In Station: {self.peopleAtStation}\n\tPeople Boarding: {self.numBoarding}\n\tPeople Leaving: {self.numLeaving}"
         return string
     
     def set_trainIn(self, x):
