@@ -35,6 +35,7 @@ class MyWindow(QMainWindow, Train, Station, Block):
         self.current_time = "00:00:00"
         self.enable_clock = False
         self.seconds_cum = 0
+        self.sim_speed = 1
 
         self.system_time = 0
 
