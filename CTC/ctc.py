@@ -858,11 +858,11 @@ class MyWindow(QMainWindow):
             self.maintenance_blocks_dict["line"] = "Red"
             self.maintenance_blocks_dict["index"] = block
             self.maintenance_blocks_dict["maintenance"] = True
-            # while(1):
-            #     print('closure')
-            #     response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
-            #     if response.status_code == 200:
-            #         break
+            while(1):
+                print('closure')
+                response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
+                if response.status_code == 200:
+                    break
 
             print("Block", block, "on the Red line has been closed for maintenance!")
             dialog.accept()
@@ -1020,11 +1020,11 @@ class MyWindow(QMainWindow):
         self.maintenance_blocks_dict["line"] = block_line
         self.maintenance_blocks_dict["index"] = block_number
         self.maintenance_blocks_dict["maintenance"] = False
-        # while(1):
-        #     print('opening')
-        #     response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
-        #     if response.status_code == 200:
-        #         break
+        while(1):
+            print('opening')
+            response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
+            if response.status_code == 200:
+                break
 
         print("Block", block_line, "on the", block_number, "line has been reopened from maintenance!")
         dialog.accept()  
@@ -1046,11 +1046,11 @@ class MyWindow(QMainWindow):
         self.maintenance_blocks_dict["line"] = block_line
         self.maintenance_blocks_dict["index"] = block_number
         self.maintenance_blocks_dict["maintenance"] = False
-        # while(1):
-        #     print('opening')
-        #     response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
-        #     if response.status_code == 200:
-        #         break
+        while(1):
+            print('opening')
+            response = requests.post(URL + "/track-controller-sw/give-data/maintenance", json=self.maintenance_blocks_dict)
+            if response.status_code == 200:
+                break
 
         print("Block", block_line, "on the", block_number, "line has been reopened from maintenance!")
         dialog.accept()
@@ -1417,6 +1417,9 @@ class MyWindow(QMainWindow):
 
                 for i in new_trains:
                     self.trains.append(i)
+
+                for station in self.green_stations:
+                    print(station.name, 'has authorities', station.authorities)
             
             except Exception as e:
                 print(f"Error reading the Excel file: {e}")
@@ -1542,7 +1545,7 @@ class MyWindow(QMainWindow):
             # Add the QComboBox to the layout
             self.train_data_big_layout.addWidget(self.train_data_combo_box)   
 
-            #self.dispatch_train(new_train.name, new_train.line)
+            self.dispatch_train(new_train.name, new_train.line)
         else: # Add a stop to the train
             selected_train = next((train for train in self.trains if train.name == selected_name), None)
             #selected_train.route_authorities.clear()
@@ -1803,10 +1806,10 @@ class MyWindow(QMainWindow):
                 self.suggested_speed_dict["speed"] = 0
                 for train in self.trains:
                     train.set_suggested_speed(0)
-                # while(1):
-                #     response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
-                #     if response.status_code == 200:
-                #         break
+                while(1):
+                    response = requests.post(URL + "/track-controller-sw/give-data/speed", json=self.suggested_speed_dict)
+                    if response.status_code == 200:
+                        break
             elif block["speed_hazard"] == False and ("Green", block["block"]) in self.recent_speed_hazards:
                 # Change speed to actual
                 self.recent_speed_hazards.remove(("Green", block["block"]))
